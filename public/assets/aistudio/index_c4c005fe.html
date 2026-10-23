@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luyện Tin Học - Kết Nối Tri Thức</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        :root {
+            --surface-1: #FFFFFF;
+            --surface-2: #F8FAFC;
+            --surface-3: #F1F5F9;
+            --surface-4: #E2E8F0;
+            --surface-5: #CBD5E1;
+
+            --primary: #3B82F6;
+            --primary-light: #60A5FA;
+            --primary-dark: #2563EB;
+            --accent: #F59E0B;
+            --success: #10B981;
+            --danger: #EF4444;
+
+            --text-primary: #1E293B;
+            --text-secondary: #64748B;
+            --text-muted: #94A3B8;
+
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-full: 999px;
+
+            --spacing-xs: 0.5rem;
+            --spacing-sm: 0.75rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+            --spacing-2xl: 3rem;
+
+            --font-display: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            --font-body: 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            font-size: clamp(0.875rem, 0.8rem + 0.4vw, 1rem);
+            line-height: 1.6;
+        }
+
+        #root {
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: var(--spacing-lg);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--surface-1);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-xl);
+            padding: var(--spacing-xl);
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: var(--spacing-2xl);
+        }
+
+        .header h1 {
+            font-family: var(--font-display);
+            font-size: clamp(1.75rem, 1.5rem + 1.5vw, 2.5rem);
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: var(--spacing-sm);
+            letter-spacing: -0.02em;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: clamp(0.875rem, 0.8rem + 0.3vw, 1rem);
+        }
+
+        .role-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-lg);
+            margin-top: var(--spacing-xl);
+        }
+
+        .role-card {
+            background: var(--surface-2);
+            border: 2px solid var(--surface-4);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-xl);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .role-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .role-icon {
+            font-size: 3rem;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .role-card h3 {
+            font-size: clamp(1.25rem, 1.1rem + 0.5vw, 1.5rem);
+            margin-bottom: var(--spacing-sm);
+            color: var(--text-primary);
+        }
+
+        .role-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: var(--spacing-sm);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: var(--spacing-md);
+            border: 2px solid var(--surface-4);
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+            font-family: var(--font-body);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn {
+            padding: var(--spacing-md) var(--spacing-xl);
+            border: none;
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: var(--font-body);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            background: var(--surface-3);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--surface-4);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-accent {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-accent:hover {
+            background: #D97706;
+        }
+
+        .dashboard {
+            background: var(--surface-1);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-xl);
+            padding: var(--spacing-xl);
+            min-height: 80vh;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-xl);
+            padding-bottom: var(--spacing-lg);
+            border-bottom: 2px solid var(--surface-3);
+        }
+
+        .dashboard-title {
+            font-size: clamp(1.5rem, 1.3rem + 0.8vw, 2rem);
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: var(--spacing-lg);
+            margin-top: var(--spacing-xl);
+        }
+
+        .subject-card {
+            background: linear-gradient(135deg, var(--surface-2) 0%, var(--surface-3) 100%);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-lg);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .subject-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-light);
+        }
+
+        .subject-card.selected {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+        }
+
+        .subject-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .subject-emoji {
+            font-size: 2.5rem;
+        }
+
+        .subject-info h3 {
+            font-size: 1.25rem;
+            margin-bottom: var(--spacing-xs);
+            color: var(--text-primary);
+        }
+
+        .subject-meta {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .subject-description {
+            margin-top: var(--spacing-md);
+            padding-top: var(--spacing-md);
+            border-top: 1px solid var(--surface-4);
+        }
+
+        .subject-description li {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: var(--spacing-xs);
+            padding-left: var(--spacing-sm);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: grid;
+            place-items: center;
+            z-index: 1000;
+            padding: var(--spacing-lg);
+        }
+
+        .modal {
+            background: var(--surface-1);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            max-width: 500px;
+            width: 100%;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .modal-header {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+        }
+
+        .pin-code {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            background: var(--surface-2);
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: var(--radius-full);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: 0.1em;
+        }
+
+        .assignment-list {
+            display: grid;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+        }
+
+        .assignment-item {
+            background: var(--surface-2);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-md);
+            display: grid;
+            gap: var(--spacing-md);
+        }
+
+        .assignment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+        }
+
+        .assignment-info h4 {
+            font-size: 1.1rem;
+            margin-bottom: var(--spacing-xs);
+            color: var(--text-primary);
+        }
+
+        .class-code {
+            display: inline-block;
+            background: var(--primary-light);
+            color: white;
+            padding: var(--spacing-xs) var(--spacing-md);
+            border-radius: var(--radius-full);
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .error-message {
+            background: #FEE2E2;
+            color: #991B1B;
+            padding: var(--spacing-md);
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--spacing-md);
+            border-left: 4px solid var(--danger);
+        }
+
+        .success-message {
+            background: #D1FAE5;
+            color: #065F46;
+            padding: var(--spacing-md);
+            border-radius: var(--spacing-sm);
+            margin-bottom: var(--spacing-md);
+            border-left: 4px solid var(--success);
+        }
+
+        .back-btn {
+            position: fixed;
+            top: var(--spacing-lg);
+            left: var(--spacing-lg);
+            z-index: 100;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+            color: white;
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-md);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Dữ liệu các môn học
+        const SUBJECTS = {
+            go: ["⌨️", "Luyện gõ phím", "8 cấp · 70 bài", ["Hình thành thói quen gõ phím đúng tư thế, đúng ngón", "Tăng dần tốc độ và độ chính xác qua luyện tập đều đặn", "Nền tảng cho mọi hoạt động học tập và làm việc trên máy tính"]],
+            "go-tv": ["🇻🇳", "Gõ tiếng Việt", "7 cấp · 36 bài", ["Gõ tiếng Việt có dấu chính xác, trôi chảy", "Giữ gìn sự trong sáng của tiếng Việt trên môi trường số", "Nền tảng để viết bài và trình bày văn bản về sau"]],
+            chuot: ["🖱️", "Luyện chuột", "10 cấp", ["Làm chủ thao tác chuột chính xác, linh hoạt", "Rèn sự phối hợp tay – mắt và khả năng tập trung", "Bước khởi đầu để sử dụng thành thạo mọi phần mềm"]],
+            ic3: ["💻", "Kĩ năng máy tính", "20 cấp · 104 bài", ["Hiểu cách máy tính, phần mềm và Internet vận hành", "Tổ chức, lưu trữ và tìm kiếm thông tin một cách khoa học", "Tự tin sử dụng công nghệ trong học tập và cuộc sống"]],
+            word: ["📝", "Soạn thảo Word", "8 cấp · 48 bài", ["Trình bày văn bản rõ ràng, khoa học và có thẩm mỹ", "Biết lựa chọn công cụ phù hợp với từng mục đích", "Kĩ năng văn phòng thiết yếu cho học tập và công việc sau này"]],
+            excel: ["📊", "Bảng tính Excel", "8 cấp · 32 bài", ["Tổ chức dữ liệu một cách có hệ thống", "Dùng công thức để tính toán, so sánh và rút ra nhận xét", "Bước đầu hình thành tư duy dữ liệu"]],
+            powerpoint: ["📽️", "Trình chiếu PowerPoint", "8 cấp · 48 bài", ["Trình bày ý tưởng mạch lạc bằng chữ và hình ảnh", "Phát triển óc sáng tạo và cảm nhận thẩm mỹ", "Tự tin thuyết trình, chia sẻ trước tập thể"]],
+            "thuat-toan": ["🤖", "Tư duy thuật toán", "11 cấp · 34 câu đố", ["Phân tích vấn đề và chia nhỏ thành từng bước giải quyết", "Rèn tư duy logic: tuần tự, lặp lại, rẽ nhánh", "Nền móng cho lập trình và tư duy máy tính"]],
+            cdso: ["🛡️", "Công dân số", "10 cấp · 100 tình huống", ["Biết tự bảo vệ bản thân và thông tin cá nhân trên mạng", "Nhận diện rủi ro và thông tin sai lệch", "Ứng xử văn minh, có trách nhiệm trong môi trường số"]],
+            ai: ["🧠", "Dùng AI", "4 cấp · 16 bài", ["Hiểu AI là gì, làm được gì và giới hạn ở đâu", "Sử dụng AI có kiểm chứng, trung thực và an toàn", "Sẵn sàng thích ứng với công nghệ của tương lai"]]
+        };
+
+        function App() {
+            const [view, setView] = useState('home');
+            const [role, setRole] = useState(null);
+            const [user, setUser] = useState(null);
+
+            useEffect(() => {
+                // Load saved data
+                const savedAssignments = JSON.parse(localStorage.getItem('assignments') || '[]');
+                if (savedAssignments.length === 0) {
+                    localStorage.setItem('assignments', JSON.stringify([]));
+                }
+            }, []);
+
+            const handleRoleSelect = (selectedRole) => {
+                setRole(selectedRole);
+                setView('login');
+            };
+
+            const handleLogin = (userData) => {
+                setUser(userData);
+                setView('dashboard');
+            };
+
+            const handleLogout = () => {
+                setUser(null);
+                setRole(null);
+                setView('home');
+            };
+
+            return (
+                <>
+                    {view === 'home' && <HomeScreen onRoleSelect={handleRoleSelect} />}
+                    {view === 'login' && <LoginScreen role={role} onLogin={handleLogin} onBack={() => setView('home')} />}
+                    {view === 'dashboard' && role === 'teacher' && <TeacherDashboard user={user} onLogout={handleLogout} />}
+                    {view === 'dashboard' && role === 'student' && <StudentDashboard user={user} onLogout={handleLogout} />}
+                </>
+            );
+        }
+
+        function HomeScreen({ onRoleSelect }) {
+            return (
+                <div className="container">
+                    <div className="card">
+                        <div className="header">
+                            <h1>🎓 Luyện Tin Học Tiểu Học</h1>
+                            <p>Chương trình Kết Nối Tri Thức - Bộ Giáo Dục và Đào Tạo</p>
+                        </div>
+                        <div className="role-selector">
+                            <div className="role-card" onClick={() => onRoleSelect('teacher')}>
+                                <div className="role-icon">👨‍🏫</div>
+                                <h3>Giáo Viên</h3>
+                                <p>Tạo và quản lý bài tập cho học sinh</p>
+                            </div>
+                            <div className="role-card" onClick={() => onRoleSelect('student')}>
+                                <div className="role-icon">👧</div>
+                                <h3>Học Sinh</h3>
+                                <p>Tham gia làm bài tập và luyện tập</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function LoginScreen({ role, onLogin, onBack }) {
+            const [formData, setFormData] = useState({ name: '', password: '', code: '', pin: '' });
+            const [error, setError] = useState('');
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                setError('');
+
+                if (role === 'teacher') {
+                    if (!formData.name || !formData.password) {
+                        setError('Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu');
+                        return;
+                    }
+                    // Kiểm tra thông tin đăng nhập giáo viên
+                    const teachers = JSON.parse(localStorage.getItem('teachers') || '[]');
+                    const teacher = teachers.find(t => t.username === formData.name && t.password === formData.password);
+
+                    if (!teacher) {
+                        // Nếu chưa có tài khoản, tự động tạo mới
+                        const newTeacher = { username: formData.name, password: formData.password, createdAt: new Date().toISOString() };
+                        teachers.push(newTeacher);
+                        localStorage.setItem('teachers', JSON.stringify(teachers));
+                        onLogin({ name: formData.name, role: 'teacher' });
+                    } else {
+                        onLogin({ name: formData.name, role: 'teacher' });
+                    }
+                } else {
+                    if (!formData.name || !formData.code || !formData.pin) {
+                        setError('Vui lòng nhập đầy đủ thông tin');
+                        return;
+                    }
+
+                    // Kiểm tra mã PIN
+                    const assignments = JSON.parse(localStorage.getItem('assignments') || '[]');
+                    const assignment = assignments.find(a => a.pin === formData.pin && a.classCode === formData.code);
+
+                    if (!assignment) {
+                        setError('Mã PIN hoặc mã lớp không đúng');
+                        return;
+                    }
+
+                    onLogin({ name: formData.name, code: formData.code, pin: formData.pin, role: 'student', assignment });
+                }
+            };
+
+            return (
+                <div className="container">
+                    <button className="btn btn-secondary back-btn" onClick={onBack}>← Quay lại</button>
+                    <div className="card">
+                        <div className="header">
+                            <h1>{role === 'teacher' ? '👨‍🏫 Đăng Nhập Giáo Viên' : '👧 Đăng Nhập Học Sinh'}</h1>
+                            <p>{role === 'teacher' ? 'Nhập thông tin để tạo và quản lý bài tập' : 'Nhập thông tin để tham gia lớp học'}</p>
+                        </div>
+
+                        {error && <div className="error-message">{error}</div>}
+
+                        <form onSubmit={handleSubmit}>
+                            <div className="form-group">
+                                <label className="form-label">
+                                    {role === 'teacher' ? 'Tên đăng nhập' : 'Họ và tên'}
+                                </label>
+                                <input
+                                    type="text"
+                                    className="form-input"
+                                    placeholder={role === 'teacher' ? 'Ví dụ: giaovien01' : 'Ví dụ: Nguyễn Văn An'}
+                                    value={formData.name}
+                                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                />
+                            </div>
+
+                            {role === 'teacher' && (
+                                <div className="form-group">
+                                    <label className="form-label">Mật khẩu</label>
+                                    <input
+                                        type="password"
+                                        className="form-input"
+                                        placeholder="Nhập mật khẩu"
+                                        value={formData.password}
+                                        onChange={(e) => setFormData({...formData, password: e.target.value})}
+                                    />
+                                </div>
+                            )}
+
+                            {role === 'student' && (
+                                <>
+                                    <div className="form-group">
+                                        <label className="form-label">Mã lớp học</label>
+                                        <input
+                                            type="text"
+                                            className="form-input"
+                                            placeholder="Ví dụ: 3A"
+                                            value={formData.code}
+                                            onChange={(e) => setFormData({...formData, code: e.target.value.toUpperCase()})}
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Mã PIN</label>
+                                        <input
+                                            type="text"
+                                            className="form-input"
+                                            placeholder="Nhập mã PIN từ giáo viên"
+                                            value={formData.pin}
+                                            onChange={(e) => setFormData({...formData, pin: e.target.value.toUpperCase()})}
+                                        />
+                                    </div>
+                                </>
+                            )}
+
+                            <button type="submit" className="btn btn-primary" style={{width: '100%', marginTop: 'var(--spacing-lg)'}}>
+                                Đăng nhập
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            );
+        }
+
+        function LessonsView({ subject, onBack, onStartLesson, onLogout }) {
+            const [emoji, name, meta] = SUBJECTS[subject];
+
+            const getLessons = (subjectId) => {
+                const lessonData = {
+                    go: [
+                        { id: 1, level: 1, title: 'Làm quen F và J', desc: 'Tấm ngón đặt lên ASDF - JKL;' },
+                        { id: 2, level: 1, title: 'Luyện F và J', desc: 'Rèn sự chính xác với hai phím chính' },
+                        { id: 3, level: 1, title: 'Thêm phím D và K', desc: 'Mở rộng sang hai ngón kế cận' },
+                        { id: 4, level: 2, title: 'Luyện D, F, J, K', desc: 'Kết hợp bốn phím đã học' },
+                        { id: 5, level: 2, title: 'Thêm phím S và L', desc: 'Hoàn thiện hàng giữa' }
+                    ],
+                    'go-tv': [
+                        { id: 1, level: 1, title: 'Gõ các dấu thanh', desc: 'Huyền, sắc, hỏi, ngã, nặng' },
+                        { id: 2, level: 1, title: 'Các chữ đặc biệt', desc: 'Ă, â, ê, ô, ơ, ư, đ' },
+                        { id: 3, level: 2, title: 'Gõ từ đơn giản', desc: 'Luyện gõ từ có dấu' },
+                        { id: 4, level: 2, title: 'Gõ câu ngắn', desc: 'Kết hợp từ thành câu' }
+                    ],
+                    chuot: [
+                        { id: 1, level: 1, title: 'Di chuyển chuột', desc: 'Làm chủ việc di chuyển con trỏ' },
+                        { id: 2, level: 1, title: 'Click đơn', desc: 'Luyện click chuột chính xác' },
+                        { id: 3, level: 2, title: 'Click kéo thả', desc: 'Rèn kỹ thuật drag and drop' },
+                        { id: 4, level: 2, title: 'Click nhanh', desc: 'Tăng tốc độ phản xạ' }
+                    ],
+                    ic3: [
+                        { id: 1, level: 1, title: 'Máy tính là gì', desc: 'Tìm hiểu các bộ phận máy tính' },
+                        { id: 2, level: 1, title: 'Bật tắt máy tính', desc: 'Cách khởi động và tắt đúng cách' },
+                        { id: 3, level: 2, title: 'Làm việc với tệp tin', desc: 'Tạo, mở, lưu tệp tin' },
+                        { id: 4, level: 2, title: 'Tổ chức thư mục', desc: 'Sắp xếp dữ liệu khoa học' }
+                    ],
+                    word: [
+                        { id: 1, level: 1, title: 'Làm quen Word', desc: 'Giao diện và công cụ cơ bản' },
+                        { id: 2, level: 1, title: 'Nhập văn bản', desc: 'Gõ và chỉnh sửa văn bản' },
+                        { id: 3, level: 2, title: 'Định dạng chữ', desc: 'Font, cỡ chữ, màu sắc' },
+                        { id: 4, level: 2, title: 'Căn lề và canh chỉnh', desc: 'Trình bày văn bản đẹp mắt' }
+                    ],
+                    excel: [
+                        { id: 1, level: 1, title: 'Làm quen Excel', desc: 'Ô, cột, hàng là gì' },
+                        { id: 2, level: 1, title: 'Nhập dữ liệu', desc: 'Nhập số và chữ vào ô' },
+                        { id: 3, level: 2, title: 'Công thức cơ bản', desc: 'Cộng, trừ, nhân, chia' },
+                        { id: 4, level: 2, title: 'Tạo biểu đồ', desc: 'Minh họa dữ liệu bằng đồ thị' }
+                    ],
+                    powerpoint: [
+                        { id: 1, level: 1, title: 'Làm quen PowerPoint', desc: 'Slide và các thành phần' },
+                        { id: 2, level: 1, title: 'Tạo slide mới', desc: 'Thêm và xóa slide' },
+                        { id: 3, level: 1, title: 'Thêm trang chiếu mới', desc: 'Thiết kế bố cục slide' },
+                        { id: 4, level: 2, title: 'Thêm văn bản', desc: 'Tiêu đề và nội dung' },
+                        { id: 5, level: 2, title: 'Chèn hình ảnh', desc: 'Trang trí slide bằng hình' }
+                    ],
+                    'thuat-toan': [
+                        { id: 1, level: 1, title: 'Thuật toán là gì', desc: 'Hiểu về các bước giải quyết' },
+                        { id: 2, level: 1, title: 'Tư duy tuần tự', desc: 'Làm việc theo thứ tự' },
+                        { id: 3, level: 2, title: 'Tư duy lặp lại', desc: 'Làm đi làm lại nhiều lần' },
+                        { id: 4, level: 2, title: 'Tư duy rẽ nhánh', desc: 'Chọn lựa giữa các phương án' }
+                    ],
+                    cdso: [
+                        { id: 1, level: 1, title: 'Thông tin cá nhân', desc: 'Bảo vệ thông tin riêng tư' },
+                        { id: 2, level: 1, title: 'Mật khẩu an toàn', desc: 'Tạo mật khẩu mạnh' },
+                        { id: 3, level: 2, title: 'Bẫy lừa trên mạng', desc: 'Nhận diện lừa đảo' },
+                        { id: 4, level: 2, title: 'Ứng xử lịch sự', desc: 'Văn hóa giao tiếp online' }
+                    ],
+                    ai: [
+                        { id: 1, level: 1, title: 'AI là gì', desc: 'Trí tuệ nhân tạo trong cuộc sống' },
+                        { id: 2, level: 1, title: 'Dùng AI hỏi đáp', desc: 'Cách hỏi AI hiệu quả' },
+                        { id: 3, level: 2, title: 'Kiểm tra kết quả AI', desc: 'Không tin AI 100%' },
+                        { id: 4, level: 2, title: 'Dùng AI sáng tạo', desc: 'Vẽ tranh, làm video với AI' }
+                    ]
+                };
+                return lessonData[subjectId] || [];
+            };
+
+            const lessons = getLessons(subject);
+
+            return (
+                <div className="container">
+                    <button className="btn btn-secondary back-btn" onClick={onBack}>← Quay lại</button>
+                    <div className="dashboard">
+                        <div className="dashboard-header">
+                            <div>
+                                <div className="dashboard-title">{emoji} {name}</div>
+                                <p style={{color: 'var(--text-secondary)', marginTop: 'var(--spacing-xs)'}}>{meta}</p>
+                            </div>
+                        </div>
+
+                        <div style={{display: 'grid', gap: 'var(--spacing-md)', marginTop: 'var(--spacing-lg)'}}>
+                            {lessons.map(lesson => (
+                                <div key={lesson.id} className="assignment-item" style={{cursor: 'pointer'}} onClick={() => onStartLesson(lesson)}>
+                                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                        <div>
+                                            <div style={{display: 'inline-block', background: 'var(--primary)', color: 'white', padding: '4px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, marginBottom: 'var(--spacing-xs)'}}>
+                                                Cấp {lesson.level} · Bài {lesson.id}
+                                            </div>
+                                            <h4 style={{fontSize: '1.1rem', marginBottom: 'var(--spacing-xs)'}}>{lesson.title}</h4>
+                                            <p style={{color: 'var(--text-secondary)', fontSize: '0.875rem'}}>{lesson.desc}</p>
+                                        </div>
+                                        <button className="btn btn-primary">Bắt đầu →</button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function ExerciseView({ lesson, subject, onBack, onLogout }) {
+            const [emoji] = SUBJECTS[subject];
+
+            // Các component bài tập khác nhau tùy theo môn học
+            if (subject === 'go' || subject === 'go-tv') {
+                return <TypingExercise lesson={lesson} subject={subject} emoji={emoji} onBack={onBack} />;
+            } else if (subject === 'chuot') {
+                return <MouseExercise lesson={lesson} emoji={emoji} onBack={onBack} />;
+            } else if (subject === 'cdso') {
+                return <DigitalCitizenExercise lesson={lesson} emoji={emoji} onBack={onBack} />;
+            } else if (subject === 'powerpoint') {
+                return <PowerPointExercise lesson={lesson} emoji={emoji} onBack={onBack} />;
+            } else {
+                return <GenericExercise lesson={lesson} subject={subject} emoji={emoji} onBack={onBack} />;
+            }
+        }
+
+        function TypingExercise({ lesson, subject, emoji, onBack }) {
+            const [input, setInput] = useState('');
+            const [errors, setErrors] = useState(0);
+            const [showHands, setShowHands] = useState(true);
+
+            const textToType = subject === 'go'
+                ? 'jjff..ffjj..fjfj..jjff..ffjj..fjfj..jjff..ffjj..fjfj..jjff..ffjj..fjfj'
+                : 'Sáng nay em dậy sớm, tự gắp chăn màn rồi ra sân. Tập thể dục. Trời mưa thu mát mẻ, nắng vàng trải nhẹ trên hàng cây trước nhà.';
+
+            const handleKeyPress = (e) => {
+                const char = e.key;
+                const expected = textToType[input.length];
+
+                if (char === expected) {
+                    setInput(input + char);
+                } else if (char.length === 1) {
+                    setErrors(errors + 1);
+                }
+            };
+
+            const accuracy = input.length > 0 ? Math.round(((input.length - errors) / (input.length + errors)) * 100) : 100;
+
+            return (
+                <div style={{minHeight: '100vh', background: 'linear-gradient(135deg, #1e3a8a 0%, #312e81 100%)', color: 'white', padding: 'var(--spacing-lg)'}}>
+                    <button className="btn btn-secondary" onClick={onBack} style={{marginBottom: 'var(--spacing-lg)'}}>← Quay lại</button>
+
+                    <div style={{maxWidth: '900px', margin: '0 auto'}}>
+                        <div style={{textAlign: 'center', marginBottom: 'var(--spacing-2xl)'}}>
+                            <h1 style={{fontSize: '1.75rem', marginBottom: 'var(--spacing-sm)'}}>{emoji} Cấp {lesson.level} · Bài {lesson.id}: {lesson.title}</h1>
+                            <p style={{opacity: 0.9}}>{lesson.desc}</p>
+                        </div>
+
+                        <div style={{display: 'flex', justifyContent: 'center', gap: 'var(--spacing-xl)', marginBottom: 'var(--spacing-xl)'}}>
+                            <div style={{textAlign: 'center'}}>
+                                <div style={{fontSize: '2rem', fontWeight: 700}}>{input.length}</div>
+                                <div style={{fontSize: '0.875rem', opacity: 0.8}}>Ký tự</div>
+                            </div>
+                            <div style={{textAlign: 'center'}}>
+                                <div style={{fontSize: '2rem', fontWeight: 700}}>{errors}</div>
+                                <div style={{fontSize: '0.875rem', opacity: 0.8}}>Sai</div>
+                            </div>
+                            <div style={{textAlign: 'center'}}>
+                                <div style={{fontSize: '2rem', fontWeight: 700}}>{accuracy}%</div>
+                                <div style={{fontSize: '0.875rem', opacity: 0.8}}>Chính xác</div>
+                            </div>
+                        </div>
+
+                        <div style={{background: 'rgba(255,255,255,0.1)', padding: 'var(--spacing-xl)', borderRadius: 'var(--radius-lg)', marginBottom: 'var(--spacing-xl)'}}>
+                            <p style={{fontSize: '1.25rem', lineHeight: 1.8, fontFamily: 'monospace', letterSpacing: '0.1em'}}>
+                                <span style={{color: '#10B981'}}>{input}</span>
+                                <span style={{background: 'rgba(59,130,246,0.5)', padding: '2px 4px'}}>{textToType[input.length]}</span>
+                                <span style={{opacity: 0.5}}>{textToType.slice(input.length + 1)}</span>
+                            </p>
+                        </div>
+
+                        <div style={{background: 'var(--surface-1)', padding: 'var(--spacing-xl)', borderRadius: 'var(--radius-lg)'}}>
+                            <input
+                                type="text"
+                                value={input}
+                                onChange={(e) => {}}
+                                onKeyPress={handleKeyPress}
+                                placeholder="Bắt đầu gõ..."
+                                autoFocus
+                                style={{width: '100%', padding: 'var(--spacing-md)', fontSize: '1rem', border: '2px solid var(--surface-4)', borderRadius: 'var(--radius-sm)', fontFamily: 'monospace', letterSpacing: '0.1em'}}
+                            />
+
+                            {input.length > 0 && input.length < textToType.length && errors > 0 && (
+                                <div style={{marginTop: 'var(--spacing-md)', padding: 'var(--spacing-md)', background: '#FEE2E2', color: '#991B1B', borderRadius: 'var(--radius-sm)', fontSize: '0.875rem'}}>
+                                    ❌ Sai phím! Em gõ sai — cần gõ phím {textToType[input.length]}. Phím {textToType[input.length].toUpperCase()} — dùng ngón đúng.
+                                </div>
+                            )}
+                        </div>
+
+                        {showHands && (
+                            <div style={{marginTop: 'var(--spacing-xl)', textAlign: 'center'}}>
+                                <div style={{display: 'inline-grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: '4px', background: 'white', padding: 'var(--spacing-lg)', borderRadius: 'var(--radius-md)'}}>
+                                    {['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'].map((key, i) => (
+                                        <div key={i} style={{padding: '8px 12px', background: '#FEE', borderRadius: '4px', fontSize: '0.875rem', color: '#333'}}>{key}</div>
+                                    ))}
+                                    {['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'].map((key, i) => (
+                                        <div key={i} style={{padding: '8px 12px', background: '#FFE', borderRadius: '4px', fontSize: '0.875rem', color: '#333'}}>{key}</div>
+                                    ))}
+                                    {['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';'].map((key, i) => (
+                                        <div key={i} style={{padding: '8px 12px', background: key === 'F' || key === 'J' ? '#9F9' : '#EFE', borderRadius: '4px', fontSize: '0.875rem', fontWeight: key === 'F' || key === 'J' ? 'bold' : 'normal', color: '#333'}}>{key}</div>
+                                    ))}
+                                    {['Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/'].map((key, i) => (
+                                        <div key={i} style={{padding: '8px 12px', background: '#EEF', borderRadius: '4px', fontSize: '0.875rem', color: '#333'}}>{key}</div>
+                                    ))}
+                                </div>
+                                <div style={{marginTop: 'var(--spacing-md)'}}>
+                                    <label style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--spacing-sm)', cursor: 'pointer'}}>
+                                        <input type="checkbox" checked={showHands} onChange={(e) => setShowHands(e.target.checked)} />
+                                        <span>Hiển thị bàn phím</span>
+                                    </label>
+                                </div>
+                            </div>
+                        )}
+
+                        {input === textToType && (
+                            <div style={{marginTop: 'var(--spacing-xl)', padding: 'var(--spacing-xl)', background: '#D1FAE5', color: '#065F46', borderRadius: 'var(--radius-lg)', textAlign: 'center'}}>
+                                <div style={{fontSize: '3rem', marginBottom: 'var(--spacing-md)'}}>🎉</div>
+                                <h2 style={{fontSize: '1.5rem', marginBottom: 'var(--spacing-sm)'}}>Chúc mừng em!</h2>
+                                <p>Hoàn thành bài với độ chính xác {accuracy}%</p>
+                                <button className="btn btn-success" style={{marginTop: 'var(--spacing-lg)'}} onClick={onBack}>Tiếp tục →</button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        function DigitalCitizenExercise({ lesson, emoji, onBack }) {
+            const scenarios = [
+                { id: 1, title: 'Thông tin cá nhân', icon: '👤', status: 'Chưa làm' },
+                { id: 2, title: 'Mật khẩu an toàn', icon: '🔒', status: 'Chưa làm' },
+                { id: 3, title: 'Bẫy lừa trên mạng', icon: '😱', status: 'Chưa làm' },
+                { id: 4, title: 'Ứng xử lịch sự', icon: '💛', status: 'Chưa làm' },
+                { id: 5, title: 'Tin thật — tin giả', icon: '📰', status: 'Chưa làm' },
+                { id: 6, title: 'Bản quyền, ghi nguồn & phân mém', icon: '©️', status: 'Chưa làm' },
+                { id: 7, title: 'Trí tuệ nhân tạo', icon: '🤖', status: 'Chưa làm' },
+                { id: 8, title: 'Bắt nạt trên mạng', icon: '😢', status: 'Chưa làm' },
+                { id: 9, title: 'Lừa đảo trên mạng', icon: '💬', status: 'Chưa làm' },
+                { id: 10, title: 'Công dân số có trách nhiệm', icon: '✨', status: 'Chưa làm' }
+            ];
+
+            return (
+                <div style={{minHeight: '100vh', background: 'linear-gradient(135deg, #4c1d95 0%, #5b21b6 100%)', color: 'white', padding: 'var(--spacing-lg)'}}>
+                    <button className="btn btn-secondary" onClick={onBack} style={{marginBottom: 'var(--spacing-lg)'}}>← Về trang chủ</button>
+
+                    <div style={{maxWidth: '900px', margin: '0 auto'}}>
+                        <div style={{textAlign: 'center', marginBottom: 'var(--spacing-2xl)'}}>
+                            <h1 style={{fontSize: '1.75rem', marginBottom: 'var(--spacing-sm)'}}>{emoji} Công dân số</h1>
+                        </div>
+
+                        <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 'var(--spacing-lg)'}}>
+                            {scenarios.map(scenario => (
+                                <div key={scenario.id} style={{background: 'rgba(255,255,255,0.1)', padding: 'var(--spacing-lg)', borderRadius: 'var(--radius-md)', textAlign: 'center', cursor: 'pointer', transition: 'all 0.3s', border: '2px solid transparent'}} onMouseEnter={(e) => e.currentTarget.style.borderColor = 'white'} onMouseLeave={(e) => e.currentTarget.style.borderColor = 'transparent'}>
+                                    <div style={{fontSize: '3rem', marginBottom: 'var(--spacing-md)'}}>{scenario.icon}</div>
+                                    <div style={{fontWeight: 600, marginBottom: 'var(--spacing-xs)', fontSize: '0.95rem'}}>{scenario.id}</div>
+                                    <h3 style={{fontSize: '1rem', marginBottom: 'var(--spacing-sm)', minHeight: '2.5em'}}>{scenario.title}</h3>
+                                    <div style={{height: '2px', background: 'white', marginBottom: 'var(--spacing-sm)'}}></div>
+                                    <div style={{fontSize: '0.875rem', opacity: 0.8}}>{scenario.status}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function PowerPointExercise({ lesson, emoji, onBack }) {
+            const tasks = [
+                '👍 Mở thẻ Home (Trang chủ)',
+                '📄 Bấm New Slide (+) để thêm trang thứ hai',
+                '🎨 Bấm vào trang số 1 ở cột bên trái',
+                '📊 Bấm sang trang số 3'
+            ];
+
+            return (
+                <div style={{minHeight: '100vh', background: 'linear-gradient(135deg, #1e3a8a 0%, #312e81 100%)', color: 'white', padding: 'var(--spacing-lg)'}}>
+                    <button className="btn btn-secondary" onClick={onBack} style={{marginBottom: 'var(--spacing-lg)'}}>← Quay lại</button>
+
+                    <div style={{maxWidth: '1100px', margin: '0 auto'}}>
+                        <div style={{textAlign: 'center', marginBottom: 'var(--spacing-xl)'}}>
+                            <h1 style={{fontSize: '1.5rem', marginBottom: 'var(--spacing-sm)'}}>{emoji} Cấp {lesson.level} · Bài {lesson.id}: {lesson.title}</h1>
+                            <p style={{opacity: 0.9}}>{lesson.desc}</p>
+                        </div>
+
+                        <div style={{display: 'grid', gridTemplateColumns: '1fr 250px', gap: 'var(--spacing-lg)'}}>
+                            {/* Main content */}
+                            <div style={{background: 'white', borderRadius: 'var(--radius-lg)', padding: 'var(--spacing-lg)', color: '#333'}}>
+                                <div style={{background: '#D97706', padding: 'var(--spacing-sm)', borderRadius: 'var(--radius-sm)', marginBottom: 'var(--spacing-md)'}}>
+                                    <div style={{display: 'flex', gap: 'var(--spacing-md)', fontSize: '0.875rem', color: 'white'}}>
+                                        <span style={{background: 'rgba(255,255,255,0.2)', padding: '4px 12px', borderRadius: '4px'}}>Home</span>
+                                        <span>Insert</span>
+                                        <span>Design</span>
+                                        <span>Transitions</span>
+                                        <span>Animations</span>
+                                        <span>Slide Show</span>
+                                        <span>View</span>
+                                    </div>
+                                </div>
+
+                                <div style={{display: 'flex', gap: 'var(--spacing-md)', padding: 'var(--spacing-md)', background: '#F3F4F6', borderRadius: 'var(--radius-sm)', marginBottom: 'var(--spacing-md)', fontSize: '0.875rem'}}>
+                                    <button style={{padding: '4px 12px', background: 'white', border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer'}}>✂️ Cut</button>
+                                    <button style={{padding: '4px 12px', background: 'white', border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer'}}>📋 Copy</button>
+                                    <button style={{padding: '4px 12px', background: 'white', border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer'}}>📄 Paste</button>
+                                    <button style={{padding: '4px 12px', background: 'white', border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer'}}>⚙️ Layout</button>
+                                    <button style={{padding: '4px 12px', background: 'white', border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer'}}>🔄 Reset</button>
+                                    <button style={{padding: '4px 12px', background: '#3B82F6', color: 'white', border: 'none', borderRadius: '4px', fontWeight: 600, cursor: 'pointer'}}>➕ New Slide</button>
+                                </div>
+
+                                <div style={{display: 'flex', gap: 'var(--spacing-md)'}}>
+                                    <div style={{width: '80px', background: '#F9FAFB', padding: 'var(--spacing-sm)', borderRadius: 'var(--radius-sm)'}}>
+                                        <div style={{background: 'white', padding: 'var(--spacing-sm)', borderRadius: '4px', marginBottom: 'var(--spacing-sm)', border: '2px solid #3B82F6', fontSize: '0.75rem'}}>
+                                            <div style={{background: '#EF4444', height: '20px', marginBottom: '4px'}}></div>
+                                            <div style={{background: '#E5E7EB', height: '30px'}}></div>
+                                        </div>
+                                    </div>
+
+                                    <div style={{flex: 1, border: '2px solid #E5E7EB', borderRadius: 'var(--radius-sm)', padding: 'var(--spacing-2xl)', textAlign: 'center', minHeight: '400px', display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
+                                        <h2 style={{fontSize: '2rem', marginBottom: 'var(--spacing-lg)', color: '#1F2937'}}>Con vật em yêu thích</h2>
+                                        <p style={{color: '#6B7280', fontSize: '1.125rem'}}>Chú mèo nhà em</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Sidebar */}
+                            <div style={{background: 'rgba(255,255,255,0.1)', borderRadius: 'var(--radius-lg)', padding: 'var(--spacing-lg)'}}>
+                                <div style={{background: '#3B82F6', padding: 'var(--spacing-md)', borderRadius: 'var(--radius-sm)', marginBottom: 'var(--spacing-md)'}}>
+                                    <h3 style={{fontSize: '1rem', fontWeight: 600}}>📌 Việc cần làm</h3>
+                                </div>
+
+                                {tasks.map((task, index) => (
+                                    <div key={index} style={{padding: 'var(--spacing-md)', background: index === 0 ? '#FCD34D' : 'rgba(255,255,255,0.05)', borderRadius: 'var(--radius-sm)', marginBottom: 'var(--spacing-sm)', color: index === 0 ? '#000' : 'white', fontSize: '0.875rem'}}>
+                                        {task}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function MouseExercise({ lesson, emoji, onBack }) {
+            return (
+                <div style={{minHeight: '100vh', background: 'linear-gradient(135deg, #1e3a8a 0%, #312e81 100%)', color: 'white', padding: 'var(--spacing-lg)'}}>
+                    <button className="btn btn-secondary" onClick={onBack} style={{marginBottom: 'var(--spacing-lg)'}}>← Quay lại</button>
+
+                    <div style={{maxWidth: '900px', margin: '0 auto', textAlign: 'center'}}>
+                        <h1 style={{fontSize: '1.75rem', marginBottom: 'var(--spacing-sm)'}}>{emoji} {lesson.title}</h1>
+                        <p style={{opacity: 0.9, marginBottom: 'var(--spacing-2xl)'}}>{lesson.desc}</p>
+
+                        <div style={{background: 'rgba(255,255,255,0.1)', padding: 'var(--spacing-2xl)', borderRadius: 'var(--radius-lg)', minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                            <div style={{fontSize: '4rem'}}>🎯</div>
+                        </div>
+
+                        <p style={{marginTop: 'var(--spacing-lg)', opacity: 0.8}}>Di chuyển chuột và click vào mục tiêu!</p>
+                    </div>
+                </div>
+            );
+        }
+
+        function GenericExercise({ lesson, subject, emoji, onBack }) {
+            return (
+                <div style={{minHeight: '100vh', background: 'linear-gradient(135deg, #1e3a8a 0%, #312e81 100%)', color: 'white', padding: 'var(--spacing-lg)'}}>
+                    <button className="btn btn-secondary" onClick={onBack} style={{marginBottom: 'var(--spacing-lg)'}}>← Quay lại</button>
+
+                    <div style={{maxWidth: '900px', margin: '0 auto', textAlign: 'center'}}>
+                        <h1 style={{fontSize: '1.75rem', marginBottom: 'var(--spacing-sm)'}}>{emoji} Cấp {lesson.level} · Bài {lesson.id}: {lesson.title}</h1>
+                        <p style={{opacity: 0.9, marginBottom: 'var(--spacing-2xl)'}}>{lesson.desc}</p>
+
+                        <div style={{background: 'rgba(255,255,255,0.1)', padding: 'var(--spacing-2xl)', borderRadius: 'var(--radius-lg)', minHeight: '400px'}}>
+                            <p style={{fontSize: '1.125rem'}}>Nội dung bài học đang được phát triển...</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function TeacherDashboard({ user, onLogout }) {
+            const [classCode, setClassCode] = useState('');
+            const [assignments, setAssignments] = useState([]);
+
+            useEffect(() => {
+                loadAssignments();
+            }, []);
+
+            const loadAssignments = () => {
+                const saved = JSON.parse(localStorage.getItem('assignments') || '[]');
+                setAssignments(saved);
+            };
+
+            const toggleSubject = (subjectId) => {
+                setSelectedSubjects(prev =>
+                    prev.includes(subjectId)
+                        ? prev.filter(id => id !== subjectId)
+                        : [...prev, subjectId]
+                );
+            };
+
+            const generatePIN = () => {
+                return Math.random().toString(36).substring(2, 8).toUpperCase();
+            };
+
+            const createAssignment = () => {
+                if (!classCode || selectedSubjects.length === 0) {
+                    alert('Vui lòng nhập mã lớp và chọn ít nhất một chủ đề');
+                    return;
+                }
+
+                const pin = generatePIN();
+                const newAssignment = {
+                    id: Date.now(),
+                    classCode: classCode.toUpperCase(),
+                    pin: pin,
+                    subjects: selectedSubjects,
+                    teacher: user.name,
+                    createdAt: new Date().toISOString()
+                };
+
+                const updated = [...assignments, newAssignment];
+                localStorage.setItem('assignments', JSON.stringify(updated));
+                setAssignments(updated);
+                setShowModal(false);
+                setClassCode('');
+                setSelectedSubjects([]);
+
+                alert(`✅ Đã tạo bài tập thành công!\n\nMã lớp: ${newAssignment.classCode}\nMã PIN: ${newAssignment.pin}\n\nHãy chia sẻ mã PIN này cho học sinh.`);
+            };
+
+            const deleteAssignment = (id) => {
+                if (confirm('Bạn có chắc muốn xóa bài tập này?')) {
+                    const updated = assignments.filter(a => a.id !== id);
+                    localStorage.setItem('assignments', JSON.stringify(updated));
+                    setAssignments(updated);
+                }
+            };
+
+            return (
+                <div className="container">
+                    <button className="btn btn-secondary back-btn" onClick={onLogout}>← Đăng xuất</button>
+                    <div className="dashboard">
+                        <div className="dashboard-header">
+                            <div>
+                                <div className="dashboard-title">👨‍🏫 Quản Lý Bài Tập</div>
+                                <p style={{color: 'var(--text-secondary)', marginTop: 'var(--spacing-xs)'}}>Xin chào, {user.name}!</p>
+                            </div>
+                            <button className="btn btn-success" onClick={() => setShowModal(true)}>
+                                ➕ Tạo bài tập mới
+                            </button>
+                        </div>
+
+                        <div className="stats-grid">
+                            <div className="stat-card">
+                                <div className="stat-value">{assignments.length}</div>
+                                <div className="stat-label">Bài tập đã tạo</div>
+                            </div>
+                            <div className="stat-card" style={{background: 'linear-gradient(135deg, var(--accent) 0%, #D97706 100%)'}}>
+                                <div className="stat-value">{Object.keys(SUBJECTS).length}</div>
+                                <div className="stat-label">Chủ đề có sẵn</div>
+                            </div>
+                        </div>
+
+                        <h3 style={{marginTop: 'var(--spacing-xl)', marginBottom: 'var(--spacing-lg)', fontSize: '1.25rem'}}>
+                            📋 Danh sách bài tập
+                        </h3>
+
+                        {assignments.length === 0 ? (
+                            <div style={{textAlign: 'center', padding: 'var(--spacing-2xl)', color: 'var(--text-secondary)'}}>
+                                <p>Chưa có bài tập nào. Hãy tạo bài tập đầu tiên!</p>
+                            </div>
+                        ) : (
+                            <div className="assignment-list">
+                                {assignments.map(assignment => (
+                                    <div key={assignment.id} className="assignment-item">
+                                        <div className="assignment-header">
+                                            <div className="assignment-info">
+                                                <h4>
+                                                    <span className="class-code">{assignment.classCode}</span>
+                                                </h4>
+                                                <p style={{color: 'var(--text-secondary)', fontSize: '0.875rem', marginTop: 'var(--spacing-xs)'}}>
+                                                    {assignment.subjects.length} chủ đề · Tạo ngày {new Date(assignment.createdAt).toLocaleDateString('vi-VN')}
+                                                </p>
+                                            </div>
+                                            <button className="btn btn-secondary" style={{fontSize: '0.875rem'}} onClick={() => deleteAssignment(assignment.id)}>
+                                                🗑️ Xóa
+                                            </button>
+                                        </div>
+                                        <div style={{background: 'var(--surface-3)', padding: 'var(--spacing-md)', borderRadius: 'var(--radius-sm)'}}>
+                                            <strong>Mã PIN:</strong> <span className="pin-code" style={{fontSize: '1.25rem', marginLeft: 'var(--spacing-md)'}}>{assignment.pin}</span>
+                                        </div>
+                                        <div>
+                                            <strong style={{display: 'block', marginBottom: 'var(--spacing-sm)'}}>Các chủ đề:</strong>
+                                            <div style={{display: 'flex', flexWrap: 'wrap', gap: 'var(--spacing-xs)'}}>
+                                                {assignment.subjects.map(subId => (
+                                                    <span key={subId} style={{background: 'var(--surface-3)', padding: 'var(--spacing-xs) var(--spacing-md)', borderRadius: 'var(--radius-full)', fontSize: '0.875rem'}}>
+                                                        {SUBJECTS[subId][0]} {SUBJECTS[subId][1]}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {showModal && (
+                        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+                            <div className="modal" onClick={e => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <h2 className="modal-title">Tạo bài tập mới</h2>
+                                </div>
+
+                                <div className="form-group">
+                                    <label className="form-label">Mã lớp học</label>
+                                    <input
+                                        type="text"
+                                        className="form-input"
+                                        placeholder="Ví dụ: 3A, 4B, 5C..."
+                                        value={classCode}
+                                        onChange={(e) => setClassCode(e.target.value)}
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <label className="form-label">Chọn chủ đề ({selectedSubjects.length} đã chọn)</label>
+                                    <div style={{display: 'grid', gap: 'var(--spacing-sm)', maxHeight: '300px', overflowY: 'auto', padding: 'var(--spacing-xs)'}}>
+                                        {Object.entries(SUBJECTS).map(([id, data]) => (
+                                            <div
+                                                key={id}
+                                                onClick={() => toggleSubject(id)}
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 'var(--spacing-md)',
+                                                    padding: 'var(--spacing-md)',
+                                                    background: selectedSubjects.includes(id) ? 'var(--primary-light)' : 'var(--surface-2)',
+                                                    color: selectedSubjects.includes(id) ? 'white' : 'var(--text-primary)',
+                                                    borderRadius: 'var(--radius-sm)',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.2s'
+                                                }}
+                                            >
+                                                <span style={{fontSize: '1.5rem'}}>{data[0]}</span>
+                                                <div>
+                                                    <div style={{fontWeight: 600}}>{data[1]}</div>
+                                                    <div style={{fontSize: '0.875rem', opacity: 0.9}}>{data[2]}</div>
+                                                </div>
+                                                {selectedSubjects.includes(id) && <span style={{marginLeft: 'auto'}}>✓</span>}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="modal-actions">
+                                    <button className="btn btn-secondary" onClick={() => setShowModal(false)} style={{flex: 1}}>
+                                        Hủy
+                                    </button>
+                                    <button className="btn btn-success" onClick={createAssignment} style={{flex: 1}}>
+                                        Tạo bài tập
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        function StudentDashboard({ user, onLogout }) {
+            const { assignment } = user;
+            const [currentView, setCurrentView] = useState('subjects');
+            const [selectedSubject, setSelectedSubject] = useState(null);
+            const [currentLesson, setCurrentLesson] = useState(null);
+
+            const handleStartSubject = (subjectId) => {
+                setSelectedSubject(subjectId);
+                setCurrentView('lessons');
+            };
+
+            const handleStartLesson = (lesson) => {
+                setCurrentLesson(lesson);
+                setCurrentView('exercise');
+            };
+
+            if (currentView === 'exercise' && currentLesson) {
+                return <ExerciseView lesson={currentLesson} subject={selectedSubject} onBack={() => setCurrentView('lessons')} onLogout={onLogout} />;
+            }
+
+            if (currentView === 'lessons' && selectedSubject) {
+                return <LessonsView subject={selectedSubject} onBack={() => setCurrentView('subjects')} onStartLesson={handleStartLesson} onLogout={onLogout} />;
+            }
+
+            return (
+                <div className="container">
+                    <button className="btn btn-secondary back-btn" onClick={onLogout}>← Đăng xuất</button>
+                    <div className="dashboard">
+                        <div className="dashboard-header">
+                            <div>
+                                <div className="dashboard-title">👧 Bài Tập Của Em</div>
+                                <p style={{color: 'var(--text-secondary)', marginTop: 'var(--spacing-xs)'}}>
+                                    Xin chào, {user.name}! · Lớp {assignment.classCode}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="success-message">
+                            ✅ Em đã tham gia thành công bài tập của giáo viên {assignment.teacher}
+                        </div>
+
+                        <div className="subjects-grid">
+                            {assignment.subjects.map(subjectId => {
+                                const [emoji, name, meta, descriptions] = SUBJECTS[subjectId];
+                                return (
+                                    <div key={subjectId} className="subject-card">
+                                        <div className="subject-header">
+                                            <div className="subject-emoji">{emoji}</div>
+                                            <div className="subject-info">
+                                                <h3>{name}</h3>
+                                                <div className="subject-meta">{meta}</div>
+                                            </div>
+                                        </div>
+                                        <div className="subject-description">
+                                            <ul style={{listStyle: 'none', padding: 0}}>
+                                                {descriptions.map((desc, idx) => (
+                                                    <li key={idx}>✓ {desc}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                        <button className="btn btn-primary" style={{width: '100%', marginTop: 'var(--spacing-md)'}} onClick={() => handleStartSubject(subjectId)}>
+                                            Bắt đầu học
+                                        </button>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function TeacherDashboard({ user, onLogout }) {
+            const [selectedSubjects, setSelectedSubjects] = useState([]);
+            const [showModal, setShowModal] = useState(false);
+            const [classCode, setClassCode] = useState('');
+            const [assignments, setAssignments] = useState([]);
+
+            useEffect(() => {
+                loadAssignments();
+            }, []);
+
+            const loadAssignments = () => {
+                const saved = JSON.parse(localStorage.getItem('assignments') || '[]');
+                setAssignments(saved);
+            };
+
+            const toggleSubject = (subjectId) => {
+                setSelectedSubjects(prev =>
+                    prev.includes(subjectId)
+                        ? prev.filter(id => id !== subjectId)
+                        : [...prev, subjectId]
+                );
+            };
+
+            const generatePIN = () => {
+                return Math.random().toString(36).substring(2, 8).toUpperCase();
+            };
+
+            const createAssignment = () => {
+                if (!classCode || selectedSubjects.length === 0) {
+                    alert('Vui lòng nhập mã lớp và chọn ít nhất một chủ đề');
+                    return;
+                }
+
+                const pin = generatePIN();
+                const newAssignment = {
+                    id: Date.now(),
+                    classCode: classCode.toUpperCase(),
+                    pin: pin,
+                    subjects: selectedSubjects,
+                    teacher: user.name,
+                    createdAt: new Date().toISOString()
+                };
+
+                const updated = [...assignments, newAssignment];
+                localStorage.setItem('assignments', JSON.stringify(updated));
+                setAssignments(updated);
+                setShowModal(false);
+                setClassCode('');
+                setSelectedSubjects([]);
+
+                alert(`✅ Đã tạo bài tập thành công!\n\nMã lớp: ${newAssignment.classCode}\nMã PIN: ${newAssignment.pin}\n\nHãy chia sẻ mã PIN này cho học sinh.`);
+            };
+
+            const deleteAssignment = (id) => {
+                if (confirm('Bạn có chắc muốn xóa bài tập này?')) {
+                    const updated = assignments.filter(a => a.id !== id);
+                    localStorage.setItem('assignments', JSON.stringify(updated));
+                    setAssignments(updated);
+                }
+            };
+
+            return (
+                <div className="container">
+                    <button className="btn btn-secondary back-btn" onClick={onLogout}>← Đăng xuất</button>
+                    <div className="dashboard">
+                        <div className="dashboard-header">
+                            <div>
+                                <div className="dashboard-title">👨‍🏫 Quản Lý Bài Tập</div>
+                                <p style={{color: 'var(--text-secondary)', marginTop: 'var(--spacing-xs)'}}>Xin chào, {user.name}!</p>
+                            </div>
+                            <button className="btn btn-success" onClick={() => setShowModal(true)}>
+                                ➕ Tạo bài tập mới
+                            </button>
+                        </div>
+
+                        <div className="stats-grid">
+                            <div className="stat-card">
+                                <div className="stat-value">{assignments.length}</div>
+                                <div className="stat-label">Bài tập đã tạo</div>
+                            </div>
+                            <div className="stat-card" style={{background: 'linear-gradient(135deg, var(--accent) 0%, #D97706 100%)'}}>
+                                <div className="stat-value">{Object.keys(SUBJECTS).length}</div>
+                                <div className="stat-label">Chủ đề có sẵn</div>
+                            </div>
+                        </div>
+
+                        <h3 style={{marginTop: 'var(--spacing-xl)', marginBottom: 'var(--spacing-lg)', fontSize: '1.25rem'}}>
+                            📋 Danh sách bài tập
+                        </h3>
+
+                        {assignments.length === 0 ? (
+                            <div style={{textAlign: 'center', padding: 'var(--spacing-2xl)', color: 'var(--text-secondary)'}}>
+                                <p>Chưa có bài tập nào. Hãy tạo bài tập đầu tiên!</p>
+                            </div>
+                        ) : (
+                            <div className="assignment-list">
+                                {assignments.map(assignment => (
+                                    <div key={assignment.id} className="assignment-item">
+                                        <div className="assignment-header">
+                                            <div className="assignment-info">
+                                                <h4>
+                                                    <span className="class-code">{assignment.classCode}</span>
+                                                </h4>
+                                                <p style={{color: 'var(--text-secondary)', fontSize: '0.875rem', marginTop: 'var(--spacing-xs)'}}>
+                                                    {assignment.subjects.length} chủ đề · Tạo ngày {new Date(assignment.createdAt).toLocaleDateString('vi-VN')}
+                                                </p>
+                                            </div>
+                                            <button className="btn btn-secondary" style={{fontSize: '0.875rem'}} onClick={() => deleteAssignment(assignment.id)}>
+                                                🗑️ Xóa
+                                            </button>
+                                        </div>
+                                        <div style={{background: 'var(--surface-3)', padding: 'var(--spacing-md)', borderRadius: 'var(--radius-sm)'}}>
+                                            <strong>Mã PIN:</strong> <span className="pin-code" style={{fontSize: '1.25rem', marginLeft: 'var(--spacing-md)'}}>{assignment.pin}</span>
+                                        </div>
+                                        <div>
+                                            <strong style={{display: 'block', marginBottom: 'var(--spacing-sm)'}}>Các chủ đề:</strong>
+                                            <div style={{display: 'flex', flexWrap: 'wrap', gap: 'var(--spacing-xs)'}}>
+                                                {assignment.subjects.map(subId => (
+                                                    <span key={subId} style={{background: 'var(--surface-3)', padding: 'var(--spacing-xs) var(--spacing-md)', borderRadius: 'var(--radius-full)', fontSize: '0.875rem'}}>
+                                                        {SUBJECTS[subId][0]} {SUBJECTS[subId][1]}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {showModal && (
+                        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+                            <div className="modal" onClick={e => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <h2 className="modal-title">Tạo bài tập mới</h2>
+                                </div>
+
+                                <div className="form-group">
+                                    <label className="form-label">Mã lớp học</label>
+                                    <input
+                                        type="text"
+                                        className="form-input"
+                                        placeholder="Ví dụ: 3A, 4B, 5C..."
+                                        value={classCode}
+                                        onChange={(e) => setClassCode(e.target.value)}
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <label className="form-label">Chọn chủ đề ({selectedSubjects.length} đã chọn)</label>
+                                    <div style={{display: 'grid', gap: 'var(--spacing-sm)', maxHeight: '300px', overflowY: 'auto', padding: 'var(--spacing-xs)'}}>
+                                        {Object.entries(SUBJECTS).map(([id, data]) => (
+                                            <div
+                                                key={id}
+                                                onClick={() => toggleSubject(id)}
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 'var(--spacing-md)',
+                                                    padding: 'var(--spacing-md)',
+                                                    background: selectedSubjects.includes(id) ? 'var(--primary-light)' : 'var(--surface-2)',
+                                                    color: selectedSubjects.includes(id) ? 'white' : 'var(--text-primary)',
+                                                    borderRadius: 'var(--radius-sm)',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.2s'
+                                                }}
+                                            >
+                                                <span style={{fontSize: '1.5rem'}}>{data[0]}</span>
+                                                <div>
+                                                    <div style={{fontWeight: 600}}>{data[1]}</div>
+                                                    <div style={{fontSize: '0.875rem', opacity: 0.9}}>{data[2]}</div>
+                                                </div>
+                                                {selectedSubjects.includes(id) && <span style={{marginLeft: 'auto'}}>✓</span>}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="modal-actions">
+                                    <button className="btn btn-secondary" onClick={() => setShowModal(false)} style={{flex: 1}}>
+                                        Hủy
+                                    </button>
+                                    <button className="btn btn-success" onClick={createAssignment} style={{flex: 1}}>
+                                        Tạo bài tập
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>

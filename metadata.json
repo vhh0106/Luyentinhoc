@@ -1,0 +1,6 @@
+{
+  "name": "Tin Học Tiểu Học - Kết Nối Tri Thức",
+  "description": "Nền tảng luyện tập Tin học tiểu học chuẩn bộ sách Kết Nối Tri Thức của Bộ Giáo dục & Đào tạo với phân quyền Giáo viên - Học sinh, quản lý mã lớp, mã PIN và 10 trò chơi thực hành tương tác.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
