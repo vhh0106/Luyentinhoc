@@ -6,13 +6,13 @@ export const SUBJECTS_MAP: Record<SubjectId, SubjectInfo> = {
     id: 'go',
     emoji: '⌨️',
     name: 'Luyện gõ phím',
-    meta: '8 cấp · 70 bài',
+    meta: '8 cấp · 8 bài',
     gradeLevel: 'Lớp 3 - 5',
     badgeColor: 'text-blue-700 bg-blue-50 border-blue-200',
     lightBg: 'bg-blue-50/60',
     objectives: [
       'Hình thành thói quen gõ phím đúng tư thế, đúng 10 ngón',
-      'Tăng dần tốc độ và độ chính xác qua luyện tập đều đặn',
+      'Tăng dần tốc độ và độ chính xác qua từng hàng phím riêng biệt',
       'Nền tảng cho mọi hoạt động học tập và làm việc trên máy tính'
     ]
   },
@@ -20,7 +20,7 @@ export const SUBJECTS_MAP: Record<SubjectId, SubjectInfo> = {
     id: 'go-tv',
     emoji: '🇻🇳',
     name: 'Gõ tiếng Việt',
-    meta: '7 cấp · 36 bài',
+    meta: '7 cấp · 7 bài',
     gradeLevel: 'Lớp 3 - 5',
     badgeColor: 'text-rose-700 bg-rose-50 border-rose-200',
     lightBg: 'bg-rose-50/60',
@@ -34,41 +34,41 @@ export const SUBJECTS_MAP: Record<SubjectId, SubjectInfo> = {
     id: 'chuot',
     emoji: '🖱️',
     name: 'Luyện chuột',
-    meta: '10 cấp',
+    meta: '6 cấp · 6 bài',
     gradeLevel: 'Lớp 3',
     badgeColor: 'text-amber-700 bg-amber-50 border-amber-200',
     lightBg: 'bg-amber-50/60',
     objectives: [
-      'Làm chủ thao tác chuột chính xác, linh hoạt',
+      'Làm chủ thao tác chuột chính xác, linh hoạt qua 6 trò chơi tương tác khác nhau',
       'Rèn sự phối hợp tay – mắt và khả năng tập trung',
-      'Thành thạo nhấp đơn, nhấp đúp, kéo thả và lăn chuột'
+      'Thành thạo di chuyển, nhấp đơn, nhấp đúp và kéo thả chuột'
     ]
   },
   ic3: {
     id: 'ic3',
     emoji: '💻',
     name: 'Kĩ năng máy tính',
-    meta: '20 cấp · 104 bài',
+    meta: '8 cấp · 8 bài',
     gradeLevel: 'Lớp 3 - 5',
     badgeColor: 'text-indigo-700 bg-indigo-50 border-indigo-200',
     lightBg: 'bg-indigo-50/60',
     objectives: [
-      'Hiểu cách máy tính, phần mềm và Internet vận hành',
-      'Tổ chức, lưu trữ và tìm kiếm thông tin một cách khoa học',
-      'Tự tin sử dụng công nghệ trong học tập và cuộc sống'
+      'Hiểu cách máy tính, thiết bị vào - ra, phần mềm và Internet vận hành',
+      'Tổ chức, lưu trữ tệp và cây thư mục một cách khoa học',
+      'Tự tin sử dụng công nghệ an toàn trong học tập và cuộc sống'
     ]
   },
   word: {
     id: 'word',
     emoji: '📝',
     name: 'Soạn thảo Word',
-    meta: '8 cấp · 48 bài',
+    meta: '6 cấp · 6 bài',
     gradeLevel: 'Lớp 4 - 5',
     badgeColor: 'text-sky-700 bg-sky-50 border-sky-200',
     lightBg: 'bg-sky-50/60',
     objectives: [
       'Trình bày văn bản rõ ràng, khoa học và có tính thẩm mỹ',
-      'Biết lựa chọn công cụ phù hợp với từng mục đích văn bản',
+      'Biết định dạng phông chữ, căn lề, chèn ảnh và bảng biểu',
       'Kĩ năng văn phòng thiết yếu cho học tập và công việc sau này'
     ]
   },
@@ -76,41 +76,41 @@ export const SUBJECTS_MAP: Record<SubjectId, SubjectInfo> = {
     id: 'excel',
     emoji: '📊',
     name: 'Bảng tính Excel',
-    meta: '8 cấp · 32 bài',
+    meta: '6 cấp · 6 bài',
     gradeLevel: 'Lớp 4 - 5',
     badgeColor: 'text-emerald-700 bg-emerald-50 border-emerald-200',
     lightBg: 'bg-emerald-50/60',
     objectives: [
-      'Tổ chức và quản lý dữ liệu một cách có hệ thống',
-      'Dùng công thức để tính toán, so sánh và rút ra nhận xét',
-      'Bước đầu hình thành tư duy xử lý và trực quan hóa dữ liệu'
+      'Tổ chức và quản lý dữ liệu hàng, cột, ô tính có hệ thống',
+      'Dùng công thức =SUM, =AVERAGE, =MAX để tính toán tự động',
+      'Bước đầu hình thành tư duy xử lý và trực quan hóa dữ liệu bằng biểu đồ'
     ]
   },
   powerpoint: {
     id: 'powerpoint',
     emoji: '📽️',
     name: 'Trình chiếu PowerPoint',
-    meta: '8 cấp · 48 bài',
+    meta: '6 cấp · 6 bài',
     gradeLevel: 'Lớp 4 - 5',
     badgeColor: 'text-orange-700 bg-orange-50 border-orange-200',
     lightBg: 'bg-orange-50/60',
     objectives: [
-      'Trình bày ý tưởng mạch lạc bằng chữ, hình ảnh và bố cục',
-      'Phát triển óc sáng tạo và cảm nhận thẩm mỹ bài thuyết trình',
-      'Tự tin thuyết trình, chia sẻ tự tin trước thầy cô và bạn bè'
+      'Trình bày ý tưởng mạch lạc bằng chữ, hình ảnh và bố cục trang chiếu',
+      'Phát triển óc sáng tạo với mẫu nền Theme và hiệu ứng chuyển trang',
+      'Tự tin thuyết trình, chia sẻ kiến thức trước thầy cô và bạn bè'
     ]
   },
   'thuat-toan': {
     id: 'thuat-toan',
     emoji: '🤖',
     name: 'Tư duy thuật toán',
-    meta: '11 cấp · 34 câu đố',
+    meta: '8 cấp · 8 câu đố',
     gradeLevel: 'Lớp 3 - 5',
     badgeColor: 'text-purple-700 bg-purple-50 border-purple-200',
     lightBg: 'bg-purple-50/60',
     objectives: [
-      'Phân tích vấn đề và chia nhỏ thành từng bước tuần tự',
-      'Rèn luyện tư duy logic: tuần tự, rẽ nhánh Nếu-Thì, vòng lặp',
+      'Phân tích vấn đề và chia nhỏ thành từng bước tuần tự trên 8 bản đồ mê cung',
+      'Rèn luyện tư duy logic: tuần tự, rẽ nhánh Nếu-Thì, vòng lặp và gỡ lỗi',
       'Nền móng vững chắc cho lập trình và khoa học máy tính'
     ]
   },
@@ -118,12 +118,12 @@ export const SUBJECTS_MAP: Record<SubjectId, SubjectInfo> = {
     id: 'cdso',
     emoji: '🛡️',
     name: 'Công dân số',
-    meta: '10 cấp · 100 tình huống',
+    meta: '6 cấp · 6 bài',
     gradeLevel: 'Lớp 3 - 5',
     badgeColor: 'text-teal-700 bg-teal-50 border-teal-200',
     lightBg: 'bg-teal-50/60',
     objectives: [
-      'Biết tự bảo vệ bản thân và thông tin cá nhân trên mạng',
+      'Biết tự bảo vệ bản thân, mật khẩu và thông tin cá nhân trên mạng',
       'Nhận diện rủi ro, tin giả và các chiêu trò lừa đảo trực tuyến',
       'Ứng xử văn minh, có trách nhiệm và tôn trọng quyền tác giả'
     ]
@@ -132,7 +132,7 @@ export const SUBJECTS_MAP: Record<SubjectId, SubjectInfo> = {
     id: 'ai',
     emoji: '🧠',
     name: 'Dùng AI',
-    meta: '4 cấp · 16 bài',
+    meta: '4 cấp · 4 bài',
     gradeLevel: 'Lớp 4 - 5',
     badgeColor: 'text-violet-700 bg-violet-50 border-violet-200',
     lightBg: 'bg-violet-50/60',
@@ -144,390 +144,631 @@ export const SUBJECTS_MAP: Record<SubjectId, SubjectInfo> = {
   }
 };
 
-// Helper: Ensure 10 questions per lesson with authentic variations matching grade and topic
-function build10QuestionsForLesson(
-  primaryKey: keyof typeof QUESTION_BANK,
-  fallbackKey: keyof typeof QUESTION_BANK,
-  lessonTitle: string,
-  lessonIndex: number
+// Lấy bộ câu hỏi ĐỘC LẬP, KHÔNG TRÙNG LẶP cho từng bài học (cắt theo lát cắt riêng biệt)
+// Đồng thời đảo vị trí đáp án A/B/C/D một cách tất định để đáp án đúng phân bổ đều
+function getUniqueQuestionsForLesson(
+  bankKey: keyof typeof QUESTION_BANK,
+  lessonIndex: number, // 1-based index (1, 2, 3...)
+  countPerLesson: number
 ): QuizQuestion[] {
-  const primaryPool = QUESTION_BANK[primaryKey] || [];
-  const fallbackPool = QUESTION_BANK[fallbackKey] || [];
-  const combined = [...primaryPool, ...fallbackPool];
+  const pool = QUESTION_BANK[bankKey] || [];
+  const startIdx = (lessonIndex - 1) * countPerLesson;
+  const slice = pool.slice(startIdx, startIdx + countPerLesson);
 
-  // Rotate questions deterministically based on lessonIndex to provide rich variety across lessons
-  const result: QuizQuestion[] = [];
-  const count = 10;
-  for (let i = 0; i < count; i++) {
-    const sourceIndex = (lessonIndex * 3 + i) % combined.length;
-    const baseQ = combined[sourceIndex];
-    result.push({
-      id: i + 1,
-      question: baseQ ? baseQ.question : `Câu hỏi kiểm tra kiến thức ${lessonTitle}: Khẳng định nào sau đây là đúng?`,
-      options: baseQ ? [...baseQ.options] : ['Lựa chọn A đúng', 'Lựa chọn B', 'Lựa chọn C', 'Lựa chọn D'],
-      correctIndex: baseQ ? baseQ.correctIndex : 0,
-      explanation: baseQ ? baseQ.explanation : `Kiến thức chuẩn SGK Tin học Kết Nối Tri Thức cho bài: ${lessonTitle}.`
-    });
-  }
-  return result;
+  return slice.map((q, idx) => {
+    const opts = [...q.options];
+    const correctAnswerText = opts[q.correctIndex];
+    const len = opts.length;
+
+    // Xoay vòng vị trí các phương án dựa trên chỉ số bài và câu hỏi để đáp án đúng rơi đều vào A, B, C, D
+    const shift = (lessonIndex * 3 + idx) % len;
+    const rotatedOptions = opts.map((_, i) => opts[(i - shift + len) % len]);
+    const newCorrectIndex = rotatedOptions.indexOf(correctAnswerText);
+
+    return {
+      id: idx + 1,
+      question: q.question,
+      options: rotatedOptions,
+      correctIndex: newCorrectIndex >= 0 ? newCorrectIndex : 0,
+      explanation: q.explanation
+    };
+  });
 }
 
-// 1. LUYỆN GÕ PHÍM: 8 CẤP · 70 BÀI
+// 1. LUYỆN GÕ PHÍM: 8 CẤP · 8 BÀI ĐỘC LẬP (Mỗi bài 1 hàng phím/kỹ năng riêng + 4 câu hỏi riêng)
 const buildTypingLessons = (): Lesson[] => {
-  const lessons: Lesson[] = [];
-  const levelsPlan = [
-    { level: 1, name: 'Hàng phím cơ sở (ASDF JKL;)', count: 10, pattern: ['f j f j ff jj', 'd k d k dd kk', 's l s l ss ll', 'a ; a ; aa ;;', 'asdf jkl; asdf', 'fad jak lad sad', 'fall flask salad', 'glad half flash', 'asdfgh jkl;gh', 'Ôn tập xuất sắc hàng cơ sở'] },
-    { level: 2, name: 'Hàng phím trên (QWERTY UIOP)', count: 10, pattern: ['r u r u rr uu', 'e i e i ee ii', 'w o w o ww oo', 'q p q p qq pp', 't y t y tt yy', 'tree wire pour rope', 'quiet power write', 'type report write', 'quarter properly true', 'Ôn tập hàng phím trên'] },
-    { level: 3, name: 'Hàng phím dưới (ZXCVB NM,./)', count: 10, pattern: ['v m v m vv mm', 'c , c , cc ,,', 'x . x . xx ..', 'z / z / zz //', 'b n b n bb nn', 'van cab max box', 'zone zero civil zinc', 'climb balance mix', 'combine vocal member', 'Ôn tập cả 3 hàng phím chữ'] },
-    { level: 4, name: 'Hàng phím số (1 2 3 4 5 6 7 8 9 0)', count: 10, pattern: ['4 7 4 7 44 77', '3 8 3 8 33 88', '2 9 2 9 22 99', '1 0 1 0 11 00', '5 6 5 6 55 66', '123 456 789 0', '2024 2025 2026', '10 20 30 40 50', 'Lớp 3A năm 2026', 'Ôn tập gõ số chính xác'] },
-    { level: 5, name: 'Phím Shift và ký tự đặc biệt (!@#$%)', count: 10, pattern: ['A B C D E F G', 'H I J K L M N', 'O P Q R S T U', 'V W X Y Z ! ?', 'Tin Học Lớp 3', 'Kết Nối Tri Thức', 'Hà Nội, Việt Nam', 'Năm Học Mới 2026!', 'Chào Thầy Cô & Bạn Bè', 'Thử thách phối hợp Shift'] },
-    { level: 6, name: 'Luyện gõ từ vựng tiếng Anh tin học', count: 10, pattern: ['computer screen keyboard mouse', 'hardware software internet web', 'folder file storage data save', 'open close edit print copy', 'paste delete undo select all', 'window browser network system', 'algorithm code robot loop', 'digital online password account', 'information practice safety', 'Bứt phá tốc độ từ đơn'] },
-    { level: 7, name: 'Luyện gõ câu ngắn hoàn chỉnh', count: 5, pattern: ['Em yêu mái trường tiểu học.', 'Máy tính là người bạn thân thiết.', 'Học tập chăm chỉ mỗi ngày.', 'Bàn phím có hàng phím cơ sở.', 'Gõ đúng ngón tay giúp tăng tốc độ.'] },
-    { level: 8, name: 'Luyện gõ trôi chảy đoạn văn', count: 5, pattern: ['Phòng thực hành Tin học của trường em rất khang trang và sạch đẹp.', 'Học sinh tiểu học cần ngồi đúng tư thế khi học máy tính để bảo vệ mắt.', 'Mỗi ngày luyện tập gõ mười ngón giúp em hoàn thành bài tập nhanh hơn.', 'Chúng em luôn tuân thủ nội quy an toàn trong phòng máy của trường.', 'Công nghệ thông tin mở ra chân trời tri thức mới cho học sinh hôm nay.'] }
+  const items = [
+    {
+      level: 1,
+      title: 'Bài 1: Hàng phím cơ sở (A S D F - J K L ;)',
+      desc: 'Đặt 8 ngón tay lên hàng phím xuất phát, định vị hai phím có gờ F và J.',
+      target: 'f j d k s l a ; asdf jkl; fall flask salad glad half flash'
+    },
+    {
+      level: 2,
+      title: 'Bài 2: Hàng phím trên (Q W E R T - Y U I O P)',
+      desc: 'Vươn các ngón tay từ hàng cơ sở lên hàng phím trên rồi thu về vị trí chuẩn.',
+      target: 'r u e i w o q p t y tree wire pour rope quiet power write'
+    },
+    {
+      level: 3,
+      title: 'Bài 3: Hàng phím dưới (Z X C V B - N M , . /)',
+      desc: 'Di chuyển linh hoạt các ngón tay xuống hàng phím dưới và phối hợp 3 hàng chữ.',
+      target: 'v m c , x . z / b n van cab max box zone zero climb balance'
+    },
+    {
+      level: 4,
+      title: 'Bài 4: Hàng phím số (1 2 3 4 5 6 7 8 9 0)',
+      desc: 'Làm chủ hàng phím số phía trên cùng để gõ ngày tháng và số liệu chính xác.',
+      target: '1 2 3 4 5 6 7 8 9 0 2025 2026 Lop 3A 4B 5C 100 diem tot'
+    },
+    {
+      level: 5,
+      title: 'Bài 5: Phím Shift và chữ in hoa, ký tự đặc biệt',
+      desc: 'Phối hợp hai tay nhấn giữ phím Shift để gõ chữ cái đầu câu, tên riêng và dấu chấm cảm.',
+      target: 'Tin Hoc Tieu Hoc! Ket Noi Tri Thuc Voi Cuoc Song @2026#'
+    },
+    {
+      level: 6,
+      title: 'Bài 6: Luyện gõ từ vựng tiếng Anh Tin học thông dụng',
+      desc: 'Gõ nhanh các thuật ngữ máy tính quen thuộc bằng tiếng Anh chuẩn 10 ngón.',
+      target: 'computer keyboard mouse screen folder file internet browser robot code'
+    },
+    {
+      level: 7,
+      title: 'Bài 7: Luyện gõ câu ngắn hoàn chỉnh chuẩn dấu câu',
+      desc: 'Rèn kỹ năng gõ câu hoàn chỉnh có chữ hoa đầu câu và dấu chấm sát từ cuối.',
+      target: 'Em yeu mai truong tieu hoc. May tinh la nguoi ban than thiet cua em.'
+    },
+    {
+      level: 8,
+      title: 'Bài 8: Thử thách gõ đoạn văn tốc độ cao',
+      desc: 'Tổng hợp kỹ năng 10 ngón gõ trôi chảy đoạn văn dài với tốc độ và độ chính xác cao.',
+      target: 'Phong thuc hanh Tin hoc cua truong em rat sach dep. Chung em ngoi dung tu the va luyen go muoi ngon moi ngay.'
+    }
   ];
 
-  let globalId = 1;
-  levelsPlan.forEach(group => {
-    for (let i = 0; i < group.count; i++) {
-      const id = globalId++;
-      const targetStr = group.pattern[i % group.pattern.length];
-      lessons.push({
-        id,
-        level: group.level,
-        title: `Bài ${id}: ${group.name} - Bài số ${i + 1}`,
-        desc: `Luyện ngón tay chính xác cho chuỗi mẫu: "${targetStr.slice(0, 30)}..."`,
-        type: 'typing',
-        target: targetStr,
-        questions: build10QuestionsForLesson('typing', 'hardware', `Bài ${id} - ${group.name}`, id)
-      });
-    }
+  return items.map((item, idx) => {
+    const id = idx + 1;
+    return {
+      id,
+      level: item.level,
+      title: item.title,
+      desc: item.desc,
+      type: 'typing',
+      target: item.target,
+      questions: getUniqueQuestionsForLesson('typing', id, 4)
+    };
   });
-  return lessons;
 };
 
-// 2. GÕ TIẾNG VIỆT: 7 CẤP · 36 BÀI
+// 2. GÕ TIẾNG VIỆT: 7 CẤP · 7 BÀI ĐỘC LẬP (Mỗi bài 1 quy tắc Telex riêng + 4 câu hỏi riêng)
 const buildVietnameseTypingLessons = (): Lesson[] => {
-  const lessons: Lesson[] = [];
-  const levels = [
-    { level: 1, name: 'Dấu thanh cơ bản (Sắc, Huyền, Hỏi, Ngã, Nặng)', count: 5, targets: ['má má ma cá lá', 'bà bà ba gà nhà', 'cả quả mở trẻ cỏ', 'sữa ngõ đã vẽ mũ', 'mẹ bạn lụa học vẹt'] },
-    { level: 2, name: 'Chữ cái có mũ (Â, Ê, Ô - Gõ aa, ee, oo)', count: 5, targets: ['sân mây cây cầu quả cân', 'bếp đê tết dế con bê', 'cô bồ hòn sông ô tô', 'cây nêu ngày tết hoa cúc', 'sân trường mùa xuân ấm áp'] },
-    { level: 3, name: 'Chữ cái có móc (Ă, Ơ, Ư - Gõ aw, ow, uw)', count: 5, targets: ['khăn mặt mặt trăng trăng rằm', 'lá cờ mơ ước quả mơ', 'mực nước bức tranh thư viện', 'chăm chỉ học hành tiến bộ', 'cặp sách xinh xắn đến trường'] },
-    { level: 4, name: 'Chữ Đ (Gõ dd) và từ ghép tiếng Việt', count: 5, targets: ['đường đi đồng đội đón đưa', 'đất nước việt nam tươi đẹp', 'học sinh thủ đô chăm ngoan', 'bảng đen phấn trắng cô thầy', 'mái trường tiểu học yêu thương'] },
-    { level: 5, name: 'Gõ câu ca dao, tục ngữ tiếng Việt', count: 5, targets: ['Công cha như núi Thái Sơn.', 'Nghĩa mẹ như nước trong nguồn chảy ra.', 'Học thầy không tày học bạn.', 'Uống nước nhớ nguồn, ăn quả nhớ kẻ trồng cây.', 'Luyện đức rèn tài vì ngày mai lập nghiệp.'] },
-    { level: 6, name: 'Gõ đoạn văn bản SGK Tin học Kết Nối Tri Thức', count: 5, targets: ['Phòng thực hành Tin học của trường em rất sạch sẽ và hiện đại.', 'Máy tính giúp chúng em kết nối tri thức với cuộc sống sinh động.', 'Em luyện gõ tiếng Việt đúng dấu để trình bày bài văn khoa học.', 'Người công dân số văn minh luôn tôn trọng bản quyền tranh ảnh.', 'Mỗi phím trên bàn phím do một ngón tay nhất định phụ trách.'] },
-    { level: 7, name: 'Đoạn thơ thiếu nhi và thử thách tốc độ', count: 6, targets: ['Trường em ngói mới đỏ tươi, rợp bóng cây xanh đón chào ngày mới.', 'Chú bộ đội nơi đảo xa, ngày đêm vững vàng canh giữ biển trời.', 'Hạt gạo làng ta, có bão tháng bảy, có mưa tháng ba.', 'Mùa thu đến rồi, trời xanh bao la, đàn chim ríu rít ca vang.', 'Tiếng trống trường giòn giã giục giã bước chân em tới lớp học vui.', 'Học tập tốt, lao động tốt, xứng danh cháu ngoan Bác Hồ kính yêu.'] }
+  const items = [
+    {
+      level: 1,
+      title: 'Bài 1: Bỏ 5 dấu thanh cơ bản (Sắc: S, Huyền: F, Hỏi: R, Ngã: X, Nặng: J)',
+      desc: 'Luyện gõ chữ cái trước, bỏ dấu thanh ở cuối từ với 5 phím S, F, R, X, J.',
+      target: 'má cá lá bà gà nhà cả quả cỏ sữa ngõ vẽ mẹ bạn học tập'
+    },
+    {
+      level: 2,
+      title: 'Bài 2: Gõ chữ cái có mũ Â, Ê, Ô (aa, ee, oo)',
+      desc: 'Luyện gõ lặp đôi chữ cái aa -> â, ee -> ê, oo -> ô kết hợp dấu thanh.',
+      target: 'sân trường mây trắng cây cầu con bê ngày tết cô giáo dòng sông ô tô'
+    },
+    {
+      level: 3,
+      title: 'Bài 3: Gõ chữ cái có móc Ă, Ơ, Ư (aw, ow, uw)',
+      desc: 'Sử dụng phím W để tạo dấu trăng và dấu móc: aw -> ă, ow -> ơ, uw -> ư.',
+      target: 'vầng trăng rằm khăn quàng lá cờ mơ ước bức tranh thư viện chăm ngoan'
+    },
+    {
+      level: 4,
+      title: 'Bài 4: Gõ chữ Đ (dd) và các từ ghép tiếng Việt hoàn chỉnh',
+      desc: 'Gõ hai lần phím d (dd) để tạo chữ đ và ghép vần tiếng Việt chuẩn xác.',
+      target: 'đường đi đồng đội đất nước Việt Nam tươi đẹp bảng đen phấn trắng'
+    },
+    {
+      level: 5,
+      title: 'Bài 5: Luyện gõ câu ca dao, tục ngữ Việt Nam',
+      desc: 'Rèn nhịp độ gõ tiếng Việt có dấu qua những câu ca dao, tục ngữ giàu ý nghĩa.',
+      target: 'Công cha như núi Thái Sơn. Nghĩa mẹ như nước trong nguồn chảy ra.'
+    },
+    {
+      level: 6,
+      title: 'Bài 6: Gõ đoạn văn SGK Tin học Kết Nối Tri Thức',
+      desc: 'Trình bày đoạn văn bản chuẩn chính tả và quy tắc dấu câu tiếng Việt.',
+      target: 'Máy tính giúp chúng em kết nối tri thức với cuộc sống sinh động và bổ ích.'
+    },
+    {
+      level: 7,
+      title: 'Bài 7: Thử thách gõ đoạn thơ thiếu nhi Việt Nam',
+      desc: 'Hoàn thiện kỹ năng gõ tiếng Việt tốc độ cao qua những vần thơ thiếu nhi tươi sáng.',
+      target: 'Trường em ngói mới đỏ tươi, rợp bóng cây xanh đón chào ngày mới vui tươi.'
+    }
   ];
 
-  let globalId = 1;
-  levels.forEach(lvl => {
-    for (let i = 0; i < lvl.count; i++) {
-      const id = globalId++;
-      const targetStr = lvl.targets[i % lvl.targets.length];
-      lessons.push({
-        id,
-        level: lvl.level,
-        title: `Bài ${id}: ${lvl.name} (Phần ${i + 1})`,
-        desc: `Rèn luyện quy tắc gõ Telex chính xác: "${targetStr.slice(0, 35)}..."`,
-        type: 'typing',
-        target: targetStr,
-        questions: build10QuestionsForLesson('vietnameseTyping', 'typing', `Gõ tiếng Việt Bài ${id}`, id)
-      });
-    }
+  return items.map((item, idx) => {
+    const id = idx + 1;
+    return {
+      id,
+      level: item.level,
+      title: item.title,
+      desc: item.desc,
+      type: 'typing',
+      target: item.target,
+      questions: getUniqueQuestionsForLesson('vietnameseTyping', id, 4)
+    };
   });
-  return lessons;
 };
 
-// 3. LUYỆN CHUỘT: 10 CẤP
+// 3. LUYỆN CHUỘT: 6 CẤP · 6 BÀI (Mỗi bài 1 chế độ trò chơi tương tác chuột hoàn toàn khác nhau + 4 câu hỏi riêng)
 const buildMouseLessons = (): Lesson[] => {
-  const lessons: Lesson[] = [];
-  const levelThemes = [
-    { level: 1, title: 'Di chuyển chuột và bắt sao lấp lánh', desc: 'Rèn luyện phối hợp tay - mắt, đưa con trỏ chuột chạm vào các ngôi sao.', type: 'mouse' },
-    { level: 2, title: 'Nhấp chuột trái làm nổ bóng bóng', desc: 'Luyện ngón tay trỏ nhấp chuột trái dứt khoát làm vỡ bóng bay màu sắc.', type: 'mouse' },
-    { level: 3, title: 'Nhấp chuột nhanh phản xạ tốc độ', desc: 'Bóng bay bay nhanh hơn, học sinh nhấp chuột chuẩn xác để tích lũy điểm cao.', type: 'mouse' },
-    { level: 4, title: 'Nhấp đúp chuột mở rương báu tin học', desc: 'Luyện thao tác nhấp đúp (Double-click) 2 lần liên tiếp nhanh và dứt khoát.', type: 'mouse' },
-    { level: 5, title: 'Kéo thả chuột xếp linh kiện máy tính', desc: 'Nhấn giữ chuột trái, kéo bàn phím, màn hình, thân máy vào đúng vị trí.', type: 'mouse' },
-    { level: 6, title: 'Phân loại rác bảo vệ môi trường phòng máy', desc: 'Kéo thả rác tái chế và rác hữu cơ vào thùng đúng quy định.', type: 'mouse' },
-    { level: 7, title: 'Nhấp chuột phải mở thực đơn ngữ cảnh', desc: 'Luyện ngón giữa nhấp nút chuột phải mở bảng chọn lệnh Menu.', type: 'mouse' },
-    { level: 8, title: 'Lăn con lăn chuột cuộn trang tài liệu', desc: 'Làm chủ con lăn cuộn văn bản dài mượt mà không mỏi tay.', type: 'mouse' },
-    { level: 9, title: 'Kéo thả chọn nhiều đối tượng cùng lúc', desc: 'Vẽ khung chữ nhật bao quanh nhiều biểu tượng tệp tin.', type: 'mouse' },
-    { level: 10, title: 'Thử thách tổng hợp bậc thầy chuột máy tính', desc: 'Kết hợp cả nhấp đơn, nhấp đúp, kéo thả và phản xạ nhanh.', type: 'mouse' }
+  const items = [
+    {
+      level: 1,
+      title: 'Bài 1: Di chuyển chuột bắt sao lấp lánh',
+      desc: 'Luyện phối hợp tay và mắt điều khiển con trỏ chuột chạm vào các ngôi sao trên bầu trời.',
+      type: 'move_star'
+    },
+    {
+      level: 2,
+      title: 'Bài 2: Nhấp chuột trái (Click) làm nổ bóng bay',
+      desc: 'Luyện ngón trỏ nhấp nút chuột trái nhẹ nhàng, chính xác vào từng quả bóng màu sắc.',
+      type: 'click_bubbles'
+    },
+    {
+      level: 3,
+      title: 'Bài 3: Phản xạ nhấp chuột nhanh siêu tốc',
+      desc: 'Tăng tốc độ di chuyển và nhấp chuột trái vào các mục tiêu nhỏ xuất hiện nhanh.',
+      type: 'click_bubbles_fast'
+    },
+    {
+      level: 4,
+      title: 'Bài 4: Nhấp đúp chuột (Double-click) mở rương kho báu',
+      desc: 'Bấm nhanh 2 lần liên tiếp nút chuột trái để mở khóa 4 chiếc rương kho báu tri thức.',
+      type: 'double_click'
+    },
+    {
+      level: 5,
+      title: 'Bài 5: Kéo thả chuột (Drag & Drop) lắp ráp bộ máy tính',
+      desc: 'Nhấn giữ nút chuột trái để kéo Màn hình, Bàn phím, Chuột, Thân máy thả vào đúng ô.',
+      type: 'drag_drop'
+    },
+    {
+      level: 6,
+      title: 'Bài 6: Kéo thả phân loại rác bảo vệ môi trường phòng máy',
+      desc: 'Thực hành kéo thả các loại rác vào đúng 3 thùng Hữu cơ, Tái chế và Vô cơ.',
+      type: 'drag_drop_recycle'
+    }
   ];
 
-  let globalId = 1;
-  levelThemes.forEach(t => {
-    // 2 bài cho mỗi cấp -> 20 bài tổng cộng trên 10 cấp
-    for (let sub = 1; sub <= 2; sub++) {
-      const id = globalId++;
-      lessons.push({
-        id,
-        level: t.level,
-        title: `Bài ${id}: ${t.title} (Cấp ${t.level}.${sub})`,
-        desc: `${t.desc} - Thực hành thao tác tương tác chuột và 10 câu hỏi SGK.`,
-        type: 'mouse',
-        questions: build10QuestionsForLesson('mouse', 'hardware', `Thao tác chuột Cấp ${t.level}`, id)
-      });
-    }
+  return items.map((item, idx) => {
+    const id = idx + 1;
+    return {
+      id,
+      level: item.level,
+      title: item.title,
+      desc: item.desc,
+      type: item.type,
+      questions: getUniqueQuestionsForLesson('mouse', id, 4)
+    };
   });
-  return lessons;
 };
 
-// 4. KĨ NĂNG MÁY TÍNH (IC3): 20 CẤP · 104 BÀI
+// 4. KĨ NĂNG MÁY TÍNH (IC3): 8 CẤP · 8 BÀI ĐỘC LẬP (Mỗi bài 5 câu hỏi riêng biệt hoàn toàn)
 const buildIC3Lessons = (): Lesson[] => {
-  const lessons: Lesson[] = [];
-  const levelThemes = [
-    { level: 1, title: 'Các bộ phận cơ bản của máy tính để bàn và laptop', count: 5 },
-    { level: 2, title: 'Thiết bị vào và thiết bị ra (Input & Output Devices)', count: 5 },
-    { level: 3, title: 'Tư thế ngồi học và quy tắc an toàn điện trong phòng máy', count: 5 },
-    { level: 4, title: 'Bật máy và tắt máy đúng quy trình hệ điều hành', count: 5 },
-    { level: 5, title: 'Màn hình nền Desktop và các biểu tượng phần mềm', count: 5 },
-    { level: 6, title: 'Cửa sổ ứng dụng: Phóng to, thu nhỏ và đóng cửa sổ', count: 5 },
-    { level: 7, title: 'Thư mục là gì và vai trò của tổ chức tệp tin', count: 5 },
-    { level: 8, title: 'Tạo thư mục mới và đặt tên thư mục khoa học', count: 5 },
-    { level: 9, title: 'Đổi tên (Rename) và xóa thư mục an toàn (Recycle Bin)', count: 5 },
-    { level: 10, title: 'Sao chép (Copy) và di chuyển (Cut) tệp thư mục', count: 5 },
-    { level: 11, title: 'Tìm kiếm tệp tin trong máy tính với File Explorer', count: 5 },
-    { level: 12, title: 'Thiết bị lưu trữ: Ổ cứng, USB và Thẻ nhớ di động', count: 5 },
-    { level: 13, title: 'Mạng máy tính và các lợi ích của việc chia sẻ tài nguyên', count: 5 },
-    { level: 14, title: 'Mạng toàn cầu Internet và thế giới siêu liên kết', count: 5 },
-    { level: 15, title: 'Trình duyệt web Google Chrome, Cốc Cốc và thanh địa chỉ', count: 5 },
-    { level: 16, title: 'Tìm kiếm thông tin học tập hiệu quả với từ khóa', count: 5 },
-    { level: 17, title: 'Đánh dấu trang web yêu thích (Bookmark) và xem lịch sử web', count: 5 },
-    { level: 18, title: 'Tải tài liệu và hình ảnh phục vụ học tập an toàn', count: 5 },
-    { level: 19, title: 'Bảo dưỡng, vệ sinh máy tính và giữ phòng máy sạch đẹp', count: 5 },
-    { level: 20, title: 'Ôn tập tổng kết chuẩn kiến thức kỹ năng tin học tiểu học', count: 9 }
-  ]; // Total = 19 * 5 + 9 = 104 bài!
-
-  let globalId = 1;
-  levelThemes.forEach(t => {
-    for (let i = 1; i <= t.count; i++) {
-      const id = globalId++;
-      lessons.push({
-        id,
-        level: t.level,
-        title: `Bài ${id}: ${t.title} (Phần ${i})`,
-        desc: `Bài học chuẩn CTGDPT 2018 Kết Nối Tri Thức với bộ 10 câu hỏi trắc nghiệm đánh giá kiến thức.`,
-        type: 'quiz',
-        questions: build10QuestionsForLesson('hardware', 'folders', t.title, id)
-      });
+  const items = [
+    {
+      level: 1,
+      title: 'Bài 1: Các bộ phận cơ bản của máy tính để bàn và Laptop',
+      desc: 'Nhận biết Thân máy, Màn hình, Bàn phím, Chuột và đặc điểm của Laptop, Máy tính bảng.'
+    },
+    {
+      level: 2,
+      title: 'Bài 2: Thiết bị vào (Input) và Thiết bị ra (Output)',
+      desc: 'Phân biệt rõ nhóm thiết bị tiếp nhận thông tin vào và thiết bị xuất thông tin ra.'
+    },
+    {
+      level: 3,
+      title: 'Bài 3: Tư thế ngồi học đúng và Quy tắc an toàn điện phòng máy',
+      desc: 'Rèn tư thế ngồi bảo vệ mắt, cột sống và kỹ năng phòng tránh tai nạn điện.'
+    },
+    {
+      level: 4,
+      title: 'Bài 4: Bật, tắt máy tính đúng quy trình và Màn hình nền Desktop',
+      desc: 'Thao tác tắt máy bằng lệnh Shut down an toàn và làm quen cửa sổ Windows.'
+    },
+    {
+      level: 5,
+      title: 'Bài 5: Tệp tin (File) và Tổ chức cây thư mục (Folder) khoa học',
+      desc: 'Cách tạo thư mục mới, đặt tên tệp/thư mục rõ ràng và phân cấp thư mục mẹ - con.'
+    },
+    {
+      level: 6,
+      title: 'Bài 6: Sao chép (Copy), Di chuyển (Cut), Đổi tên và Khôi phục tệp',
+      desc: 'Thực hiện các thao tác quản lý tệp, phím tắt F2, Ctrl+C, Ctrl+V và Thùng rác Recycle Bin.'
+    },
+    {
+      level: 7,
+      title: 'Bài 7: Thiết bị lưu trữ dữ liệu: Ổ đĩa cứng, USB và Thẻ nhớ',
+      desc: 'Tìm hiểu các ổ đĩa C:, D:, đơn vị đo dung lượng KB, MB, GB và cách dùng USB an toàn.'
+    },
+    {
+      level: 8,
+      title: 'Bài 8: Mạng Internet, Trình duyệt Web và Tìm kiếm bằng từ khóa',
+      desc: 'Sử dụng trình duyệt Chrome/Edge, tìm kiếm thông tin học tập với từ khóa và đánh dấu trang.'
     }
-  });
-  return lessons;
-};
-
-// 5. SOẠN THẢO VĂN BẢN WORD: 8 CẤP · 48 BÀI
-const buildWordLessons = (): Lesson[] => {
-  const lessons: Lesson[] = [];
-  const levelThemes = [
-    { level: 1, title: 'Khởi động Word và làm quen giao diện dải lệnh Ribbon', count: 6 },
-    { level: 2, title: 'Gõ văn bản tiếng Việt đúng chuẩn và sửa lỗi chính tả', count: 6 },
-    { level: 3, title: 'Định dạng phông chữ, cỡ chữ và màu chữ sinh động', count: 6 },
-    { level: 4, title: 'Định dạng chữ in đậm (B), in nghiêng (I), gạch chân (U)', count: 6 },
-    { level: 5, title: 'Căn lề đoạn văn bản: Trái, Phải, Giữa và Đều 2 bên', count: 6 },
-    { level: 6, title: 'Chèn hình ảnh minh họa (Pictures) và điều chỉnh kích thước', count: 6 },
-    { level: 7, title: 'Tạo bảng (Table) thời khóa biểu và bảng phân công tổ', count: 6 },
-    { level: 8, title: 'Lưu tệp văn bản (Save) và xem trước khi in ấn', count: 6 }
-  ]; // 8 * 6 = 48 bài!
-
-  let globalId = 1;
-  levelThemes.forEach(t => {
-    for (let i = 1; i <= t.count; i++) {
-      const id = globalId++;
-      lessons.push({
-        id,
-        level: t.level,
-        title: `Bài ${id}: ${t.title} - Bài ${i}`,
-        desc: `Thực hành soạn thảo với bộ thanh công cụ mô phỏng và hoàn thành 10 câu hỏi SGK.`,
-        type: 'word',
-        content: `Thực hành ${t.title} theo bài tập SGK Kết Nối Tri Thức trang ${20 + id}.`,
-        tasks: [
-          'Gõ nội dung văn bản chuẩn tiếng Việt có dấu',
-          'Định dạng phông chữ Times New Roman cỡ 14pt',
-          'Căn giữa tiêu đề và áp dụng định dạng chữ nổi bật'
-        ],
-        questions: build10QuestionsForLesson('word', 'vietnameseTyping', t.title, id)
-      });
-    }
-  });
-  return lessons;
-};
-
-// 6. BẢNG TÍNH EXCEL: 8 CẤP · 32 BÀI
-const buildExcelLessons = (): Lesson[] => {
-  const lessons: Lesson[] = [];
-  const levelThemes = [
-    { level: 1, title: 'Giao diện bảng tính Excel: Hàng, Cột và Ô tính (Cell)', count: 4 },
-    { level: 2, title: 'Nhập dữ liệu chữ, số và định dạng viền khung bảng', count: 4 },
-    { level: 3, title: 'Quy tắc nhập công thức bắt đầu bằng dấu bằng (=)', count: 4 },
-    { level: 4, title: 'Tính tổng tự động với hàm SUM(A1:A5)', count: 4 },
-    { level: 5, title: 'Tính điểm trung bình học tập với hàm AVERAGE', count: 4 },
-    { level: 6, title: 'Tìm giá trị lớn nhất và nhỏ nhất với hàm MAX, MIN', count: 4 },
-    { level: 7, title: 'Vẽ biểu đồ cột trực quan so sánh kết quả học tập', count: 4 },
-    { level: 8, title: 'Lưu bảng tính (.xlsx) và trình bày bảng tính khoa học', count: 4 }
-  ]; // 8 * 4 = 32 bài!
-
-  let globalId = 1;
-  levelThemes.forEach(t => {
-    for (let i = 1; i <= t.count; i++) {
-      const id = globalId++;
-      lessons.push({
-        id,
-        level: t.level,
-        title: `Bài ${id}: ${t.title} - Bài ${i}`,
-        desc: `Thực hành bảng tính Excel trực quan tương tác và 10 câu hỏi kiểm tra kỹ năng.`,
-        type: 'excel',
-        tasks: [
-          'Nhập điểm số các môn Toán, Tiếng Việt, Tin học',
-          'Nhập công thức =SUM(B2:D2) để tính tổng',
-          'Quan sát biểu đồ cột tự động cập nhật số liệu'
-        ],
-        questions: build10QuestionsForLesson('excel', 'folders', t.title, id)
-      });
-    }
-  });
-  return lessons;
-};
-
-// 7. TRÌNH CHIẾU POWERPOINT: 8 CẤP · 48 BÀI
-const buildPowerPointLessons = (): Lesson[] => {
-  const lessons: Lesson[] = [];
-  const levelThemes = [
-    { level: 1, title: 'Khởi động PowerPoint và thêm trang chiếu mới (New Slide)', count: 6 },
-    { level: 2, title: 'Chọn bố cục (Slide Layout) phù hợp cho từng nội dung', count: 6 },
-    { level: 3, title: 'Nhập tiêu đề, phụ đề và định dạng chữ nghệ thuật', count: 6 },
-    { level: 4, title: 'Chọn mẫu nền thiết kế (Design Theme) tươi sáng đồng bộ', count: 6 },
-    { level: 5, title: 'Chèn ảnh minh họa về quê hương, trường lớp và động vật', count: 6 },
-    { level: 6, title: 'Tạo hiệu ứng chuyển tiếp giữa các trang chiếu (Transitions)', count: 6 },
-    { level: 7, title: 'Tạo hiệu ứng xuất hiện cho chữ và hình (Animations)', count: 6 },
-    { level: 8, title: 'Trình chiếu toàn màn hình với phím F5 và tự tin thuyết trình', count: 6 }
-  ]; // 8 * 6 = 48 bài!
-
-  let globalId = 1;
-  levelThemes.forEach(t => {
-    for (let i = 1; i <= t.count; i++) {
-      const id = globalId++;
-      lessons.push({
-        id,
-        level: t.level,
-        title: `Bài ${id}: ${t.title} - Phần ${i}`,
-        desc: `Thiết kế bài trình chiếu chuyên nghiệp và làm 10 câu hỏi trắc nghiệm SGK.`,
-        type: 'powerpoint',
-        tasks: [
-          'Thêm trang chiếu mở đầu bài thuyết trình',
-          'Nhập tiêu đề và chèn hình ảnh minh họa',
-          'Cài đặt hiệu ứng chuyển trang Fade hoặc Push'
-        ],
-        questions: build10QuestionsForLesson('powerpoint', 'word', t.title, id)
-      });
-    }
-  });
-  return lessons;
-};
-
-// 8. TƯ DUY THUẬT TOÁN: 11 CẤP · 34 CÂU ĐỐ
-const buildAlgorithmLessons = (): Lesson[] => {
-  const lessons: Lesson[] = [];
-  const mazes: MazeConfig[] = [
-    { gridSize: 5, start: [0, 2], goal: [4, 2], walls: [[1, 1], [2, 1], [3, 1], [1, 3], [2, 3], [3, 3]], initialDirection: 'down', maxCommands: 5 },
-    { gridSize: 5, start: [0, 0], goal: [3, 3], walls: [[1, 0], [1, 1], [1, 2], [2, 2]], initialDirection: 'right', maxCommands: 6 },
-    { gridSize: 5, start: [0, 0], goal: [4, 4], walls: [[0, 2], [1, 2], [3, 2], [4, 2], [2, 0]], initialDirection: 'down', maxCommands: 8 },
-    { gridSize: 6, start: [0, 0], goal: [5, 5], walls: [[2, 1], [3, 1], [1, 3], [2, 3], [3, 3]], initialDirection: 'right', maxCommands: 8 },
-    { gridSize: 6, start: [1, 1], goal: [5, 4], walls: [[2, 1], [2, 2], [2, 3], [4, 3], [4, 4], [4, 5]], initialDirection: 'right', maxCommands: 10 }
   ];
 
-  const levelConfigs = [
-    { level: 1, title: 'Chuỗi lệnh tuần tự đi thẳng', count: 3 },
-    { level: 2, title: 'Rẽ phải và rẽ trái tại các góc vuông', count: 3 },
-    { level: 3, title: 'Tránh chướng ngại vật đá ngầm trên bản đồ', count: 3 },
-    { level: 4, title: 'Vòng lặp thu gọn số lệnh di chuyển', count: 3 },
-    { level: 5, title: 'Cấu trúc rẽ nhánh Nếu - Thì trong mê cung', count: 3 },
-    { level: 6, title: 'Thu thập kim cương trên đường về đích', count: 3 },
-    { level: 7, title: 'Mê cung chữ Z và kỹ năng quay góc', count: 3 },
-    { level: 8, title: 'Tối ưu hóa số bước đi ít nhất', count: 3 },
-    { level: 9, title: 'Phát hiện và sửa lỗi chương trình (Debug)', count: 3 },
-    { level: 10, title: 'Mê cung thử thách cao tốc đa ngã rẽ', count: 3 },
-    { level: 11, title: 'Chinh phục Đảo ngọc Robot toàn năng', count: 4 }
-  ]; // 10 * 3 + 4 = 34 câu đố!
-
-  let globalId = 1;
-  levelConfigs.forEach(t => {
-    for (let i = 1; i <= t.count; i++) {
-      const id = globalId++;
-      const maze = mazes[(id - 1) % mazes.length];
-      lessons.push({
-        id,
-        level: t.level,
-        title: `Bài ${id}: ${t.title} (Thử thách ${i})`,
-        desc: `Ghép khối lệnh đưa Robot về cờ chiến thắng và trả lời 10 câu hỏi tư duy logic.`,
-        type: 'algorithm',
-        maze,
-        questions: build10QuestionsForLesson('algorithm', 'hardware', t.title, id)
-      });
-    }
+  return items.map((item, idx) => {
+    const id = idx + 1;
+    return {
+      id,
+      level: item.level,
+      title: item.title,
+      desc: item.desc,
+      type: 'quiz',
+      questions: getUniqueQuestionsForLesson('ic3', id, 5)
+    };
   });
-  return lessons;
 };
 
-// 9. CÔNG DÂN SỐ: 10 CẤP · 100 TÌNH HUỐNG
+// 5. SOẠN THẢO WORD: 6 CẤP · 6 BÀI ĐỘC LẬP (Mỗi bài 1 đề bài văn bản riêng + 4 câu hỏi riêng)
+const buildWordLessons = (): Lesson[] => {
+  const items = [
+    {
+      level: 1,
+      title: 'Bài 1: Soạn thảo đoạn văn "Em yêu trường em" & Chèn ảnh trường học',
+      desc: 'Gõ tiêu đề, nội dung đoạn văn, định dạng phông Times New Roman 18pt và chèn ảnh minh họa.'
+    },
+    {
+      level: 2,
+      title: 'Bài 2: Trình bày "Nội quy phòng Tin học" & Tạo bảng phân công',
+      desc: 'Gõ văn bản nội quy, định dạng phông Arial 16pt, căn giữa tiêu đề và chèn bảng (Table).'
+    },
+    {
+      level: 3,
+      title: 'Bài 3: Định dạng đoạn văn "Quê hương tươi đẹp" & Phối màu chữ',
+      desc: 'Thực hành in đậm, căn giữa, chọn cỡ chữ 22pt nổi bật và chèn hình ảnh quê hương.'
+    },
+    {
+      level: 4,
+      title: 'Bài 4: Thiết kế "Thời khóa biểu của em" với công cụ Bảng biểu',
+      desc: 'Soạn thảo kế hoạch học tập hàng tuần, định dạng chữ rõ ràng và chèn bảng thời khóa biểu.'
+    },
+    {
+      level: 5,
+      title: 'Bài 5: Viết bài tuyên truyền "Bảo vệ môi trường xanh - sạch - đẹp"',
+      desc: 'Trình bày thông điệp trồng cây xanh, định dạng Times New Roman 20pt và minh họa trực quan.'
+    },
+    {
+      level: 6,
+      title: 'Bài 6: Lập "Kế hoạch đọc sách tuần này" & Hoàn thiện lưu tệp',
+      desc: 'Tổng hợp kỹ năng định dạng chữ, tạo bảng theo dõi sách đọc và lưu tài liệu hoàn chỉnh.'
+    }
+  ];
+
+  return items.map((item, idx) => {
+    const id = idx + 1;
+    return {
+      id,
+      level: item.level,
+      title: item.title,
+      desc: item.desc,
+      type: 'word',
+      questions: getUniqueQuestionsForLesson('word', id, 4)
+    };
+  });
+};
+
+// 6. BẢNG TÍNH EXCEL: 6 CẤP · 6 BÀI ĐỘC LẬP (Mỗi bài 1 bảng dữ liệu riêng + 4 câu hỏi riêng)
+const buildExcelLessons = (): Lesson[] => {
+  const items = [
+    {
+      level: 1,
+      title: 'Bài 1: Bảng điểm thi đua Tổ 1 & Tính tổng bằng hàm SUM',
+      desc: 'Nhập bổ sung điểm số còn thiếu vào ô tính và lập công thức =SUM(B2:D2) tính tổng điểm.'
+    },
+    {
+      level: 2,
+      title: 'Bài 2: Tính điểm trung bình học tập bằng hàm AVERAGE',
+      desc: 'Hoàn thiện bảng điểm 3 môn và sử dụng hàm =AVERAGE(B2:D2) tính điểm trung bình tự động.'
+    },
+    {
+      level: 3,
+      title: 'Bài 3: Tìm điểm số cao nhất trong tổ bằng hàm MAX',
+      desc: 'Nhập dữ liệu số liệu và dùng hàm =MAX(B2:D2) để tìm điểm cao nhất của từng học sinh.'
+    },
+    {
+      level: 4,
+      title: 'Bài 4: Thống kê "Phong trào Kế hoạch nhỏ" quyên góp giấy vụn',
+      desc: 'Lập bảng theo dõi số ki-lô-gam giấy vụn 3 đợt và dùng hàm =SUM tính tổng quyên góp.'
+    },
+    {
+      level: 5,
+      title: 'Bài 5: Bảng theo dõi "Số sách đọc tại Thư viện" trung bình mỗi tháng',
+      desc: 'Nhập số đầu sách đọc trong 3 tháng và tính trung bình cộng bằng hàm =AVERAGE.'
+    },
+    {
+      level: 6,
+      title: 'Bài 6: Tổng kết "Hội khỏe Phù Đổng" & Vẽ biểu đồ cột so sánh',
+      desc: 'Xác định thành tích cao nhất với hàm =MAX, vẽ biểu đồ cột trực quan và lưu sổ tính.'
+    }
+  ];
+
+  return items.map((item, idx) => {
+    const id = idx + 1;
+    return {
+      id,
+      level: item.level,
+      title: item.title,
+      desc: item.desc,
+      type: 'excel',
+      questions: getUniqueQuestionsForLesson('excel', id, 4)
+    };
+  });
+};
+
+// 7. TRÌNH CHIẾU POWERPOINT: 6 CẤP · 6 BÀI ĐỘC LẬP (Mỗi bài 1 chủ đề thuyết trình riêng + 4 câu hỏi riêng)
+const buildPowerPointLessons = (): Lesson[] => {
+  const items = [
+    {
+      level: 1,
+      title: 'Bài 1: Thiết kế bài trình chiếu "Giới thiệu trường tiểu học của em"',
+      desc: 'Tạo trang tiêu đề, thêm trang chiếu mới, chọn màu nền và trình chiếu giới thiệu trường.'
+    },
+    {
+      level: 2,
+      title: 'Bài 2: Bài thuyết trình "Thế giới động vật đáng yêu quanh em"',
+      desc: 'Soạn nội dung giới thiệu loài vật có ích, chèn nhãn hình ảnh và tạo hiệu ứng chuyển trang.'
+    },
+    {
+      level: 3,
+      title: 'Bài 3: Bài thuyết trình "An toàn trên mạng Internet"',
+      desc: 'Thiết kế các slide tuyên truyền quy tắc bảo mật thông tin cá nhân trên không gian mạng.'
+    },
+    {
+      level: 4,
+      title: 'Bài 4: Bài thuyết trình "Danh lam thắng cảnh quê hương Việt Nam"',
+      desc: 'Giới thiệu vẻ đẹp Vịnh Hạ Long và Cố đô Huế với mẫu thiết kế Theme trang nhã.'
+    },
+    {
+      level: 5,
+      title: 'Bài 5: Bài thuyết trình "An toàn giao thông cho nụ cười trẻ thơ"',
+      desc: 'Trình bày thông điệp đội mũ bảo hiểm và chấp hành đèn tín hiệu giao thông.'
+    },
+    {
+      level: 6,
+      title: 'Bài 6: Bài thuyết trình "Ước mơ nghề nghiệp tương lai của em"',
+      desc: 'Tổng hợp kỹ năng thiết kế nhiều trang chiếu, hiệu ứng Transitions và thuyết trình toàn màn hình.'
+    }
+  ];
+
+  return items.map((item, idx) => {
+    const id = idx + 1;
+    return {
+      id,
+      level: item.level,
+      title: item.title,
+      desc: item.desc,
+      type: 'powerpoint',
+      questions: getUniqueQuestionsForLesson('powerpoint', id, 4)
+    };
+  });
+};
+
+// 8. TƯ DUY THUẬT TOÁN: 8 CẤP · 8 MÊ CUNG ĐỘC LẬP (Mỗi bài 1 bản đồ mê cung riêng + 4 câu hỏi riêng)
+const buildAlgorithmLessons = (): Lesson[] => {
+  const items: { level: number; title: string; desc: string; maze: MazeConfig }[] = [
+    {
+      level: 1,
+      title: 'Bài 1: Đường thẳng tuần tự về đích',
+      desc: 'Xếp chuỗi lệnh "Đi thẳng" tuần tự đưa Robot đi dọc hànhlang về thẳng cờ chiến thắng.',
+      maze: {
+        gridSize: 5,
+        start: [0, 2],
+        goal: [4, 2],
+        walls: [[1, 1], [2, 1], [3, 1], [1, 3], [2, 3], [3, 3]],
+        initialDirection: 'down',
+        maxCommands: 5
+      }
+    },
+    {
+      level: 2,
+      title: 'Bài 2: Khúc cua góc vuông chữ L',
+      desc: 'Kết hợp lệnh "Đi thẳng" và "Quay phải 90°" tại góc cua để đưa Robot về đích.',
+      maze: {
+        gridSize: 5,
+        start: [0, 0],
+        goal: [3, 3],
+        walls: [[1, 0], [1, 1], [1, 2], [2, 2], [3, 1]],
+        initialDirection: 'right',
+        maxCommands: 7
+      }
+    },
+    {
+      level: 3,
+      title: 'Bài 3: Vượt chướng ngại vật đá ngầm',
+      desc: 'Quan sát tảng đá chắn đường và lập trình cho Robot rẽ vòng qua khe trống an toàn.',
+      maze: {
+        gridSize: 5,
+        start: [0, 0],
+        goal: [4, 4],
+        walls: [[0, 2], [1, 2], [3, 2], [4, 2], [2, 0]],
+        initialDirection: 'down',
+        maxCommands: 10
+      }
+    },
+    {
+      level: 4,
+      title: 'Bài 4: Hành trình bậc thang lặp lại',
+      desc: 'Nhận diện quy luật đi ngang rồi rẽ xuống lặp lại trên bản đồ lưới 5x5.',
+      maze: {
+        gridSize: 5,
+        start: [0, 1],
+        goal: [4, 4],
+        walls: [[0, 3], [1, 0], [2, 1], [2, 3], [3, 1], [4, 2]],
+        initialDirection: 'right',
+        maxCommands: 9
+      }
+    },
+    {
+      level: 5,
+      title: 'Bài 5: Lựa chọn ngã rẽ thông minh',
+      desc: 'Phân tích hai ngã rẽ trong mê cung để chọn nhánh không bị tường đá chặn lối.',
+      maze: {
+        gridSize: 5,
+        start: [4, 0],
+        goal: [0, 4],
+        walls: [[3, 0], [3, 1], [1, 2], [2, 2], [3, 3]],
+        initialDirection: 'right',
+        maxCommands: 10
+      }
+    },
+    {
+      level: 6,
+      title: 'Bài 6: Mê cung chữ Z kích thước 6x6',
+      desc: 'Chia đường đi lớn trên sân 6x6 thành 3 chặng nhỏ để vượt qua dãy tường đá.',
+      maze: {
+        gridSize: 6,
+        start: [0, 0],
+        goal: [5, 5],
+        walls: [[1, 0], [1, 1], [1, 2], [3, 3], [3, 4], [3, 5]],
+        initialDirection: 'right',
+        maxCommands: 12
+      }
+    },
+    {
+      level: 7,
+      title: 'Bài 7: Tối ưu hóa lộ trình ngắn nhất',
+      desc: 'Tìm con đường ngắn nhất tốn ít khối lệnh nhất để đưa Robot tới cờ đích.',
+      maze: {
+        gridSize: 6,
+        start: [1, 1],
+        goal: [5, 4],
+        walls: [[2, 1], [2, 2], [2, 3], [4, 2], [4, 3], [4, 5]],
+        initialDirection: 'right',
+        maxCommands: 9
+      }
+    },
+    {
+      level: 8,
+      title: 'Bài 8: Chinh phục Đảo Ngọc Robot toàn năng',
+      desc: 'Thử thách tổng hợp điều hướng Robot vượt qua mê cung đá phức tạp về đích.',
+      maze: {
+        gridSize: 6,
+        start: [5, 0],
+        goal: [0, 5],
+        walls: [[4, 1], [3, 1], [2, 1], [3, 3], [2, 3], [1, 3], [1, 4]],
+        initialDirection: 'up',
+        maxCommands: 12
+      }
+    }
+  ];
+
+  return items.map((item, idx) => {
+    const id = idx + 1;
+    return {
+      id,
+      level: item.level,
+      title: item.title,
+      desc: item.desc,
+      type: 'algorithm',
+      maze: item.maze,
+      questions: getUniqueQuestionsForLesson('algorithm', id, 4)
+    };
+  });
+};
+
+// 9. CÔNG DÂN SỐ: 6 CẤP · 6 BÀI ĐỘC LẬP (Mỗi bài 5 câu hỏi tình huống riêng biệt)
 const buildDigitalCitizenshipLessons = (): Lesson[] => {
-  const lessons: Lesson[] = [];
-  const levelThemes = [
-    { level: 1, title: 'Bảo vệ bí mật thông tin cá nhân trên mạng', count: 10 },
-    { level: 2, title: 'Tạo và giữ gìn mật khẩu an toàn mạnh mẽ', count: 10 },
-    { level: 3, title: 'Ứng xử lịch sự, văn minh và tôn trọng bạn bè', count: 10 },
-    { level: 4, title: 'Phòng chống bắt nạt trên môi trường trực tuyến', count: 10 },
-    { level: 5, title: 'Nhận diện tin giả và thông tin chưa được kiểm chứng', count: 10 },
-    { level: 6, title: 'Cảnh giác trước các chiêu trò lừa đảo trúng thưởng', count: 10 },
-    { level: 7, title: 'Tôn trọng quyền tác giả và bản quyền hình ảnh âm nhạc', count: 10 },
-    { level: 8, title: 'Quản lý thời gian sử dụng thiết bị số lành mạnh', count: 10 },
-    { level: 9, title: 'Bảo vệ máy tính khỏi mã độc và virus nguy hiểm', count: 10 },
-    { level: 10, title: 'Trở thành công dân số gương mẫu, tự tin hội nhập', count: 10 }
-  ]; // 10 * 10 = 100 tình huống!
-
-  let globalId = 1;
-  levelThemes.forEach(t => {
-    for (let i = 1; i <= t.count; i++) {
-      const id = globalId++;
-      lessons.push({
-        id,
-        level: t.level,
-        title: `Tình huống ${id}: ${t.title} (Tình huống ${i})`,
-        desc: `Phân tích tình huống thực tế thường gặp và hoàn thành bộ 10 câu hỏi đánh giá kỹ năng số.`,
-        type: 'quiz',
-        questions: build10QuestionsForLesson('digitalCitizenship', 'internet', t.title, id)
-      });
+  const items = [
+    {
+      level: 1,
+      title: 'Bài 1: Bảo vệ thông tin cá nhân và quyền riêng tư trên mạng',
+      desc: 'Nhận biết các thông tin bí mật của bản thân, gia đình và quản lý dấu chân kỹ thuật số.'
+    },
+    {
+      level: 2,
+      title: 'Bài 2: Quy tắc tạo mật khẩu mạnh và bảo mật tài khoản học tập',
+      desc: 'Cách đặt mật khẩu an toàn, giữ bí mật mã OTP và đăng xuất khỏi máy tính dùng chung.'
+    },
+    {
+      level: 3,
+      title: 'Bài 3: Ứng xử văn minh và Phòng chống bắt nạt qua mạng (Cyberbullying)',
+      desc: 'Giao tiếp lịch sự, nhân ái trên môi trường số và kỹ năng xử lý khi gặp hành vi bắt nạt.'
+    },
+    {
+      level: 4,
+      title: 'Bài 4: Nhận diện tin giả (Fake News) và Cảnh giác lừa đảo trực tuyến',
+      desc: 'Rèn tư duy phản biện, kiểm chứng nguồn tin chính thống và tránh bẫy trúng thưởng ảo.'
+    },
+    {
+      level: 5,
+      title: 'Bài 5: Tôn trọng quyền tác giả và Bản quyền nội dung số (Copyright)',
+      desc: 'Hiểu giá trị lao động sáng tạo, biết ghi nguồn trích dẫn và nói không với đạo văn.'
+    },
+    {
+      level: 6,
+      title: 'Bài 6: Phòng chống Virus mã độc và Giữ gìn sức khỏe số lành mạnh',
+      desc: 'Bảo vệ máy tính trước phần mềm độc hại và cân bằng thời gian sử dụng màn hình khoa học.'
     }
+  ];
+
+  return items.map((item, idx) => {
+    const id = idx + 1;
+    return {
+      id,
+      level: item.level,
+      title: item.title,
+      desc: item.desc,
+      type: 'quiz',
+      questions: getUniqueQuestionsForLesson('digitalCitizenship', id, 5)
+    };
   });
-  return lessons;
 };
 
-// 10. DÙNG AI: 4 CẤP · 16 BÀI
+// 10. DÙNG AI: 4 CẤP · 4 BÀI ĐỘC LẬP (Mỗi bài 5 câu hỏi riêng biệt)
 const buildAILessons = (): Lesson[] => {
-  const lessons: Lesson[] = [];
-  const levelThemes = [
-    { level: 1, title: 'Khám phá Trí tuệ nhân tạo (AI) quanh em trong đời sống', count: 4 },
-    { level: 2, title: 'Cách AI học tập và khả năng kỳ diệu của người trợ lý ảo', count: 4 },
-    { level: 3, title: 'Kỹ năng viết câu lệnh Prompt thông minh, rõ ràng và có bối cảnh', count: 4 },
-    { level: 4, title: 'Đạo đức, sự trung thực và nguyên tắc kiểm chứng khi dùng AI', count: 4 }
-  ]; // 4 * 4 = 16 bài!
-
-  let globalId = 1;
-  levelThemes.forEach(t => {
-    for (let i = 1; i <= t.count; i++) {
-      const id = globalId++;
-      lessons.push({
-        id,
-        level: t.level,
-        title: `Bài ${id}: ${t.title} - Bài ${i}`,
-        desc: `Khám phá công nghệ tương lai và trả lời 10 câu hỏi chuẩn kiến thức AI tiểu học.`,
-        type: 'quiz',
-        questions: build10QuestionsForLesson('ai', 'digitalCitizenship', t.title, id)
-      });
+  const items = [
+    {
+      level: 1,
+      title: 'Bài 1: Khám phá Trí tuệ nhân tạo (AI) quanh em trong đời sống',
+      desc: 'Tìm hiểu khái niệm AI và các ứng dụng quen thuộc như nhận diện khuôn mặt, dịch thuật, trợ lý ảo.'
+    },
+    {
+      level: 2,
+      title: 'Bài 2: Cách AI học tập từ dữ liệu và Những giới hạn của AI',
+      desc: 'Hiểu vai trò của dữ liệu huấn luyện, hiện tượng ảo giác AI và phẩm chất riêng có của con người.'
+    },
+    {
+      level: 3,
+      title: 'Bài 3: Kỹ năng viết câu lệnh Prompt rõ ràng, thông minh và an toàn',
+      desc: 'Cách đặt câu hỏi có bối cảnh, đối tượng cụ thể cho AI và nguyên tắc bảo mật thông tin cá nhân.'
+    },
+    {
+      level: 4,
+      title: 'Bài 4: Đạo đức, sự trung thực và nguyên tắc kiểm chứng khi dùng AI',
+      desc: 'Sử dụng AI làm người bạn gợi ý học tập, kiểm chứng với SGK và không để AI làm thay bài tập.'
     }
+  ];
+
+  return items.map((item, idx) => {
+    const id = idx + 1;
+    return {
+      id,
+      level: item.level,
+      title: item.title,
+      desc: item.desc,
+      type: 'quiz',
+      questions: getUniqueQuestionsForLesson('ai', id, 5)
+    };
   });
-  return lessons;
 };
 
-// Build all subjects lessons
+// Build all subjects lessons (Total: 65 completely unique lessons, 0 duplicate questions)
 export const SUBJECT_LESSONS: Record<SubjectId, Lesson[]> = {
   go: buildTypingLessons(),
   'go-tv': buildVietnameseTypingLessons(),

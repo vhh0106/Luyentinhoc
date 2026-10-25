@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Assignment, ExerciseResult, SubjectId, TeacherAccount } from '../types';
+import { Assignment, ExerciseResult, SubjectId, TeacherAccount, StudentAccount } from '../types';
 import { SUBJECTS_MAP } from '../data/curriculum';
 import {
   getAssignments,
   saveAssignment,
   deleteAssignment,
-  generateRandomPin,
-  getResults
+  getResults,
+  fetchAssignmentsFromCloud,
+  getStudents,
+  fetchStudentsFromCloud,
+  getTeachers,
+  fetchTeachersFromCloud
 } from '../services/storage';
 import {
   Plus,
   Trash2,
-  Copy,
   Check,
   Users,
   BookOpen,
@@ -19,11 +22,15 @@ import {
   Layers,
   LogOut,
   X,
-  FileCode,
-  Download,
   Calendar,
-  KeyRound
+  BarChart3,
+  GraduationCap,
+  AlertCircle,
+  ShieldCheck
 } from 'lucide-react';
+import { ClassPerformanceAnalytics } from './dashboard/ClassPerformanceAnalytics';
+import { StudentManagement } from './dashboard/StudentManagement';
+import { TeacherManagement } from './dashboard/TeacherManagement';
 
 interface TeacherDashboardProps {
   teacher: TeacherAccount;
@@ -31,13 +38,20 @@ interface TeacherDashboardProps {
 }
 
 export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onLogout }) => {
+  const isAdmin = teacher.role === 'admin' || teacher.username.toLowerCase() === 'admin';
+
+  const [activeTab, setActiveTab] = useState<
+    'teachers' | 'students' | 'assignments' | 'performance' | 'submissions'
+  >('students');
+  const [teachersList, setTeachersList] = useState<TeacherAccount[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [students, setStudents] = useState<StudentAccount[]>([]);
   const [results, setResults] = useState<ExerciseResult[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [showResultsModal, setShowResultsModal] = useState(false);
-  const [selectedAssignmentFilter, setSelectedAssignmentFilter] = useState<string | null>(null);
+  const [selectedClassFilter, setSelectedClassFilter] = useState<string | null>(null);
 
-  // Form state
+  // Assignment Form state (assigned per classCode, no separate assignment PIN)
   const [classCode, setClassCode] = useState('');
   const [note, setNote] = useState('');
   const [selectedSubjects, setSelectedSubjects] = useState<SubjectId[]>([
@@ -46,15 +60,36 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
     'chuot',
     'thuat-toan'
   ]);
-  const [copiedPin, setCopiedPin] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [bannerNotice, setBannerNotice] = useState<string | null>(null);
+  const [confirmDeleteAssignId, setConfirmDeleteAssignId] = useState<string | null>(null);
+  const [isCloudSyncing, setIsCloudSyncing] = useState(false);
 
   useEffect(() => {
     loadData();
   }, []);
 
-  const loadData = () => {
+  const loadData = async () => {
+    setTeachersList(getTeachers());
     setAssignments(getAssignments());
+    setStudents(getStudents());
     setResults(getResults());
+    setIsCloudSyncing(true);
+    try {
+      const [cloudTeachers, cloudAssignments, cloudStudents] = await Promise.all([
+        fetchTeachersFromCloud(),
+        fetchAssignmentsFromCloud(),
+        fetchStudentsFromCloud()
+      ]);
+      setTeachersList(cloudTeachers);
+      setAssignments(cloudAssignments);
+      setStudents(cloudStudents);
+      setResults(getResults());
+    } catch (err) {
+      console.warn('TeacherDashboard cloud sync:', err);
+    } finally {
+      setIsCloudSyncing(false);
+    }
   };
 
   const handleToggleSubject = (subId: SubjectId) => {
@@ -74,24 +109,25 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
 
   const handleCreateAssignment = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!classCode.trim()) {
-      alert('Vui lòng nhập mã lớp học (Ví dụ: 3A, 4B, 5C)');
+    setFormError(null);
+    const cleanClass = classCode.trim().toUpperCase();
+    if (!cleanClass) {
+      setFormError('Vui lòng nhập mã lớp học (Ví dụ: 3A, 4B, 5C)');
       return;
     }
     if (selectedSubjects.length === 0) {
-      alert('Vui lòng chọn ít nhất 1 chủ đề bài tập');
+      setFormError('Vui lòng chọn ít nhất 1 chủ đề bài tập cho lớp');
       return;
     }
 
-    const pin = generateRandomPin();
     const newAssignment: Assignment = {
-      id: `assign-${Date.now()}`,
-      classCode: classCode.trim().toUpperCase(),
-      pin,
+      id: `assign-${cleanClass}`,
+      classCode: cleanClass,
+      pin: '',
       subjects: selectedSubjects,
       teacherName: teacher.name,
       createdAt: new Date().toISOString(),
-      note: note.trim() || `Bài tập Tin học lớp ${classCode.trim().toUpperCase()}`
+      note: note.trim() || `Bài tập Tin học Lớp ${cleanClass}`
     };
 
     saveAssignment(newAssignment);
@@ -99,60 +135,26 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
     setShowModal(false);
     setClassCode('');
     setNote('');
-
-    alert(`🎉 Đã tạo bài tập thành công!\n\nMã lớp: ${newAssignment.classCode}\nMã PIN: ${newAssignment.pin}\n\nThầy/Cô hãy gửi mã lớp và mã PIN này cho các em học sinh.`);
+    setActiveTab('assignments');
+    setBannerNotice(
+      `Đã cập nhật chương trình bài tập cho Lớp ${newAssignment.classCode} (${newAssignment.subjects.length} chủ đề). Học sinh lớp ${newAssignment.classCode} chỉ cần đăng nhập bằng Mã PIN cá nhân của mình để làm bài!`
+    );
   };
 
   const handleDeleteAssignment = (id: string) => {
-    if (window.confirm('Thầy/Cô có chắc chắn muốn xóa bài tập này không?')) {
-      deleteAssignment(id);
-      loadData();
-    }
+    deleteAssignment(id);
+    setConfirmDeleteAssignId(null);
+    loadData();
   };
 
-  const handleCopyPin = (pin: string, code: string) => {
-    navigator.clipboard.writeText(`Mã lớp: ${code} - Mã PIN: ${pin}`);
-    setCopiedPin(pin);
-    setTimeout(() => setCopiedPin(null), 2500);
-  };
-
-  // Export standalone HTML bundle if requested
-  const handleExportOfflineBundle = () => {
-    const htmlBundle = `<!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <title>Tin Học Tiểu Học - Bản Ngoại Tuyến</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body { font-family: system-ui, sans-serif; padding: 2rem; background: #f8fafc; color: #1e293b; }
-    .card { background: white; padding: 2rem; border-radius: 1rem; border: 1px solid #e2e8f0; max-width: 800px; margin: 0 auto; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-    h1 { color: #2563eb; margin-bottom: 0.5rem; }
-    .btn { display: inline-block; padding: 0.75rem 1.5rem; background: #2563eb; color: white; border-radius: 0.5rem; text-decoration: none; font-weight: bold; }
-  </style>
-</head>
-<body>
-  <div class="card">
-    <h1>🎓 Tin Học Tiểu Học - Kết Nối Tri Thức</h1>
-    <p>Gói bài tập ngoại tuyến dành cho lớp: <strong>${assignments[0]?.classCode || '3A'}</strong></p>
-    <p>Mã PIN truy cập: <strong>${assignments[0]?.pin || 'KNTT03'}</strong></p>
-    <p>10 chủ đề: Gõ phím, Gõ tiếng Việt, Chuột, Kĩ năng máy tính, Word, Excel, PowerPoint, Thuật toán, Công dân số, AI.</p>
-  </div>
-</body>
-</html>`;
-
-    const blob = new Blob([htmlBundle], { type: 'text/html;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `TinHoc_KetNoiTriThuc_Lop${assignments[0]?.classCode || 'Demo'}.html`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const filteredResults = selectedAssignmentFilter
-    ? results.filter(r => r.pin === selectedAssignmentFilter)
+  const filteredResults = selectedClassFilter
+    ? results.filter(r => r.classCode.toUpperCase() === selectedClassFilter.toUpperCase())
     : results;
+
+  const activeClassCount = new Set([
+    ...assignments.map(a => a.classCode.toUpperCase()),
+    ...students.map(s => s.classCode.toUpperCase())
+  ]).size;
 
   return (
     <div className="space-y-8">
@@ -160,25 +162,39 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
       <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-blue-700 uppercase tracking-wider mb-1">
-            <span>Không gian làm việc của Giáo Viên</span>
+            <span>{isAdmin ? 'Hệ thống Quản trị viên (Admin)' : 'Không gian làm việc của Giáo Viên'}</span>
             <span>·</span>
             <span>Bộ sách Kết Nối Tri Thức</span>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">
-            Kính chào {teacher.name}! 👨‍🏫
-          </h1>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h1 className="text-2xl font-bold text-slate-900">
+              Kính chào {teacher.name}! 👨‍🏫
+            </h1>
+            {isAdmin ? (
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-100 text-amber-900 border border-amber-300">
+                Admin Quản Trị
+              </span>
+            ) : (
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                Giáo Viên ({teacher.username})
+              </span>
+            )}
+          </div>
           <p className="text-sm text-slate-500 mt-0.5">
-            Trường: {teacher.school || 'Tiểu học Kết Nối Tri Thức'} · Quản trị menu bài tập và mã PIN tham gia của các lớp.
+            Trường: {teacher.school || 'Tiểu học Kết Nối Tri Thức'} · Mỗi học sinh dùng 1 Mã PIN cá nhân duy nhất để đăng nhập tài khoản của mình.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <button
-            onClick={() => setShowModal(true)}
+            onClick={() => {
+              setFormError(null);
+              setShowModal(true);
+            }}
             className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm shadow-sm transition-all flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
-            <span>Tạo bài tập mới</span>
+            <span>Giao bài tập cho lớp</span>
           </button>
 
           <button
@@ -192,28 +208,47 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
         </div>
       </div>
 
+      {bannerNotice && (
+        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-bold flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{bannerNotice}</span>
+          </div>
+          <button
+            onClick={() => setBannerNotice(null)}
+            className="text-emerald-700 hover:text-emerald-950 p-1"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* KPI Stats Overview */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
           <div className="flex items-center justify-between text-slate-500 text-xs font-medium mb-2">
-            <span>Bài tập đã giao</span>
-            <BookOpen className="w-4 h-4 text-blue-600" />
+            <span>Tài khoản học sinh</span>
+            <GraduationCap className="w-4 h-4 text-blue-600" />
           </div>
           <div className="text-2xl font-black text-slate-900 tabular-nums">
-            {assignments.length}
+            {students.length}
           </div>
-          <div className="text-[11px] text-slate-500 mt-1">Được gán theo từng mã lớp</div>
+          <div className="text-[11px] text-slate-500 mt-1">
+            Mỗi học sinh có 1 Mã PIN riêng
+          </div>
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
           <div className="flex items-center justify-between text-slate-500 text-xs font-medium mb-2">
-            <span>Lớp học kích hoạt</span>
+            <span>Số lớp học</span>
             <Users className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="text-2xl font-black text-emerald-700 tabular-nums">
-            {new Set(assignments.map(a => a.classCode)).size}
+            {activeClassCount}
           </div>
-          <div className="text-[11px] text-slate-500 mt-1">Ví dụ: 3A, 4B, 5C...</div>
+          <div className="text-[11px] text-slate-500 mt-1">
+            {assignments.length} lớp đã cấu hình chủ đề
+          </div>
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
@@ -236,156 +271,343 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
 
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
           <div className="flex items-center justify-between text-slate-500 text-xs font-medium mb-2">
-            <span>Kho chủ đề Kết Nối Tri Thức</span>
-            <Layers className="w-4 h-4 text-purple-600" />
+            <span>{isAdmin ? 'Tài khoản Giáo viên' : 'Kho chủ đề Kết Nối Tri Thức'}</span>
+            {isAdmin ? (
+              <ShieldCheck className="w-4 h-4 text-indigo-600" />
+            ) : (
+              <Layers className="w-4 h-4 text-purple-600" />
+            )}
           </div>
-          <div className="text-2xl font-black text-purple-700 tabular-nums">
-            10 / 10
+          <div className="text-2xl font-black text-indigo-700 tabular-nums">
+            {isAdmin ? teachersList.length : '10 / 10'}
           </div>
-          <div className="text-[11px] text-slate-500 mt-1">Gõ phím, Chuột, Word, AI...</div>
+          <div className="text-[11px] text-slate-500 mt-1">
+            {isAdmin ? 'Được cấp quyền bởi Admin' : 'Gõ phím, Chuột, Word, AI...'}
+          </div>
         </div>
       </div>
 
-      {/* Assignments Section */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
-            <h2 className="text-lg font-bold text-slate-900">
-              Danh Sách Bài Tập Theo Lớp & Mã PIN ({assignments.length})
-            </h2>
-          </div>
+      {/* Teacher / Admin Navigation Tabs */}
+      <div className="flex items-center gap-2 border-b border-slate-200/80 pb-3 flex-wrap">
+        <button
+          onClick={() => setActiveTab('students')}
+          className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 ${
+            activeTab === 'students'
+              ? 'bg-blue-600 text-white shadow-sm'
+              : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/80'
+          }`}
+        >
+          <GraduationCap className="w-4 h-4" />
+          <span>Quản lý Tài khoản Học sinh ({students.length})</span>
+        </button>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleExportOfflineBundle}
-              className="px-3 py-1.5 text-xs font-semibold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-1.5"
-              title="Xuất gói HTML để mở offline"
-            >
-              <Download className="w-3.5 h-3.5 text-slate-500" />
-              <span>Xuất bản ngoại tuyến</span>
-            </button>
-          </div>
-        </div>
-
-        {assignments.length === 0 ? (
-          <div className="bg-white p-12 rounded-3xl border border-dashed border-slate-300 text-center">
-            <BookOpen className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-            <h3 className="text-base font-bold text-slate-700">Chưa có bài tập nào</h3>
-            <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-              Thầy/Cô hãy bấm nút "Tạo bài tập mới" để soạn menu trò chơi và cấp mã PIN cho học sinh làm bài nhé!
-            </p>
-            <button
-              onClick={() => setShowModal(true)}
-              className="mt-4 px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 inline-flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              Tạo bài tập ngay
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {assignments.map(item => (
-              <div
-                key={item.id}
-                className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs hover:border-blue-300 transition-all flex flex-col justify-between space-y-4"
-              >
-                <div>
-                  {/* Card Header */}
-                  <div className="flex items-start justify-between gap-3 mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="px-3 py-1 bg-blue-600 text-white font-black text-sm rounded-lg shadow-xs">
-                        LỚP {item.classCode}
-                      </span>
-                      <span className="text-xs text-slate-500 flex items-center gap-1">
-                        <Calendar className="w-3 h-3 text-slate-400" />
-                        {new Date(item.createdAt).toLocaleDateString('vi-VN')}
-                      </span>
-                    </div>
-
-                    <button
-                      onClick={() => handleDeleteAssignment(item.id)}
-                      className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors"
-                      title="Xóa bài tập này"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-
-                  <h3 className="font-bold text-slate-900 text-base">{item.note}</h3>
-
-                  {/* PIN Display Banner */}
-                  <div className="mt-3 p-3.5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl flex items-center justify-between">
-                    <div>
-                      <span className="text-[11px] font-bold text-blue-700 uppercase tracking-wider block">
-                        Mã PIN học sinh:
-                      </span>
-                      <span className="font-mono text-xl font-black text-blue-900 tracking-widest">
-                        {item.pin}
-                      </span>
-                    </div>
-
-                    <button
-                      onClick={() => handleCopyPin(item.pin, item.classCode)}
-                      className="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 hover:bg-blue-50 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5"
-                    >
-                      {copiedPin === item.pin ? (
-                        <>
-                          <Check className="w-3.5 h-3.5 text-emerald-600" />
-                          <span className="text-emerald-700">Đã sao chép!</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-3.5 h-3.5" />
-                          <span>Sao chép PIN</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-
-                  {/* Included Subjects */}
-                  <div className="mt-4">
-                    <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-2">
-                      Menu trò chơi được gán ({item.subjects.length} chủ đề):
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {item.subjects.map(sId => {
-                        const sub = SUBJECTS_MAP[sId];
-                        if (!sub) return null;
-                        return (
-                          <span
-                            key={sId}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-700"
-                          >
-                            <span>{sub.emoji}</span>
-                            <span>{sub.name}</span>
-                          </span>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Submissions button */}
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                  <span className="text-xs text-slate-500">
-                    GV phụ trách: <strong className="text-slate-700">{item.teacherName}</strong>
-                  </span>
-                  <button
-                    onClick={() => {
-                      setSelectedAssignmentFilter(item.pin);
-                      setShowResultsModal(true);
-                    }}
-                    className="text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors"
-                  >
-                    Xem điểm bài này →
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+        {isAdmin && (
+          <button
+            onClick={() => setActiveTab('teachers')}
+            className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 ${
+              activeTab === 'teachers'
+                ? 'bg-indigo-600 text-white shadow-sm'
+                : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/80'
+            }`}
+          >
+            <ShieldCheck className="w-4 h-4 text-amber-400" />
+            <span>Quản lý Tài khoản Giáo viên ({teachersList.length})</span>
+            <span className="px-1.5 py-0.5 rounded-md text-[10px] font-black bg-amber-400 text-amber-950">
+              Admin
+            </span>
+          </button>
         )}
+
+        <button
+          onClick={() => setActiveTab('assignments')}
+          className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 ${
+            activeTab === 'assignments'
+              ? 'bg-blue-600 text-white shadow-sm'
+              : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/80'
+          }`}
+        >
+          <BookOpen className="w-4 h-4" />
+          <span>Giao Bài tập theo Lớp ({assignments.length})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('performance')}
+          className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 ${
+            activeTab === 'performance'
+              ? 'bg-blue-600 text-white shadow-sm'
+              : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/80'
+          }`}
+        >
+          <BarChart3 className="w-4 h-4 text-amber-400" />
+          <span>Hiệu Suất Lớp Học</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('submissions')}
+          className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 ${
+            activeTab === 'submissions'
+              ? 'bg-blue-600 text-white shadow-sm'
+              : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/80'
+          }`}
+        >
+          <Award className="w-4 h-4" />
+          <span>Lịch sử Nộp bài & Điểm số ({results.length})</span>
+        </button>
       </div>
+
+      {/* TAB: ADMIN TEACHER ACCOUNTS MANAGEMENT */}
+      {activeTab === 'teachers' && isAdmin && (
+        <TeacherManagement
+          teachers={teachersList}
+          currentTeacher={teacher}
+          onRefresh={loadData}
+          isSyncing={isCloudSyncing}
+        />
+      )}
+
+      {/* TAB: STUDENT ACCOUNTS MANAGEMENT (CRUD BY CLASS) */}
+      {activeTab === 'students' && (
+        <StudentManagement
+          students={students}
+          results={results}
+          assignments={assignments}
+          onRefresh={loadData}
+          isSyncing={isCloudSyncing}
+        />
+      )}
+
+      {/* TAB: CLASS PERFORMANCE (RECHARTS) */}
+      {activeTab === 'performance' && (
+        <ClassPerformanceAnalytics
+          assignments={assignments}
+          results={results}
+          students={students}
+          onRefreshCloud={loadData}
+          isRefreshing={isCloudSyncing}
+        />
+      )}
+
+      {/* TAB: ASSIGNMENTS BY CLASS (NO SEPARATE ASSIGNMENT PIN) */}
+      {activeTab === 'assignments' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                <h2 className="text-lg font-bold text-slate-900">
+                  Cấu Hình Bài Tập Theo Lớp ({assignments.length})
+                </h2>
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Học sinh đăng nhập bằng <strong>Mã PIN cá nhân của học sinh</strong> sẽ tự động thấy danh sách chủ đề được giao cho lớp mình.
+              </p>
+            </div>
+          </div>
+
+          {assignments.length === 0 ? (
+            <div className="bg-white p-12 rounded-3xl border border-dashed border-slate-300 text-center">
+              <BookOpen className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+              <h3 className="text-base font-bold text-slate-700">
+                Mặc định mở cả 10 chủ đề cho tất cả các lớp
+              </h3>
+              <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+                Nếu Thầy/Cô muốn giới hạn các chủ đề bài tập riêng cho từng lớp (VD: Lớp 3A chỉ học Gõ phím & Chuột), hãy bấm nút "Giao bài tập cho lớp" nhé!
+              </p>
+              <button
+                onClick={() => setShowModal(true)}
+                className="mt-4 px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 inline-flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Giao bài tập theo lớp
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {assignments.map(item => {
+                const classStudentCount = students.filter(
+                  s => s.classCode.toUpperCase() === item.classCode.toUpperCase()
+                ).length;
+
+                return (
+                  <div
+                    key={item.id}
+                    className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs hover:border-blue-300 transition-all flex flex-col justify-between space-y-4"
+                  >
+                    <div>
+                      {/* Card Header */}
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="px-3 py-1 bg-blue-600 text-white font-black text-sm rounded-lg shadow-xs">
+                            LỚP {item.classCode}
+                          </span>
+                          <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-xs rounded-lg">
+                            Sĩ số: {classStudentCount} HS
+                          </span>
+                          <span className="text-xs text-slate-500 flex items-center gap-1">
+                            <Calendar className="w-3 h-3 text-slate-400" />
+                            {new Date(item.createdAt).toLocaleDateString('vi-VN')}
+                          </span>
+                        </div>
+
+                        {confirmDeleteAssignId === item.id ? (
+                          <div className="flex items-center gap-1 bg-rose-50 border border-rose-200 px-2 py-1 rounded-xl text-xs">
+                            <span className="text-rose-800 font-bold">Xóa?</span>
+                            <button
+                              onClick={() => handleDeleteAssignment(item.id)}
+                              className="px-2 py-0.5 bg-rose-600 text-white rounded-md font-bold hover:bg-rose-700"
+                            >
+                              Có
+                            </button>
+                            <button
+                              onClick={() => setConfirmDeleteAssignId(null)}
+                              className="px-1.5 py-0.5 text-slate-600 hover:text-slate-900 font-semibold"
+                            >
+                              Hủy
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setConfirmDeleteAssignId(item.id)}
+                            className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors"
+                            title="Xóa cấu hình bài tập lớp này"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+
+                      <h3 className="font-bold text-slate-900 text-base">{item.note}</h3>
+
+                      {/* Included Subjects */}
+                      <div className="mt-4">
+                        <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-2">
+                          Menu chủ đề mở cho Lớp {item.classCode} ({item.subjects.length} chủ đề):
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {item.subjects.map(sId => {
+                            const sub = SUBJECTS_MAP[sId];
+                            if (!sub) return null;
+                            return (
+                              <span
+                                key={sId}
+                                className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-700"
+                              >
+                                <span>{sub.emoji}</span>
+                                <span>{sub.name}</span>
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Submissions button */}
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                      <span className="text-xs text-slate-500">
+                        GV giao bài: <strong className="text-slate-700">{item.teacherName}</strong>
+                      </span>
+                      <button
+                        onClick={() => {
+                          setSelectedClassFilter(item.classCode);
+                          setShowResultsModal(true);
+                        }}
+                        className="text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors"
+                      >
+                        Xem điểm Lớp {item.classCode} →
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* TAB: SUBMISSIONS HISTORY */}
+      {activeTab === 'submissions' && (
+        <div className="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-sm space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div>
+              <h3 className="text-base font-extrabold text-slate-900">
+                Lịch Sử Điểm Số & Bài Nộp Của Học Sinh ({results.length} bài nộp)
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Tổng hợp kết quả thực tế của học sinh từ các máy tính trong phòng máy
+              </p>
+            </div>
+            {selectedClassFilter && (
+              <button
+                onClick={() => setSelectedClassFilter(null)}
+                className="px-2.5 py-1 text-xs bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-lg font-semibold"
+              >
+                Xóa lọc Lớp: {selectedClassFilter}
+              </button>
+            )}
+          </div>
+
+          {filteredResults.length === 0 ? (
+            <div className="py-12 text-center text-slate-400 text-xs">
+              Chưa có học sinh nào nộp bài tập.
+            </div>
+          ) : (
+            <div className="overflow-x-auto max-h-[500px]">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead className="sticky top-0 bg-slate-50 border-b border-slate-200">
+                  <tr className="text-slate-500 uppercase text-[10px] font-bold">
+                    <th className="py-2.5 px-4">Học sinh</th>
+                    <th className="py-2.5 px-4">Lớp</th>
+                    <th className="py-2.5 px-4">Chủ đề</th>
+                    <th className="py-2.5 px-4">Bài học</th>
+                    <th className="py-2.5 px-4 text-center">Điểm số</th>
+                    <th className="py-2.5 px-4 text-center">Độ chính xác</th>
+                    <th className="py-2.5 px-4 text-center">Thời gian</th>
+                    <th className="py-2.5 px-4 text-right">Thời điểm</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filteredResults.map(r => {
+                    const sub = SUBJECTS_MAP[r.subjectId];
+                    return (
+                      <tr key={r.id} className="hover:bg-slate-50/70">
+                        <td className="py-2.5 px-4 font-bold text-slate-900">
+                          {r.studentName}
+                        </td>
+                        <td className="py-2.5 px-4 text-slate-600">
+                          <span className="font-semibold text-blue-600">Lớp {r.classCode}</span>
+                        </td>
+                        <td className="py-2.5 px-4 text-slate-700">
+                          <span className="mr-1">{sub?.emoji}</span>
+                          <span>{sub?.name || r.subjectId}</span>
+                        </td>
+                        <td className="py-2.5 px-4 text-slate-600 max-w-[200px] truncate">
+                          {r.lessonTitle}
+                        </td>
+                        <td className="py-2.5 px-4 text-center">
+                          <span className={`px-2 py-0.5 rounded-md font-bold ${
+                            r.score >= 80 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                          }`}>
+                            {r.score} đ
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-4 text-center text-slate-700 font-semibold">
+                          {r.accuracy}%
+                        </td>
+                        <td className="py-2.5 px-4 text-center text-slate-500 font-mono">
+                          {Math.round(r.timeSpentSeconds || 0)}s
+                        </td>
+                        <td className="py-2.5 px-4 text-right text-slate-400 text-[11px]">
+                          {new Date(r.completedAt).toLocaleTimeString('vi-VN')} {new Date(r.completedAt).toLocaleDateString('vi-VN')}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* CREATE ASSIGNMENT MODAL */}
       {showModal && (
@@ -393,9 +615,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
           <div className="bg-white rounded-3xl max-w-2xl w-full p-6 md:p-8 shadow-2xl border border-slate-200 overflow-y-auto max-h-[90vh]">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-6">
               <div>
-                <h3 className="text-xl font-bold text-slate-900">Tạo Bài Tập Mới Cho Lớp</h3>
+                <h3 className="text-xl font-bold text-slate-900">Giao Bài Tập Theo Lớp</h3>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Chọn mã lớp và menu các trò chơi trong chương trình Kết Nối Tri Thức
+                  Chọn các chủ đề cho lớp học. Học sinh của lớp dùng Mã PIN cá nhân của mình để đăng nhập và làm bài.
                 </p>
               </div>
               <button
@@ -405,6 +627,13 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
                 <X className="w-5 h-5" />
               </button>
             </div>
+
+            {formError && (
+              <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                <span>{formError}</span>
+              </div>
+            )}
 
             <form onSubmit={handleCreateAssignment} className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -418,14 +647,16 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
                     placeholder="Ví dụ: 3A, 4B, 5C..."
                     value={classCode}
                     onChange={e => setClassCode(e.target.value.toUpperCase())}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none uppercase"
                   />
-                  <span className="text-[11px] text-slate-400 mt-1 block">Học sinh sẽ nhập đúng mã này</span>
+                  <span className="text-[11px] text-slate-400 mt-1 block">
+                    Áp dụng tự động cho toàn bộ học sinh thuộc lớp này
+                  </span>
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                    Ghi Chú / Tên Đợt Bài Tập
+                    Ghi Chú / Lời Dặn Cho Lớp
                   </label>
                   <input
                     type="text"
@@ -441,7 +672,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                    Soạn Menu Trò Chơi ({selectedSubjects.length} đã chọn)
+                    Chọn Chủ Đề Luyện Tập ({selectedSubjects.length} đã chọn)
                   </label>
                   <div className="flex items-center gap-2 text-xs">
                     <button
@@ -509,8 +740,8 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
                   type="submit"
                   className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-2"
                 >
-                  <KeyRound className="w-4 h-4" />
-                  <span>Tạo bài tập & Cấp mã PIN</span>
+                  <BookOpen className="w-4 h-4" />
+                  <span>Lưu bài tập cho lớp</span>
                 </button>
               </div>
             </form>
@@ -526,13 +757,13 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
               <div>
                 <h3 className="text-xl font-bold text-slate-900">Bảng Kết Quả Học Sinh Đã Luyện Tập</h3>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Thống kê kết quả nộp bài của học sinh theo mã PIN
+                  Thống kê kết quả nộp bài của học sinh theo lớp
                 </p>
               </div>
               <button
                 onClick={() => {
                   setShowResultsModal(false);
-                  setSelectedAssignmentFilter(null);
+                  setSelectedClassFilter(null);
                 }}
                 className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100"
               >
@@ -540,11 +771,11 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
               </button>
             </div>
 
-            {selectedAssignmentFilter && (
+            {selectedClassFilter && (
               <div className="mb-4 flex items-center justify-between p-2.5 bg-blue-50 text-blue-800 rounded-xl text-xs font-semibold">
-                <span>Đang lọc theo mã PIN: <strong>{selectedAssignmentFilter}</strong></span>
+                <span>Đang lọc theo: <strong>Lớp {selectedClassFilter}</strong></span>
                 <button
-                  onClick={() => setSelectedAssignmentFilter(null)}
+                  onClick={() => setSelectedClassFilter(null)}
                   className="text-blue-600 hover:underline"
                 >
                   Xem tất cả các lớp
@@ -554,7 +785,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
 
             {filteredResults.length === 0 ? (
               <div className="text-center py-12 text-slate-400 text-xs italic">
-                Chưa có học sinh nào nộp kết quả cho đợt bài này.
+                Chưa có học sinh nào nộp kết quả cho lớp này.
               </div>
             ) : (
               <div className="overflow-x-auto border border-slate-200 rounded-2xl">
@@ -562,7 +793,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
                   <thead>
                     <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold">
                       <th className="p-3">Học sinh</th>
-                      <th className="p-3">Lớp / PIN</th>
+                      <th className="p-3">Lớp</th>
                       <th className="p-3">Bài học</th>
                       <th className="p-3 text-center">Điểm</th>
                       <th className="p-3 text-center">Độ chính xác</th>
@@ -573,8 +804,8 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
                     {filteredResults.map(res => (
                       <tr key={res.id} className="border-b border-slate-100 hover:bg-slate-50">
                         <td className="p-3 font-bold text-slate-900">{res.studentName}</td>
-                        <td className="p-3 font-mono text-slate-600">
-                          {res.classCode} · {res.pin}
+                        <td className="p-3 font-bold text-blue-600">
+                          Lớp {res.classCode}
                         </td>
                         <td className="p-3 font-medium text-slate-700">
                           {res.lessonTitle}
@@ -599,7 +830,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
               <button
                 onClick={() => {
                   setShowResultsModal(false);
-                  setSelectedAssignmentFilter(null);
+                  setSelectedClassFilter(null);
                 }}
                 className="px-5 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl"
               >

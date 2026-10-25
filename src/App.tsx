@@ -5,6 +5,7 @@ import { initializeStorage } from './services/storage';
 import { AuthModal } from './components/AuthModal';
 import { TeacherDashboard } from './components/TeacherDashboard';
 import { StudentDashboard } from './components/StudentDashboard';
+import { HeroRobotCanvas } from './components/3d/HeroRobotCanvas';
 import {
   GraduationCap,
   Sparkles,
@@ -55,9 +56,9 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col text-slate-800">
+    <div className="min-h-screen bg-gradient-to-b from-sky-50/50 via-slate-50 to-indigo-50/40 flex flex-col text-slate-800">
       {/* Universal Top Bar Contract: 3 Zones with gap-8 */}
-      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200">
+      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-2xs">
         <div className="max-w-7xl mx-auto px-6 py-3.5 flex items-center justify-between gap-8">
           {/* Zone 1: Brand Wordmark (Single text element) */}
           <div
@@ -166,68 +167,97 @@ export default function App() {
         {/* VIEW: HOME SCREEN */}
         {view === 'home' && (
           <div className="space-y-16">
-            {/* Hero Section */}
-            <section className="text-center max-w-3xl mx-auto pt-6 space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 border border-blue-200 rounded-full text-xs font-bold text-blue-700 shadow-2xs">
-                <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-                <span>Chương trình Giáo dục phổ thông mới của Bộ Giáo dục & Đào tạo</span>
-              </div>
-
-              <h1 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight leading-tight">
-                Luyện Tin Học Tiểu Học <br />
-                <span className="text-blue-600">Bộ Sách Kết Nối Tri Thức</span>
-              </h1>
-
-              <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
-                Hệ thống thực hành trực tuyến dành cho học sinh tiểu học với 2 phân quyền Giáo viên và Học sinh, quản lý mã lớp, tạo mã PIN nhanh chóng và 10 trò chơi rèn luyện kỹ năng máy tính sinh động.
-              </p>
-
-              {/* Two Role Entrance Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-6 text-left">
-                {/* Teacher Card */}
-                <div
-                  onClick={() => handleStartRole('teacher')}
-                  className="bg-white p-7 rounded-3xl border-2 border-slate-200 hover:border-blue-500 hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between group"
-                >
-                  <div>
-                    <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-700 flex items-center justify-center text-3xl mb-4 group-hover:scale-105 transition-transform">
-                      👨‍🏫
-                    </div>
-                    <h3 className="text-xl font-black text-slate-900 group-hover:text-blue-600 transition-colors">
-                      Dành Cho Giáo Viên
-                    </h3>
-                    <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                      Đăng nhập tài khoản riêng, soạn menu bài tập tổng, phân bổ theo mã lớp (3A, 4B...), cấp mã PIN cho học sinh và theo dõi kết quả làm bài.
-                    </p>
-                  </div>
-
-                  <div className="pt-6 mt-6 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-blue-600">
-                    <span>Đăng nhập giáo viên</span>
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </div>
+            {/* 3D Immersive Hero Section */}
+            <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center pt-2">
+              {/* Left Column: Heading, Badges & Role Cards */}
+              <div className="lg:col-span-7 space-y-6 text-left">
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-gradient-to-r from-blue-50 via-indigo-50 to-teal-50 border border-blue-200/80 rounded-full text-xs font-bold text-blue-700 shadow-2xs">
+                  <Sparkles className="w-3.5 h-3.5 text-blue-600 animate-pulse-subtle" />
+                  <span>Chương trình GDPT 2018 · Bộ sách Kết Nối Tri Thức</span>
                 </div>
 
-                {/* Student Card */}
-                <div
-                  onClick={() => handleStartRole('student')}
-                  className="bg-gradient-to-br from-emerald-500 to-teal-700 text-white p-7 rounded-3xl shadow-lg hover:shadow-2xl hover:scale-[1.01] transition-all cursor-pointer flex flex-col justify-between group"
-                >
-                  <div>
-                    <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-xs text-white flex items-center justify-center text-3xl mb-4 group-hover:scale-105 transition-transform">
-                      👧👦
+                <h1 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight leading-[1.15]">
+                  Luyện Tin Học Tiểu Học <br />
+                  <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500 bg-clip-text text-transparent">
+                    Bộ Sách Kết Nối Tri Thức
+                  </span>
+                </h1>
+
+                <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl">
+                  Nền tảng thực hành trực quan dành cho học sinh tiểu học với 2 phân quyền Giáo viên - Học sinh, quản lý mã lớp, tạo mã PIN nhanh chóng và 10 trò chơi rèn luyện kỹ năng số toàn diện.
+                </p>
+
+                {/* Two Role Entrance Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                  {/* Teacher Card */}
+                  <div
+                    onClick={() => handleStartRole('teacher')}
+                    className="bg-white p-6 rounded-3xl border-2 border-slate-200 hover:border-blue-500 hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between group relative overflow-hidden"
+                  >
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-blue-100/40 to-transparent rounded-bl-full pointer-events-none" />
+                    <div>
+                      <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-700 flex items-center justify-center text-2xl mb-3 group-hover:scale-105 transition-transform shadow-2xs">
+                        👨‍🏫
+                      </div>
+                      <h3 className="text-lg font-black text-slate-900 group-hover:text-blue-600 transition-colors">
+                        Dành Cho Giáo Viên
+                      </h3>
+                      <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                        Đăng nhập tài khoản riêng, soạn menu bài tập, chia theo mã lớp (3A, 4B...), cấp mã PIN và xem kết quả.
+                      </p>
                     </div>
-                    <h3 className="text-xl font-black text-white">
-                      Dành Cho Học Sinh
-                    </h3>
-                    <p className="text-xs text-emerald-100 mt-2 leading-relaxed">
-                      Nhập Họ tên, Mã lớp và Mã PIN do thầy/cô cung cấp để mở khóa các bài tập được giao, rèn luyện gõ phím 10 ngón, luyện chuột và nhận sao thưởng.
-                    </p>
+
+                    <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-blue-600">
+                      <span>Đăng nhập giáo viên</span>
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </div>
                   </div>
 
-                  <div className="pt-6 mt-6 border-t border-white/20 flex items-center justify-between text-xs font-bold text-white">
-                    <span>Nhập mã PIN tham gia ngay</span>
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  {/* Student Card */}
+                  <div
+                    onClick={() => handleStartRole('student')}
+                    className="bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-600 text-white p-6 rounded-3xl shadow-lg hover:shadow-2xl hover:scale-[1.01] transition-all cursor-pointer flex flex-col justify-between group relative overflow-hidden"
+                  >
+                    <div className="absolute -bottom-6 -right-6 w-28 h-28 bg-white/10 rounded-full blur-sm pointer-events-none" />
+                    <div>
+                      <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xs text-white flex items-center justify-center text-2xl mb-3 group-hover:scale-105 transition-transform shadow-2xs">
+                        👧👦
+                      </div>
+                      <h3 className="text-lg font-black text-white">
+                        Dành Cho Học Sinh
+                      </h3>
+                      <p className="text-xs text-emerald-100 mt-1.5 leading-relaxed">
+                        Nhập Tên, Mã lớp và Mã PIN để mở bài tập, luyện gõ 10 ngón, luyện chuột và tích lũy sao thưởng.
+                      </p>
+                    </div>
+
+                    <div className="pt-4 mt-4 border-t border-white/20 flex items-center justify-between text-xs font-bold text-white">
+                      <span>Nhập mã PIN làm bài ngay</span>
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </div>
                   </div>
+                </div>
+              </div>
+
+              {/* Right Column: 3D Interactive Mascot Canvas */}
+              <div className="lg:col-span-5 flex flex-col items-center">
+                <div className="w-full bg-gradient-to-tr from-blue-50/90 via-indigo-50/70 to-teal-50/90 rounded-3xl border border-blue-200/80 p-4 shadow-xl relative overflow-hidden group">
+                  {/* Subtle decorative glowing background shapes */}
+                  <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-blue-400/20 via-teal-300/10 to-transparent rounded-full blur-2xl pointer-events-none" />
+                  <div className="absolute bottom-0 left-0 w-40 h-40 bg-gradient-to-tr from-indigo-400/20 to-transparent rounded-full blur-2xl pointer-events-none" />
+
+                  {/* Header info badge inside 3D frame */}
+                  <div className="flex items-center justify-between px-3 py-2 bg-white/85 backdrop-blur-xs rounded-2xl border border-slate-200/60 text-xs mb-1 shadow-2xs">
+                    <span className="font-bold text-slate-800 flex items-center gap-1.5">
+                      <span className="text-base">🤖</span> Chú Robot Tri Thức 3D
+                    </span>
+                    <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-lg text-[10px] font-bold">
+                      Tương tác 3D
+                    </span>
+                  </div>
+
+                  {/* Three.js Canvas */}
+                  <HeroRobotCanvas />
                 </div>
               </div>
             </section>

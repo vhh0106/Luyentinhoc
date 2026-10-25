@@ -1,0 +1,104 @@
+{
+  "entities": {
+    "Assignment": {
+      "title": "Assignment",
+      "description": "Teacher assignment for a classroom",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique assignment identifier" },
+        "classCode": { "type": "string", "description": "Class code such as 3A or 4B" },
+        "pin": { "type": "string", "description": "Optional legacy PIN code" },
+        "subjects": { "type": "array", "description": "List of subject IDs" },
+        "teacherName": { "type": "string", "description": "Name of the teacher" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" },
+        "note": { "type": "string", "description": "Teacher's instruction or note" }
+      },
+      "required": ["id", "classCode", "subjects", "createdAt"]
+    },
+    "StudentAccount": {
+      "title": "StudentAccount",
+      "description": "Student account by class with personal login PIN",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique student identifier" },
+        "studentName": { "type": "string", "description": "Full name of the student" },
+        "classCode": { "type": "string", "description": "Class code" },
+        "studentCode": { "type": "string", "description": "Student roll number or ID code" },
+        "gender": { "type": "string", "description": "Gender: Nam / Nu / Khac" },
+        "pin": { "type": "string", "description": "Student personal login PIN" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" },
+        "note": { "type": "string", "description": "Teacher note" }
+      },
+      "required": ["id", "studentName", "classCode", "pin", "createdAt"]
+    },
+    "ExerciseResult": {
+      "title": "ExerciseResult",
+      "description": "Student exercise result record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique result identifier" },
+        "studentName": { "type": "string", "description": "Full name of the student" },
+        "classCode": { "type": "string", "description": "Class code" },
+        "pin": { "type": "string", "description": "Student PIN code" },
+        "subjectId": { "type": "string", "description": "Subject identifier" },
+        "lessonId": { "type": "string", "description": "Lesson identifier" },
+        "lessonTitle": { "type": "string", "description": "Lesson title" },
+        "score": { "type": "number", "description": "Score achieved (0-100)" },
+        "accuracy": { "type": "number", "description": "Accuracy percentage (0-100)" },
+        "timeSpentSeconds": { "type": "number", "description": "Time spent in seconds" },
+        "completedAt": { "type": "string", "description": "Completion ISO timestamp" }
+      },
+      "required": ["id", "studentName", "classCode", "subjectId", "lessonId", "score", "accuracy", "completedAt"]
+    },
+    "StudentAchievement": {
+      "title": "StudentAchievement",
+      "description": "Student unlocked achievement badge record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique achievement record identifier" },
+        "studentName": { "type": "string", "description": "Full name of the student" },
+        "classCode": { "type": "string", "description": "Class code" },
+        "achievementId": { "type": "string", "description": "Achievement badge identifier" },
+        "unlockedAt": { "type": "string", "description": "Unlock ISO timestamp" }
+      },
+      "required": ["id", "studentName", "classCode", "achievementId", "unlockedAt"]
+    },
+    "TeacherAccount": {
+      "title": "TeacherAccount",
+      "description": "Admin and Teacher account with credentials and role",
+      "type": "object",
+      "properties": {
+        "username": { "type": "string", "description": "Teacher login username" },
+        "password": { "type": "string", "description": "Teacher login password" },
+        "name": { "type": "string", "description": "Teacher display name" },
+        "role": { "type": "string", "enum": ["admin", "teacher"], "description": "Account role" },
+        "school": { "type": "string", "description": "School name" },
+        "assignedClasses": { "type": "array", "description": "Classes assigned to this teacher" },
+        "createdAt": { "type": "string", "description": "Registration ISO timestamp" }
+      },
+      "required": ["username", "password", "name", "role", "school", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/assignments/{assignmentId}": {
+      "schema": "Assignment",
+      "description": "Class curriculum assignments created by teachers"
+    },
+    "/students/{studentId}": {
+      "schema": "StudentAccount",
+      "description": "Student accounts organized by classroom"
+    },
+    "/results/{resultId}": {
+      "schema": "ExerciseResult",
+      "description": "Exercise results submitted by students"
+    },
+    "/achievements/{recordId}": {
+      "schema": "StudentAchievement",
+      "description": "Digital achievement badges earned by students"
+    },
+    "/teachers/{username}": {
+      "schema": "TeacherAccount",
+      "description": "Admin and teacher accounts"
+    }
+  }
+}

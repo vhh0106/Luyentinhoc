@@ -157,3 +157,12 @@ Nền tảng trực tuyến luyện tập và thực hành Tin học dành cho h
    - Dashboard Giáo viên: Tạo bài tập, chọn môn trong menu tổng, quản lý danh sách mã PIN và lớp học.
    - Dashboard Học sinh: Xem các môn được giáo viên phân công, bấm vào học và làm bài tập.
 6. **Kiểm tra và biên dịch**: Chạy `compile_applet` để xác thực toàn bộ hệ thống hoạt động hoàn hảo không lỗi cú pháp hay thiếu import.
+7. **Bảng Tiến Độ Học Tập Trực Quan (Progress Dashboard)**:
+   - Tích hợp thư viện `recharts` với biểu đồ tròn RadialBar và Donut PieChart đa tầng.
+   - Hiển thị tỷ lệ hoàn thành 10 môn học, tổng số bài học, điểm số chính xác và các mốc huy hiệu đạt được.
+   - Thẻ hiển thị từng môn học tích hợp vòng tròn SVG Circular Progress Ring sắc nét.
+8. **Hệ Thống Huy Hiệu Kỹ Thuật Số (Achievement System)**:
+   - 33 danh hiệu số vinh danh chia thành 4 cấp độ: Đồng (🥉), Bạc (🥈), Vàng (🥇), Kim Cương (💎).
+   - Bộ huy hiệu chuyên biệt cho từng môn trong 10 môn học: "Typing Master" (Gõ phím), "Logic Genius" (Thuật toán), "Digital Citizen" (Công dân số), "Bút Son Tiếng Việt", "Xạ Thủ Chuột Siêu Tốc", "Chuyên Gia Máy Tính IC3", "Bậc Thầy Word", "Thần Đồng Tính Toán Excel", "Phù Thủy Thuyết Trình PowerPoint", "Nhà Phát Minh Tương Lai AI".
+   - Popup chúc mừng hiệu ứng pháo hoa canvas (Confetti) và âm thanh kèn trumpet (Web Audio API) khi mở khóa thành tích mới trong thời gian thực.
+   - Bảng vàng danh dự `AchievementShowcaseModal` cho phép học sinh tra cứu, lọc theo môn học/trạng thái và xem chi tiết tiêu chí đạt được.

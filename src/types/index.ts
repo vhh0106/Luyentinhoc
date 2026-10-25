@@ -54,9 +54,23 @@ export interface MazeConfig {
 
 export interface TeacherAccount {
   username: string;
+  password?: string;
   name: string;
+  role?: 'admin' | 'teacher';
   school?: string;
+  assignedClasses?: string[];
   createdAt: string;
+}
+
+export interface StudentAccount {
+  id: string;
+  studentName: string;
+  classCode: string;
+  studentCode?: string;
+  gender?: 'Nam' | 'Nữ' | 'Khác';
+  pin?: string;
+  createdAt: string;
+  note?: string;
 }
 
 export interface Assignment {
@@ -71,6 +85,7 @@ export interface Assignment {
 
 export interface StudentSession {
   name: string;
+  studentCode?: string;
   classCode: string;
   pin: string;
   assignment: Assignment;
@@ -88,4 +103,31 @@ export interface ExerciseResult {
   accuracy: number;
   timeSpentSeconds: number;
   completedAt: string;
+}
+
+export type BadgeTier = 'bronze' | 'silver' | 'gold' | 'diamond';
+
+export interface Achievement {
+  id: string;
+  title: string;
+  subjectId: SubjectId | 'all';
+  tier: BadgeTier;
+  icon: string;
+  description: string;
+  criteriaDescription: string;
+  targetCount: number;
+  minAccuracy?: number;
+  checkUnlocked: (context: {
+    completedLessonIds: string[];
+    results: ExerciseResult[];
+  }) => {
+    isUnlocked: boolean;
+    currentProgress: number;
+    targetProgress: number;
+  };
+}
+
+export interface StudentAchievementRecord {
+  achievementId: string;
+  unlockedAt: string;
 }

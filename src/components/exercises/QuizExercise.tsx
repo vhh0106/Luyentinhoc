@@ -61,7 +61,7 @@ export const QuizExercise: React.FC<QuizExerciseProps> = ({
       setIsFinished(true);
       soundService.playSuccessCelebration();
       const finalAccuracy = Math.round((correctCount / questions.length) * 100);
-      onComplete(100, finalAccuracy, 40);
+      onComplete(finalAccuracy, finalAccuracy, 40);
     }
   };
 

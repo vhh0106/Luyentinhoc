@@ -180,6 +180,36 @@ class SoundService {
     osc.start();
     osc.stop(this.ctx.currentTime + 0.05);
   }
+
+  public playBadgeUnlock() {
+    if (this.isMuted) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    // Majestic trumpet-like fanfare: C5, E5, G5, high C6 chord burst
+    const notes = [
+      { freq: 523.25, time: 0.0, dur: 0.12 },
+      { freq: 659.25, time: 0.12, dur: 0.12 },
+      { freq: 783.99, time: 0.24, dur: 0.15 },
+      { freq: 1046.5, time: 0.40, dur: 0.45 },
+      { freq: 1318.51, time: 0.44, dur: 0.45 },
+    ];
+
+    notes.forEach(({ freq, time, dur }) => {
+      if (!this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, this.ctx.currentTime + time);
+      gain.gain.setValueAtTime(0.15, this.ctx.currentTime + time);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + time + dur);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(this.ctx.currentTime + time);
+      osc.stop(this.ctx.currentTime + time + dur);
+    });
+  }
 }
 
 export const soundService = new SoundService();
