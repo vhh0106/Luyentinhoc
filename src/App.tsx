@@ -377,7 +377,7 @@ export default function App() {
             <button onClick={() => handleStartRole('student')} className="hover:text-slate-800">
               Cổng Học Sinh
             </button>
-            <span>Bản quyền nội dung © 2026</span>
+            <span>Được tạo bởi Vũ Hoàng Hiệp</span>
           </div>
         </div>
       </footer>
