@@ -28,10 +28,10 @@ import {
   Home,
   Mail,
   Phone,
-  Facebook,
   MessageSquareHeart,
   MessageSquarePlus
 } from 'lucide-react';
+import { FacebookIcon } from './components/common/FacebookIcon';
 
 export default function App() {
   const [view, setView] = useState<'home' | 'login' | 'teacher_dash' | 'student_dash' | 'arcade'>('home');
@@ -774,7 +774,7 @@ export default function App() {
                 className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 shadow-2xs transition-all cursor-pointer"
                 title="Trang Facebook cá nhân Vũ Hoàng Hiệp"
               >
-                <Facebook className="w-4 h-4 text-blue-600" />
+                <FacebookIcon className="w-4 h-4 text-blue-600" />
                 <span>Facebook</span>
               </a>
 

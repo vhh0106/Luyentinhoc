@@ -3,7 +3,6 @@ import {
   X,
   Mail,
   Phone,
-  Facebook,
   Send,
   Star,
   CheckCircle2,
@@ -13,6 +12,7 @@ import {
   ExternalLink,
   Heart
 } from 'lucide-react';
+import { FacebookIcon } from './FacebookIcon';
 
 import { UserFeedback } from '../../types';
 import { saveFeedback, getFeedbacks, subscribeToFeedbacks } from '../../services/storage';
@@ -207,7 +207,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
               <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 shadow-2xs flex flex-col justify-between">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-                    <Facebook className="w-4 h-4" />
+                    <FacebookIcon className="w-4 h-4" />
                   </div>
                   <div>
                     <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Facebook</div>
