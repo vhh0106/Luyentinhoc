@@ -145,3 +145,20 @@ export interface StudentAchievementRecord {
   achievementId: string;
   unlockedAt: string;
 }
+
+export type FeedbackStatus = 'pending' | 'in_progress' | 'resolved';
+
+export interface UserFeedback {
+  id: string;
+  name: string;
+  role: 'student' | 'teacher' | 'parent' | 'other';
+  contact?: string;
+  category: string;
+  rating: number;
+  message: string;
+  status: FeedbackStatus;
+  adminResponse?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+

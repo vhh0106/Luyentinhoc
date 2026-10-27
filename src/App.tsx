@@ -13,6 +13,7 @@ import {
   ARCADE_GAMES_CATALOG,
   ArcadeGameId
 } from './components/games/ArcadeGameCenter';
+import { FeedbackModal } from './components/common/FeedbackModal';
 import {
   ArrowRight,
   ArrowLeft,
@@ -24,7 +25,12 @@ import {
   ChevronDown,
   LogOut,
   LayoutDashboard,
-  Home
+  Home,
+  Mail,
+  Phone,
+  Facebook,
+  MessageSquareHeart,
+  MessageSquarePlus
 } from 'lucide-react';
 
 export default function App() {
@@ -34,6 +40,7 @@ export default function App() {
   const [currentStudent, setCurrentStudent] = useState<StudentSession | null>(null);
   const [selectedArcadeGame, setSelectedArcadeGame] = useState<ArcadeGameId>('space-typing');
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
   useEffect(() => {
     initializeStorage();
@@ -154,13 +161,24 @@ export default function App() {
             <button
               type="button"
               onClick={() => setView('home')}
-              className="text-lg font-black tracking-tight text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              className="flex items-center gap-2.5 group cursor-pointer text-left shrink-0"
+              title="KidTech — Hướng đến kỹ năng công nghệ cho trẻ"
             >
-              Tin Học Tiểu Học
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-black text-sm shadow-sm group-hover:scale-105 transition-transform">
+                🚀
+              </div>
+              <div className="flex flex-col">
+                <span className="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-none">
+                  KidTech
+                </span>
+                <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 hidden sm:inline leading-tight mt-0.5">
+                  Hướng đến kỹ năng công nghệ cho trẻ
+                </span>
+              </div>
             </button>
           </div>
 
-          {/* Zone 2: 5 Concise Single-Line Navigation Links */}
+          {/* Zone 2: Navigation Links */}
           <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold text-slate-600 dark:text-slate-300">
             <button
               type="button"
@@ -206,7 +224,8 @@ export default function App() {
           </nav>
 
           {/* Zone 3: Theme Switcher & User Profile Dropdown (or Primary Login Action) */}
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+
             <ThemeToggleButton />
 
             {currentStudent && view !== 'teacher_dash' ? (
@@ -423,15 +442,15 @@ export default function App() {
               {/* Left Column: Heading, Unboxed Kicker & Role Cards */}
               <div className="lg:col-span-7 flex flex-col justify-between space-y-6 text-left">
                 <div className="space-y-4">
-                  <div className="text-xs font-bold text-blue-700 dark:text-blue-400 tracking-wide">
-                    Chương trình GDPT 2018 · Bộ sách Kết Nối Tri Thức với Cuộc Sống · Lớp 3, 4, 5
+                  <div className="text-xs font-bold text-blue-700 dark:text-blue-400 tracking-wide uppercase">
+                    KidTech · Hướng đến kỹ năng công nghệ cho trẻ · Bộ sách Kết Nối Tri Thức
                   </div>
 
                   <h1
                     className="text-3xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.14]"
                     style={{ textWrap: 'balance' }}
                   >
-                    Học & Chơi Tin Học Tiểu Học Trực Quan, Sinh Động
+                    KidTech — Hướng Đến Kỹ Năng Công Nghệ Cho Trẻ
                   </h1>
 
                   <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl">
@@ -709,40 +728,117 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white/85 dark:bg-slate-900/85 border-t border-slate-200/80 dark:border-slate-800/80 mt-16 py-8 relative z-10 transition-colors">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-slate-700 dark:text-slate-200">Tin Học Tiểu Học</span>
-            <span>·</span>
-            <span>Bộ sách Kết Nối Tri Thức với Cuộc Sống</span>
+      <footer className="bg-white/90 dark:bg-slate-900/90 border-t border-slate-200/80 dark:border-slate-800/80 mt-16 pt-10 pb-8 relative z-10 transition-colors">
+        <div className="max-w-7xl mx-auto px-6 space-y-8">
+          {/* Contact & Feedback Highlight Box in Footer */}
+          <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-sky-50 dark:from-slate-800/90 dark:via-blue-950/40 dark:to-slate-800/90 rounded-3xl p-6 sm:p-8 border border-blue-200/80 dark:border-slate-700/80 flex flex-col lg:flex-row items-center justify-between gap-6 shadow-xs">
+            <div className="space-y-2 text-center lg:text-left">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-300 text-xs font-bold">
+                <MessageSquareHeart className="w-3.5 h-3.5 text-rose-500" />
+                <span>Liên hệ & Hòm thư góp ý</span>
+              </div>
+              <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
+                Bạn có ý kiến đóng góp hoặc cần hỗ trợ về phần mềm?
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-xl">
+                Thầy Vũ Hoàng Hiệp luôn lắng nghe mọi đóng góp từ quý thầy cô, phụ huynh và các em học sinh để liên tục nâng cấp bài học, giao diện và trò chơi.
+              </p>
+            </div>
+
+            {/* Quick Contact Chips & Open Feedback Form */}
+            <div className="flex flex-wrap items-center justify-center gap-3 shrink-0">
+              <a
+                href="mailto:vhh0106@gmail.com"
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 shadow-2xs transition-all cursor-pointer"
+                title="Gửi email cho thầy Hiệp"
+              >
+                <Mail className="w-4 h-4 text-rose-500" />
+                <span>vhh0106@gmail.com</span>
+              </a>
+
+              <a
+                href="https://zalo.me/0348554851"
+                target="_blank"
+                rel="noreferrer noopener"
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-300 shadow-2xs transition-all cursor-pointer"
+                title="Chat Zalo hoặc gọi 034 855 4851"
+              >
+                <Phone className="w-4 h-4 text-emerald-500" />
+                <span>034 855 4851 (Zalo)</span>
+              </a>
+
+              <a
+                href="https://www.facebook.com/vhh0106"
+                target="_blank"
+                rel="noreferrer noopener"
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 shadow-2xs transition-all cursor-pointer"
+                title="Trang Facebook cá nhân Vũ Hoàng Hiệp"
+              >
+                <Facebook className="w-4 h-4 text-blue-600" />
+                <span>Facebook</span>
+              </a>
+
+              <button
+                type="button"
+                onClick={() => setShowFeedbackModal(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold shadow-md hover:shadow-lg active:scale-95 transition-all cursor-pointer"
+              >
+                <MessageSquarePlus className="w-4 h-4" />
+                <span>Điền Form Góp Ý</span>
+              </button>
+            </div>
           </div>
 
-          <div className="flex items-center gap-6">
-            <button
-              type="button"
-              onClick={() => handleLaunchArcade('space-typing')}
-              className="hover:text-slate-800 dark:hover:text-white transition-colors"
-            >
-              Trò Chơi Tin Học
-            </button>
-            <button
-              type="button"
-              onClick={() => handleStartRole('teacher')}
-              className="hover:text-slate-800 dark:hover:text-white transition-colors"
-            >
-              Cổng Giáo Viên
-            </button>
-            <button
-              type="button"
-              onClick={() => handleStartRole('student')}
-              className="hover:text-slate-800 dark:hover:text-white transition-colors"
-            >
-              Cổng Học Sinh
-            </button>
-            <span>Được tạo bởi Vũ Hoàng Hiệp</span>
+          {/* Bottom Bar */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200/60 dark:border-slate-800/60">
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-slate-700 dark:text-slate-200">KidTech — Hướng đến kỹ năng công nghệ cho trẻ</span>
+              <span>·</span>
+              <span>Bộ sách Kết Nối Tri Thức với Cuộc Sống</span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+              <button
+                type="button"
+                onClick={() => handleLaunchArcade('space-typing')}
+                className="hover:text-slate-800 dark:hover:text-white transition-colors cursor-pointer"
+              >
+                Trò Chơi Tin Học
+              </button>
+              <button
+                type="button"
+                onClick={() => handleStartRole('teacher')}
+                className="hover:text-slate-800 dark:hover:text-white transition-colors cursor-pointer"
+              >
+                Cổng Giáo Viên
+              </button>
+              <button
+                type="button"
+                onClick={() => handleStartRole('student')}
+                className="hover:text-slate-800 dark:hover:text-white transition-colors cursor-pointer"
+              >
+                Cổng Học Sinh
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowFeedbackModal(true)}
+                className="text-blue-600 dark:text-blue-400 hover:underline font-bold transition-colors cursor-pointer"
+              >
+                Gửi góp ý
+              </button>
+              <span>Tác giả: Vũ Hoàng Hiệp</span>
+            </div>
           </div>
         </div>
       </footer>
+
+      {/* Global Feedback & Contact Modal */}
+      <FeedbackModal
+        isOpen={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+        defaultRole={currentTeacher ? 'teacher' : currentStudent ? 'student' : 'student'}
+        defaultName={currentTeacher?.name || currentStudent?.name || ''}
+      />
     </div>
   );
 }

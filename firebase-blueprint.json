@@ -77,6 +77,25 @@
         "createdAt": { "type": "string", "description": "Registration ISO timestamp" }
       },
       "required": ["username", "password", "name", "role", "school", "createdAt"]
+    },
+    "Feedback": {
+      "title": "Feedback",
+      "description": "User feedback, suggestions, and issue reports submitted via the feedback form",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique feedback ID" },
+        "name": { "type": "string", "description": "Name of the submitter" },
+        "role": { "type": "string", "enum": ["student", "teacher", "parent", "other"], "description": "Role of the submitter" },
+        "contact": { "type": "string", "description": "Contact info such as phone number or email" },
+        "category": { "type": "string", "description": "Topic or category of feedback" },
+        "rating": { "type": "number", "description": "Satisfaction rating from 1 to 5" },
+        "message": { "type": "string", "description": "Feedback message text" },
+        "status": { "type": "string", "enum": ["pending", "in_progress", "resolved"], "description": "Processing state" },
+        "adminResponse": { "type": "string", "description": "Resolution notes or teacher reply" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "description": "Last update timestamp" }
+      },
+      "required": ["id", "name", "role", "category", "rating", "message", "createdAt"]
     }
   },
   "firestore": {
@@ -99,6 +118,10 @@
     "/teachers/{username}": {
       "schema": "TeacherAccount",
       "description": "Admin and teacher accounts"
+    },
+    "/feedbacks/{feedbackId}": {
+      "schema": "Feedback",
+      "description": "User feedback, bug reports, and suggestions"
     }
   }
 }

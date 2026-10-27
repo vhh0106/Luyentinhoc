@@ -1,4 +1,4 @@
-import { Assignment, ExerciseResult, SubjectId, TeacherAccount, StudentAccount, ClassRecord } from '../types';
+import { Assignment, ExerciseResult, SubjectId, TeacherAccount, StudentAccount, ClassRecord, UserFeedback } from '../types';
 import { db } from './firebase';
 import {
   collection,
@@ -23,6 +23,7 @@ const STORAGE_KEYS = {
   DELETED_ASSIGNMENT_IDS: 'tinhoc_deleted_assignment_ids_v1',
   DELETED_STUDENT_IDS: 'tinhoc_deleted_student_ids_v1',
   DELETED_CLASS_CODES: 'tinhoc_deleted_class_codes_v1',
+  FEEDBACKS: 'tinhoc_feedbacks_v1',
 };
 
 export function getDeletedAssignmentIds(): Set<string> {
@@ -1135,6 +1136,7 @@ export async function syncAllWithCloud(): Promise<{
   classesCount: number;
   assignmentsCount: number;
   teachersCount: number;
+  feedbacksCount?: number;
 }> {
   try {
     // 1. Fetch Cloud collections
@@ -1201,13 +1203,14 @@ export async function syncAllWithCloud(): Promise<{
     }
 
     // 6. Now pull all latest data down to refresh local cache
-    const [finalTeachers, finalAssignments, finalStudents, finalClasses, finalResults] =
+    const [finalTeachers, finalAssignments, finalStudents, finalClasses, finalResults, finalFeedbacks] =
       await Promise.all([
         fetchTeachersFromCloud(),
         fetchAssignmentsFromCloud(),
         fetchStudentsFromCloud(),
         fetchClassesFromCloud(),
-        fetchAllResultsFromCloud()
+        fetchAllResultsFromCloud(),
+        fetchFeedbacksFromCloud()
       ]);
 
     return {
@@ -1215,7 +1218,8 @@ export async function syncAllWithCloud(): Promise<{
       studentsCount: finalStudents.length,
       classesCount: finalClasses.length,
       assignmentsCount: finalAssignments.length,
-      teachersCount: finalTeachers.length
+      teachersCount: finalTeachers.length,
+      feedbacksCount: finalFeedbacks.length
     };
   } catch (err) {
     console.warn('[Sync] syncAllWithCloud error:', err);
@@ -1224,9 +1228,164 @@ export async function syncAllWithCloud(): Promise<{
       studentsCount: getStudents().length,
       classesCount: getClasses().length,
       assignmentsCount: getAssignments().length,
-      teachersCount: getTeachers().length
+      teachersCount: getTeachers().length,
+      feedbacksCount: getFeedbacks().length
     };
   }
 }
+
+// ==========================================
+// FEEDBACKS CRUD & REAL-TIME FIRESTORE SYNC
+// ==========================================
+
+export function getFeedbacks(): UserFeedback[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = safeGetItem(STORAGE_KEYS.FEEDBACKS);
+    if (!raw) return [];
+    const list: UserFeedback[] = JSON.parse(raw);
+    return Array.isArray(list) ? list : [];
+  } catch (e) {
+    console.error('Failed to parse feedbacks from local storage:', e);
+    return [];
+  }
+}
+
+export async function fetchFeedbacksFromCloud(): Promise<UserFeedback[]> {
+  try {
+    const colRef = collection(db, 'feedbacks');
+    const snapshot = await getDocs(colRef);
+    const cloudFeedbacks: UserFeedback[] = [];
+    snapshot.forEach(docSnap => {
+      const data = docSnap.data() as UserFeedback;
+      if (data && data.id) {
+        cloudFeedbacks.push(data);
+      }
+    });
+
+    // Sort descending by createdAt
+    cloudFeedbacks.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    // Merge with local storage
+    if (typeof window !== 'undefined') {
+      const local = getFeedbacks();
+      const map = new Map<string, UserFeedback>();
+      local.forEach(f => map.set(f.id, f));
+      cloudFeedbacks.forEach(f => map.set(f.id, f));
+      const merged = Array.from(map.values()).sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      safeSetItem(STORAGE_KEYS.FEEDBACKS, JSON.stringify(merged));
+      return merged;
+    }
+
+    return cloudFeedbacks;
+  } catch (e) {
+    console.warn('[Firestore] fetchFeedbacksFromCloud error:', e);
+    return getFeedbacks();
+  }
+}
+
+export async function saveFeedback(feedback: UserFeedback): Promise<void> {
+  const safeId = (feedback.id || `fb_${Date.now()}`).replace(/[^a-zA-Z0-9_\-]/g, '_');
+  const normalizedFeedback: UserFeedback = {
+    ...feedback,
+    id: safeId,
+    status: feedback.status || 'pending',
+    createdAt: feedback.createdAt || new Date().toISOString()
+  };
+
+  // 1. Optimistic save to Local Storage immediately
+  const local = getFeedbacks();
+  const filtered = local.filter(f => f.id !== safeId);
+  const updated = [normalizedFeedback, ...filtered];
+  safeSetItem(STORAGE_KEYS.FEEDBACKS, JSON.stringify(updated));
+
+  // 2. Push to Firestore
+  try {
+    const docRef = doc(db, 'feedbacks', safeId);
+    await setDoc(docRef, normalizedFeedback);
+  } catch (err) {
+    console.warn('[Firestore] Error saving feedback to cloud:', err);
+  }
+}
+
+export async function updateFeedback(id: string, updates: Partial<UserFeedback>): Promise<void> {
+  const safeId = id.replace(/[^a-zA-Z0-9_\-]/g, '_');
+  const local = getFeedbacks();
+  const existing = local.find(f => f.id === safeId);
+  if (!existing) return;
+
+  const updatedFeedback: UserFeedback = {
+    ...existing,
+    ...updates,
+    updatedAt: new Date().toISOString()
+  };
+
+  // 1. Local storage update
+  const newLocal = local.map(f => (f.id === safeId ? updatedFeedback : f));
+  safeSetItem(STORAGE_KEYS.FEEDBACKS, JSON.stringify(newLocal));
+
+  // 2. Cloud update
+  try {
+    const docRef = doc(db, 'feedbacks', safeId);
+    await setDoc(docRef, updatedFeedback, { merge: true });
+  } catch (err) {
+    console.warn('[Firestore] updateFeedback cloud error:', err);
+  }
+}
+
+export async function deleteFeedback(id: string): Promise<void> {
+  const safeId = id.replace(/[^a-zA-Z0-9_\-]/g, '_');
+
+  // 1. Remove from local storage
+  const local = getFeedbacks();
+  const filtered = local.filter(f => f.id !== safeId);
+  safeSetItem(STORAGE_KEYS.FEEDBACKS, JSON.stringify(filtered));
+
+  // 2. Remove from Firestore
+  try {
+    const docRef = doc(db, 'feedbacks', safeId);
+    await deleteDoc(docRef);
+  } catch (err) {
+    console.warn('[Firestore] deleteFeedback cloud error:', err);
+  }
+}
+
+export function subscribeToFeedbacks(callback: (feedbacks: UserFeedback[]) => void): () => void {
+  try {
+    const colRef = collection(db, 'feedbacks');
+    return onSnapshot(
+      colRef,
+      snapshot => {
+        const cloudFeedbacks: UserFeedback[] = [];
+        snapshot.forEach(docSnap => {
+          const d = docSnap.data() as UserFeedback;
+          if (d && d.id) cloudFeedbacks.push(d);
+        });
+
+        // Merge with local items in case of offline writes
+        const local = getFeedbacks();
+        const map = new Map<string, UserFeedback>();
+        local.forEach(f => map.set(f.id, f));
+        cloudFeedbacks.forEach(f => map.set(f.id, f));
+        const merged = Array.from(map.values()).sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
+        if (typeof window !== 'undefined') {
+          safeSetItem(STORAGE_KEYS.FEEDBACKS, JSON.stringify(merged));
+        }
+
+        callback(merged);
+      },
+      err => console.warn('[Firestore] subscribeToFeedbacks error:', err)
+    );
+  } catch (e) {
+    console.warn('[Firestore] subscribeToFeedbacks setup error:', e);
+    return () => {};
+  }
+}
+
 
 

@@ -276,29 +276,7 @@ export const StudentProgressChart: React.FC<StudentProgressChartProps> = ({
             </button>
           </div>
 
-          {/* Quick Actions: Leaderboard & Badges */}
-          <div className="flex items-center gap-2">
-            {onOpenLeaderboard && (
-              <button
-                onClick={onOpenLeaderboard}
-                className="px-3 py-1.5 rounded-xl font-black bg-amber-400 hover:bg-amber-300 text-amber-950 transition-all flex items-center gap-1.5 shadow-2xs"
-                title="Xem Bảng Vàng Lớp Học tích lũy sao"
-              >
-                <Medal className="w-3.5 h-3.5" />
-                <span>Bảng Vàng Lớp ⭐</span>
-              </button>
-            )}
-            {onOpenAchievements && (
-              <button
-                onClick={onOpenAchievements}
-                className="px-3 py-1.5 rounded-xl font-bold bg-white/20 hover:bg-white/30 text-white transition-all flex items-center gap-1.5"
-                title="Xem kho huy hiệu"
-              >
-                <Trophy className="w-3.5 h-3.5 text-amber-300" />
-                <span>Kho Huy Hiệu</span>
-              </button>
-            )}
-          </div>
+
         </div>
       </div>
 

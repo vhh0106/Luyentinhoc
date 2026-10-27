@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Assignment, ExerciseResult, SubjectId, TeacherAccount, StudentAccount, ClassRecord } from '../types';
+import { Assignment, ExerciseResult, SubjectId, TeacherAccount, StudentAccount, ClassRecord, UserFeedback } from '../types';
 import { SUBJECTS_MAP } from '../data/curriculum';
 import {
   getAssignments,
@@ -21,6 +21,8 @@ import {
   subscribeToStudents,
   subscribeToAssignments,
   subscribeToTeachers,
+  getFeedbacks,
+  subscribeToFeedbacks,
   syncAllWithCloud
 } from '../services/storage';
 import {
@@ -41,11 +43,13 @@ import {
   RefreshCw,
   CloudCheck,
   ArrowLeft,
-  ChevronDown
+  ChevronDown,
+  MessageSquare
 } from 'lucide-react';
 import { ClassPerformanceAnalytics } from './dashboard/ClassPerformanceAnalytics';
 import { StudentManagement } from './dashboard/StudentManagement';
 import { TeacherManagement } from './dashboard/TeacherManagement';
+import { FeedbackManagement } from './dashboard/FeedbackManagement';
 import { ThemeToggleButton } from './common/ThemeToggleButton';
 
 interface TeacherDashboardProps {
@@ -58,13 +62,14 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
   const isAdmin = teacher.role === 'admin' || teacher.username.toLowerCase() === 'admin';
 
   const [activeTab, setActiveTab] = useState<
-    'teachers' | 'students' | 'assignments' | 'performance' | 'submissions'
+    'teachers' | 'students' | 'assignments' | 'performance' | 'submissions' | 'feedbacks'
   >('students');
   const [teachersList, setTeachersList] = useState<TeacherAccount[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [students, setStudents] = useState<StudentAccount[]>([]);
   const [results, setResults] = useState<ExerciseResult[]>([]);
   const [classesList, setClassesList] = useState<ClassRecord[]>(() => getClasses());
+  const [feedbacks, setFeedbacks] = useState<UserFeedback[]>(() => getFeedbacks());
   const [showModal, setShowModal] = useState(false);
   const [showResultsModal, setShowResultsModal] = useState(false);
   const [selectedClassFilter, setSelectedClassFilter] = useState<string | null>(null);
@@ -93,6 +98,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
     const unsubAssignments = subscribeToAssignments(live => setAssignments(live));
     const unsubClasses = subscribeToClasses(live => setClassesList(live));
     const unsubTeachers = subscribeToTeachers(live => setTeachersList(live));
+    const unsubFeedbacks = subscribeToFeedbacks(live => setFeedbacks(live));
 
     return () => {
       unsubResults();
@@ -100,6 +106,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
       unsubAssignments();
       unsubClasses();
       unsubTeachers();
+      unsubFeedbacks();
     };
   }, []);
 
@@ -109,6 +116,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
     setStudents(getStudents());
     setResults(getResults());
     setClassesList(getClasses());
+    setFeedbacks(getFeedbacks());
     setIsCloudSyncing(true);
     try {
       await syncAllWithCloud();
@@ -117,6 +125,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
       setStudents(getStudents());
       setResults(getResults());
       setClassesList(getClasses());
+      setFeedbacks(getFeedbacks());
     } catch (err) {
       console.warn('TeacherDashboard cloud sync:', err);
     } finally {
@@ -296,7 +305,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
       )}
 
       {/* KPI Stats Overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className={`grid grid-cols-1 sm:grid-cols-2 ${isAdmin ? 'lg:grid-cols-5' : 'lg:grid-cols-4'} gap-4`}>
         <div className="bg-white dark:bg-slate-900/90 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-medium mb-2">
             <span>Tài khoản học sinh</span>
@@ -357,6 +366,32 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
             {isAdmin ? 'Được cấp quyền bởi Admin' : 'Gõ phím, Chuột, Word, AI...'}
           </div>
         </div>
+
+        {isAdmin && (
+          <div className="bg-white dark:bg-slate-900/90 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
+            <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-medium mb-2">
+              <span>Hòm thư góp ý</span>
+              <MessageSquare className="w-4 h-4 text-emerald-500" />
+            </div>
+            <div className="text-2xl font-black text-emerald-700 dark:text-emerald-400 tabular-nums flex items-center gap-2">
+              <span>{feedbacks.length}</span>
+              {feedbacks.filter(f => f.status === 'pending').length > 0 && (
+                <span className="text-xs px-2 py-0.5 rounded-full bg-rose-500 text-white font-bold animate-pulse">
+                  {feedbacks.filter(f => f.status === 'pending').length} mới
+                </span>
+              )}
+            </div>
+            <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+              <button
+                type="button"
+                onClick={() => setActiveTab('feedbacks')}
+                className="text-blue-600 dark:text-blue-400 hover:underline font-semibold cursor-pointer"
+              >
+                Quản lý góp ý realtime →
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Teacher / Admin Navigation Tabs */}
@@ -384,6 +419,28 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
           >
             <ShieldCheck className="w-4 h-4 text-amber-400" />
             <span>Quản lý Tài khoản Giáo viên ({teachersList.length})</span>
+            <span className="px-1.5 py-0.5 rounded-md text-[10px] font-black bg-amber-400 text-amber-950">
+              Admin
+            </span>
+          </button>
+        )}
+
+        {isAdmin && (
+          <button
+            onClick={() => setActiveTab('feedbacks')}
+            className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 ${
+              activeTab === 'feedbacks'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200/80 dark:border-slate-700'
+            }`}
+          >
+            <MessageSquare className="w-4 h-4 text-emerald-400" />
+            <span>Quản lý Hòm thư Góp ý ({feedbacks.length})</span>
+            {feedbacks.filter(f => f.status === 'pending').length > 0 && (
+              <span className="px-1.5 py-0.5 rounded-md text-[10px] font-black bg-rose-500 text-white animate-pulse">
+                {feedbacks.filter(f => f.status === 'pending').length} mới
+              </span>
+            )}
             <span className="px-1.5 py-0.5 rounded-md text-[10px] font-black bg-amber-400 text-amber-950">
               Admin
             </span>
@@ -432,6 +489,15 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
         <TeacherManagement
           teachers={teachersList}
           currentTeacher={teacher}
+          onRefresh={loadData}
+          isSyncing={isCloudSyncing}
+        />
+      )}
+
+      {/* TAB: ADMIN FEEDBACKS MANAGEMENT */}
+      {activeTab === 'feedbacks' && isAdmin && (
+        <FeedbackManagement
+          feedbacks={feedbacks}
           onRefresh={loadData}
           isSyncing={isCloudSyncing}
         />

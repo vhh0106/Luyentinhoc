@@ -137,5 +137,29 @@ service cloud.firestore {
       allow create, update: if isValidId(username) && isValidTeacher(incoming());
       allow delete: if isValidId(username) && username != 'admin';
     }
+
+    // Feedbacks collection (submitted from feedback form, managed by admin in real-time)
+    match /feedbacks/{feedbackId} {
+      function isValidFeedback(data) {
+        return data.keys().hasAll(['id', 'name', 'role', 'category', 'rating', 'message', 'createdAt'])
+          && data.keys().hasOnly(['id', 'name', 'role', 'contact', 'category', 'rating', 'message', 'status', 'adminResponse', 'createdAt', 'updatedAt'])
+          && data.id is string && data.id.size() <= 128
+          && data.name is string && data.name.size() >= 1 && data.name.size() <= 100
+          && data.role is string && (data.role in ['student', 'teacher', 'parent', 'other'])
+          && (!('contact' in data) || (data.contact is string && data.contact.size() <= 128))
+          && data.category is string && data.category.size() <= 100
+          && data.rating is number && data.rating >= 1 && data.rating <= 5
+          && data.message is string && data.message.size() >= 1 && data.message.size() <= 2000
+          && (!('status' in data) || (data.status in ['pending', 'in_progress', 'resolved']))
+          && (!('adminResponse' in data) || (data.adminResponse is string && data.adminResponse.size() <= 1000))
+          && data.createdAt is string && data.createdAt.size() <= 64
+          && (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 64));
+      }
+
+      allow read: if true;
+      allow create, update: if isValidId(feedbackId) && isValidFeedback(incoming());
+      allow delete: if isValidId(feedbackId);
+    }
   }
 }
+
