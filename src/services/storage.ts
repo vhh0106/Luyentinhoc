@@ -1,4 +1,4 @@
-import { Assignment, ExerciseResult, SubjectId, TeacherAccount, StudentAccount } from '../types';
+import { Assignment, ExerciseResult, SubjectId, TeacherAccount, StudentAccount, ClassRecord } from '../types';
 import { db } from './firebase';
 import {
   collection,
@@ -9,7 +9,7 @@ import {
   query,
   where,
   limit,
-  serverTimestamp
+  onSnapshot
 } from 'firebase/firestore';
 
 const STORAGE_KEYS = {
@@ -17,9 +17,53 @@ const STORAGE_KEYS = {
   ASSIGNMENTS: 'tinhoc_assignments_v1',
   RESULTS: 'tinhoc_results_v1',
   STUDENTS: 'tinhoc_students_v1',
+  CLASSES: 'tinhoc_classes_v1',
   CURRENT_TEACHER: 'tinhoc_current_teacher_v1',
   CURRENT_STUDENT: 'tinhoc_current_student_v1',
+  DELETED_ASSIGNMENT_IDS: 'tinhoc_deleted_assignment_ids_v1',
+  DELETED_STUDENT_IDS: 'tinhoc_deleted_student_ids_v1',
+  DELETED_CLASS_CODES: 'tinhoc_deleted_class_codes_v1',
 };
+
+export function getDeletedAssignmentIds(): Set<string> {
+  try {
+    const raw = safeGetItem(STORAGE_KEYS.DELETED_ASSIGNMENT_IDS);
+    return new Set(raw ? JSON.parse(raw) : []);
+  } catch {
+    return new Set();
+  }
+}
+
+export function addDeletedAssignmentId(id: string): void {
+  const set = getDeletedAssignmentIds();
+  set.add(id);
+  safeSetItem(STORAGE_KEYS.DELETED_ASSIGNMENT_IDS, JSON.stringify(Array.from(set)));
+}
+
+export function removeDeletedAssignmentId(id: string): void {
+  const set = getDeletedAssignmentIds();
+  if (set.has(id)) {
+    set.delete(id);
+    safeSetItem(STORAGE_KEYS.DELETED_ASSIGNMENT_IDS, JSON.stringify(Array.from(set)));
+  }
+}
+
+function safeGetItem(key: string): string | null {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      return window.localStorage.getItem(key);
+    }
+  } catch (e) {}
+  return null;
+}
+
+function safeSetItem(key: string, value: string): void {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem(key, value);
+    }
+  } catch (e) {}
+}
 
 const DEFAULT_ADMIN_ACCOUNT: TeacherAccount = {
   username: 'admin',
@@ -31,20 +75,25 @@ const DEFAULT_ADMIN_ACCOUNT: TeacherAccount = {
   createdAt: '2026-01-01T00:00:00.000Z'
 };
 
-// Initialize storage and clean up any legacy example/demo assignments
+// Initialize storage, clean legacy items, and execute bidirectional cloud sync
 export function initializeStorage() {
   if (typeof window === 'undefined') return;
 
-  // Purge legacy demo-3a and demo-4b if they exist from earlier sessions
+  // Purge legacy demo assignments & deleted assignments
   try {
-    const rawAssignments = localStorage.getItem(STORAGE_KEYS.ASSIGNMENTS);
+    const rawAssignments = safeGetItem(STORAGE_KEYS.ASSIGNMENTS);
     if (rawAssignments) {
       const parsed: Assignment[] = JSON.parse(rawAssignments);
-      const filtered = parsed.filter(a => a.id !== 'demo-3a' && a.id !== 'demo-4b');
+      const deletedIds = getDeletedAssignmentIds();
+      deletedIds.add('assign-1792762830495'); // Specifically purge the stale duplicate test assignment
+      const filtered = parsed.filter(
+        a => a && a.id && a.id !== 'demo-3a' && a.id !== 'demo-4b' && a.id !== 'assign-1792762830495' && !deletedIds.has(a.id)
+      );
       if (filtered.length !== parsed.length) {
-        localStorage.setItem(STORAGE_KEYS.ASSIGNMENTS, JSON.stringify(filtered));
+        safeSetItem(STORAGE_KEYS.ASSIGNMENTS, JSON.stringify(filtered));
         deleteDoc(doc(db, 'assignments', 'demo-3a')).catch(() => {});
         deleteDoc(doc(db, 'assignments', 'demo-4b')).catch(() => {});
+        deleteDoc(doc(db, 'assignments', 'assign-1792762830495')).catch(() => {});
       }
     }
   } catch (e) {
@@ -57,10 +106,10 @@ export function initializeStorage() {
     saveTeacher(DEFAULT_ADMIN_ACCOUNT);
   }
 
-  // Pre-fetch real teachers, assignments, and students from Cloud Firestore
-  fetchTeachersFromCloud().catch(() => {});
-  fetchAssignmentsFromCloud().catch(() => {});
-  fetchStudentsFromCloud().catch(() => {});
+  // Execute full bidirectional cloud sync (pushes unsynced local data to Cloud & pulls latest Cloud state)
+  syncAllWithCloud().catch(err => {
+    console.warn('[Sync] Initial sync error:', err);
+  });
 }
 
 
@@ -68,8 +117,10 @@ export function initializeStorage() {
 export function getAssignments(): Assignment[] {
   if (typeof window === 'undefined') return [];
   try {
-    const raw = localStorage.getItem(STORAGE_KEYS.ASSIGNMENTS);
-    return raw ? JSON.parse(raw) : [];
+    const raw = safeGetItem(STORAGE_KEYS.ASSIGNMENTS);
+    const parsed: Assignment[] = raw ? JSON.parse(raw) : [];
+    const deletedIds = getDeletedAssignmentIds();
+    return parsed.filter(a => a && a.id && a.id !== 'demo-3a' && a.id !== 'demo-4b' && !deletedIds.has(a.id));
   } catch (e) {
     console.error('Failed to parse assignments', e);
     return [];
@@ -77,29 +128,46 @@ export function getAssignments(): Assignment[] {
 }
 
 export async function fetchAssignmentsFromCloud(): Promise<Assignment[]> {
+  const deletedIds = getDeletedAssignmentIds();
   try {
     const colRef = collection(db, 'assignments');
     const snapshot = await getDocs(colRef);
-    if (!snapshot.empty) {
-      const cloudAssignments: Assignment[] = [];
-      snapshot.forEach(docSnap => {
-        const data = docSnap.data() as Assignment;
-        if (data.id === 'demo-3a' || data.id === 'demo-4b') {
-          deleteDoc(doc(db, 'assignments', docSnap.id)).catch(() => {});
-        } else {
-          cloudAssignments.push(data);
-        }
-      });
-
-      // Merge with local assignments without losing newer ones
-      const local = getAssignments().filter(a => a.id !== 'demo-3a' && a.id !== 'demo-4b');
-      const mergedMap = new Map<string, Assignment>();
-      local.forEach(a => mergedMap.set(a.id, a));
-      cloudAssignments.forEach(a => mergedMap.set(a.id, a));
-      const merged = Array.from(mergedMap.values());
-      localStorage.setItem(STORAGE_KEYS.ASSIGNMENTS, JSON.stringify(merged));
-      return merged;
+    const cloudAssignments: Assignment[] = [];
+    for (const docSnap of snapshot.docs) {
+      const data = docSnap.data() as Assignment;
+      const docId = docSnap.id;
+      if (docId === 'demo-3a' || docId === 'demo-4b' || (data && (data.id === 'demo-3a' || data.id === 'demo-4b'))) {
+        deleteDoc(docSnap.ref).catch(() => {});
+        continue;
+      }
+      if (deletedIds.has(docId) || (data && deletedIds.has(data.id))) {
+        deleteDoc(docSnap.ref).catch(() => {});
+        continue;
+      }
+      if (data && data.classCode) {
+        cloudAssignments.push(data);
+      }
     }
+
+    // De-duplicate per classCode keeping newest
+    const classMap = new Map<string, Assignment>();
+    cloudAssignments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    cloudAssignments.forEach(a => {
+      const key = a.classCode.toUpperCase();
+      if (!classMap.has(key)) {
+        classMap.set(key, a);
+      } else {
+        // Stale duplicate assignment for the same class: remove from Firestore
+        const oldSafeId = (a.id || '').replace(/[^a-zA-Z0-9_\-]/g, '_');
+        if (oldSafeId) {
+          deleteDoc(doc(db, 'assignments', oldSafeId)).catch(() => {});
+        }
+      }
+    });
+
+    const uniqueList = Array.from(classMap.values());
+    safeSetItem(STORAGE_KEYS.ASSIGNMENTS, JSON.stringify(uniqueList));
+    return uniqueList;
   } catch (err) {
     console.warn('[Firestore] fetchAssignmentsFromCloud offline or error:', err);
   }
@@ -107,23 +175,34 @@ export async function fetchAssignmentsFromCloud(): Promise<Assignment[]> {
 }
 
 export function saveAssignment(assignment: Assignment): void {
+  removeDeletedAssignmentId(assignment.id);
+  const safeId = assignment.id.replace(/[^a-zA-Z0-9_\-]/g, '_');
+  removeDeletedAssignmentId(safeId);
+  const cleanClass = assignment.classCode.trim().toUpperCase();
+  removeDeletedAssignmentId(`assign-${cleanClass}`);
+
   const current = getAssignments();
   // Replace existing assignment for the same id or same classCode so each class has a clear curriculum config
   const index = current.findIndex(
-    a => a.id === assignment.id || a.classCode.toUpperCase() === assignment.classCode.toUpperCase()
+    a => a.id === assignment.id || a.classCode.toUpperCase() === cleanClass
   );
   if (index >= 0) {
     current[index] = assignment;
   } else {
     current.unshift(assignment);
   }
-  localStorage.setItem(STORAGE_KEYS.ASSIGNMENTS, JSON.stringify(current));
+  if (typeof window !== 'undefined') {
+    safeSetItem(STORAGE_KEYS.ASSIGNMENTS, JSON.stringify(current));
+  }
 
   // Sync to Cloud
   syncAssignmentToCloud(assignment).catch(e => console.warn('Could not sync assignment to cloud:', e));
 }
 
 export async function syncAssignmentToCloud(assignment: Assignment): Promise<void> {
+  const deletedIds = getDeletedAssignmentIds();
+  if (deletedIds.has(assignment.id)) return;
+
   try {
     const safeId = assignment.id.replace(/[^a-zA-Z0-9_\-]/g, '_');
     await setDoc(doc(db, 'assignments', safeId), {
@@ -140,14 +219,48 @@ export async function syncAssignmentToCloud(assignment: Assignment): Promise<voi
   }
 }
 
-export function deleteAssignment(id: string): void {
-  const current = getAssignments().filter(a => a.id !== id);
-  localStorage.setItem(STORAGE_KEYS.ASSIGNMENTS, JSON.stringify(current));
+export async function deleteAssignment(id: string, classCode?: string): Promise<void> {
+  const existing = getAssignments();
+  const targetObj = existing.find(a => a.id === id);
+  const cleanClass = (classCode || targetObj?.classCode || '').trim().toUpperCase();
+
+  addDeletedAssignmentId(id);
+  const safeId = id.replace(/[^a-zA-Z0-9_\-]/g, '_');
+  addDeletedAssignmentId(safeId);
+  if (cleanClass) {
+    addDeletedAssignmentId(`assign-${cleanClass}`);
+  }
+
+  const current = existing.filter(
+    a =>
+      a.id !== id &&
+      a.id !== safeId &&
+      (!cleanClass || a.classCode.trim().toUpperCase() !== cleanClass)
+  );
+  safeSetItem(STORAGE_KEYS.ASSIGNMENTS, JSON.stringify(current));
 
   // Delete from Cloud
   try {
-    const safeId = id.replace(/[^a-zA-Z0-9_\-]/g, '_');
-    deleteDoc(doc(db, 'assignments', safeId)).catch(() => {});
+    await deleteDoc(doc(db, 'assignments', safeId)).catch(() => {});
+    if (id !== safeId) {
+      await deleteDoc(doc(db, 'assignments', id)).catch(() => {});
+    }
+    const qById = query(collection(db, 'assignments'), where('id', '==', id));
+    const snapById = await getDocs(qById);
+    for (const d of snapById.docs) {
+      await deleteDoc(d.ref).catch(() => {});
+    }
+    if (cleanClass) {
+      await deleteDoc(doc(db, 'assignments', `assign-${cleanClass}`)).catch(() => {});
+      const qByClass = query(collection(db, 'assignments'), where('classCode', '==', cleanClass));
+      const snapByClass = await getDocs(qByClass);
+      for (const d of snapByClass.docs) {
+        addDeletedAssignmentId(d.id);
+        const data = d.data() as Assignment;
+        if (data?.id) addDeletedAssignmentId(data.id);
+        await deleteDoc(d.ref).catch(() => {});
+      }
+    }
   } catch (e) {
     console.warn('[Firestore] deleteAssignment error:', e);
   }
@@ -155,24 +268,43 @@ export function deleteAssignment(id: string): void {
 
 export function findAssignmentByClass(classCode: string): Assignment | undefined {
   const cleanClass = classCode.trim().toUpperCase();
-  return getAssignments().find(a => a.classCode.toUpperCase() === cleanClass);
+  const deletedIds = getDeletedAssignmentIds();
+  return getAssignments().find(
+    a => a.classCode.toUpperCase() === cleanClass && !deletedIds.has(a.id)
+  );
 }
 
 export async function findAssignmentByClassCloud(classCode: string): Promise<Assignment | undefined> {
   const cleanClass = classCode.trim().toUpperCase();
+  const deletedIds = getDeletedAssignmentIds();
   try {
     const colRef = collection(db, 'assignments');
-    const q = query(colRef, where('classCode', '==', cleanClass), limit(1));
+    const q = query(colRef, where('classCode', '==', cleanClass));
     const snapshot = await getDocs(q);
     if (!snapshot.empty) {
-      const found = snapshot.docs[0].data() as Assignment;
-      saveAssignment(found);
-      return found;
+      const validDocs = snapshot.docs
+        .filter(d => {
+          const data = d.data() as Assignment;
+          return !deletedIds.has(d.id) && (!data?.id || !deletedIds.has(data.id));
+        })
+        .map(d => d.data() as Assignment)
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+      if (validDocs.length > 0) {
+        const found = validDocs[0];
+        saveAssignment(found);
+        return found;
+      }
     }
+
+    // Cloud responded and has no active assignment for this class -> purge stale local cache for this class
+    const remaining = getAssignments().filter(a => a.classCode.toUpperCase() !== cleanClass);
+    safeSetItem(STORAGE_KEYS.ASSIGNMENTS, JSON.stringify(remaining));
+    return undefined;
   } catch (err) {
     console.warn('[Firestore] findAssignmentByClassCloud error:', err);
+    return findAssignmentByClass(cleanClass);
   }
-  return findAssignmentByClass(cleanClass);
 }
 
 export function findAssignmentByPinAndClass(pin: string, classCode: string): Assignment | undefined {
@@ -227,7 +359,7 @@ export function generateRandomPin(): string {
 export function getTeachers(): TeacherAccount[] {
   if (typeof window === 'undefined') return [DEFAULT_ADMIN_ACCOUNT];
   try {
-    const raw = localStorage.getItem(STORAGE_KEYS.TEACHERS);
+    const raw = safeGetItem(STORAGE_KEYS.TEACHERS);
     const parsed: TeacherAccount[] = raw ? JSON.parse(raw) : [];
     if (!parsed.some(t => t.username.toLowerCase() === 'admin')) {
       parsed.unshift(DEFAULT_ADMIN_ACCOUNT);
@@ -263,7 +395,7 @@ export async function fetchTeachersFromCloud(): Promise<TeacherAccount[]> {
     }
 
     const merged = Array.from(map.values());
-    localStorage.setItem(STORAGE_KEYS.TEACHERS, JSON.stringify(merged));
+    safeSetItem(STORAGE_KEYS.TEACHERS, JSON.stringify(merged));
     return merged;
   } catch (err) {
     console.warn('[Firestore] fetchTeachersFromCloud error:', err);
@@ -289,7 +421,7 @@ export async function saveTeacher(teacher: TeacherAccount): Promise<void> {
   } else {
     list.push(normalized);
   }
-  localStorage.setItem(STORAGE_KEYS.TEACHERS, JSON.stringify(list));
+  safeSetItem(STORAGE_KEYS.TEACHERS, JSON.stringify(list));
   await syncTeacherToCloud(normalized);
 }
 
@@ -315,7 +447,7 @@ export async function deleteTeacher(username: string): Promise<void> {
   if (clean === 'admin') return; // Never delete primary admin
 
   const remaining = getTeachers().filter(t => t.username.toLowerCase() !== clean);
-  localStorage.setItem(STORAGE_KEYS.TEACHERS, JSON.stringify(remaining));
+  safeSetItem(STORAGE_KEYS.TEACHERS, JSON.stringify(remaining));
 
   try {
     const safeUsername = clean.replace(/[^a-zA-Z0-9_\-]/g, '_');
@@ -355,14 +487,14 @@ export async function authenticateTeacherCloud(
 export function getResults(): ExerciseResult[] {
   if (typeof window === 'undefined') return [];
   try {
-    const raw = localStorage.getItem(STORAGE_KEYS.RESULTS);
+    const raw = safeGetItem(STORAGE_KEYS.RESULTS);
     return raw ? JSON.parse(raw) : [];
   } catch (e) {
     return [];
   }
 }
 
-export function saveResult(result: ExerciseResult): void {
+export async function saveResult(result: ExerciseResult): Promise<void> {
   const list = getResults();
   const existingIdx = list.findIndex(r => r.id === result.id);
   if (existingIdx >= 0) {
@@ -370,30 +502,34 @@ export function saveResult(result: ExerciseResult): void {
   } else {
     list.unshift(result);
   }
-  // Keep last 300 results locally
-  localStorage.setItem(STORAGE_KEYS.RESULTS, JSON.stringify(list.slice(0, 300)));
+  // Keep last 500 results locally
+  if (typeof window !== 'undefined') {
+    safeSetItem(STORAGE_KEYS.RESULTS, JSON.stringify(list.slice(0, 500)));
+  }
 
   // Sync to Cloud Firestore immediately
-  syncResultToCloud(result).catch(err => {
+  try {
+    await syncResultToCloud(result);
+  } catch (err) {
     console.warn('[Firestore] Failed to sync result to cloud:', err);
-  });
+  }
 }
 
 export async function syncResultToCloud(result: ExerciseResult): Promise<void> {
   try {
-    const safeId = result.id.replace(/[^a-zA-Z0-9_\-]/g, '_');
+    const safeId = (result.id || `res_${Date.now()}`).replace(/[^a-zA-Z0-9_\-]/g, '_');
     await setDoc(doc(db, 'results', safeId), {
       id: result.id,
-      studentName: result.studentName,
-      classCode: result.classCode,
-      pin: result.pin || '',
+      studentName: result.studentName.trim(),
+      classCode: result.classCode.trim().toUpperCase(),
+      pin: (result.pin || '').trim().toUpperCase(),
       subjectId: result.subjectId,
       lessonId: result.lessonId,
       lessonTitle: result.lessonTitle || '',
-      score: result.score,
-      accuracy: result.accuracy,
-      timeSpentSeconds: result.timeSpentSeconds || 0,
-      completedAt: result.completedAt
+      score: Math.min(100, Math.max(0, Math.round(result.score))),
+      accuracy: Math.min(100, Math.max(0, Math.round(result.accuracy))),
+      timeSpentSeconds: Math.max(0, Math.round(result.timeSpentSeconds || 0)),
+      completedAt: result.completedAt || new Date().toISOString()
     });
     console.log(`[Firestore] Synced result ${result.id} to cloud.`);
   } catch (err) {
@@ -410,17 +546,22 @@ export async function fetchStudentResultsFromCloud(
   studentName: string,
   classCode: string
 ): Promise<ExerciseResult[]> {
+  const cleanName = studentName.trim();
+  const cleanClass = classCode.trim().toUpperCase();
+
   try {
     const colRef = collection(db, 'results');
     const q = query(
       colRef,
-      where('studentName', '==', studentName.trim()),
-      where('classCode', '==', classCode.trim().toUpperCase())
+      where('classCode', '==', cleanClass)
     );
     const snapshot = await getDocs(q);
     const cloudResults: ExerciseResult[] = [];
     snapshot.forEach(docSnap => {
-      cloudResults.push(docSnap.data() as ExerciseResult);
+      const data = docSnap.data() as ExerciseResult;
+      if (data && data.studentName && data.classCode) {
+        cloudResults.push(data);
+      }
     });
 
     if (cloudResults.length > 0) {
@@ -432,10 +573,13 @@ export async function fetchStudentResultsFromCloud(
       const merged = Array.from(map.values()).sort(
         (a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
       );
-      localStorage.setItem(STORAGE_KEYS.RESULTS, JSON.stringify(merged.slice(0, 300)));
+      safeSetItem(STORAGE_KEYS.RESULTS, JSON.stringify(merged.slice(0, 500)));
 
+      const normTarget = cleanName.normalize('NFC').toLowerCase();
       return merged.filter(
-        r => r.studentName === studentName && r.classCode === classCode.trim().toUpperCase()
+        r =>
+          r.classCode.trim().toUpperCase() === cleanClass &&
+          r.studentName.trim().normalize('NFC').toLowerCase() === normTarget
       );
     }
   } catch (err) {
@@ -443,43 +587,106 @@ export async function fetchStudentResultsFromCloud(
   }
 
   // Fallback to local
+  const normTarget = cleanName.normalize('NFC').toLowerCase();
   return getResults().filter(
-    r => r.studentName === studentName && r.classCode === classCode.trim().toUpperCase()
+    r =>
+      r.classCode.trim().toUpperCase() === cleanClass &&
+      r.studentName.trim().normalize('NFC').toLowerCase() === normTarget
   );
 }
 
 /**
- * Fetch all results for a specific class code (for Teacher dashboard across all PCs).
+ * Fetch all results for a specific class code or all classes (for Teacher dashboard across all PCs).
  */
-export async function fetchClassResultsFromCloud(classCode: string): Promise<ExerciseResult[]> {
+export async function fetchAllResultsFromCloud(classCode?: string): Promise<ExerciseResult[]> {
+  const cleanClass = classCode && classCode.toUpperCase() !== 'ALL' ? classCode.trim().toUpperCase() : undefined;
+
   try {
     const colRef = collection(db, 'results');
-    const q = query(
-      colRef,
-      where('classCode', '==', classCode.trim().toUpperCase())
-    );
+    const q = cleanClass
+      ? query(colRef, where('classCode', '==', cleanClass))
+      : query(colRef);
+
     const snapshot = await getDocs(q);
     const cloudResults: ExerciseResult[] = [];
     snapshot.forEach(docSnap => {
-      cloudResults.push(docSnap.data() as ExerciseResult);
+      const data = docSnap.data() as ExerciseResult;
+      if (data && data.studentName && data.classCode) {
+        cloudResults.push(data);
+      }
     });
 
-    if (cloudResults.length > 0) {
-      const localResults = getResults();
-      const map = new Map<string, ExerciseResult>();
-      localResults.forEach(r => map.set(r.id, r));
-      cloudResults.forEach(r => map.set(r.id, r));
-      const merged = Array.from(map.values()).sort(
-        (a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
-      );
-      localStorage.setItem(STORAGE_KEYS.RESULTS, JSON.stringify(merged.slice(0, 300)));
-      return cloudResults;
-    }
-  } catch (err) {
-    console.warn('[Firestore] fetchClassResultsFromCloud error:', err);
-  }
+    const localResults = getResults();
+    const map = new Map<string, ExerciseResult>();
+    localResults.forEach(r => map.set(r.id, r));
+    cloudResults.forEach(r => map.set(r.id, r));
+    const merged = Array.from(map.values()).sort(
+      (a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
+    );
+    safeSetItem(STORAGE_KEYS.RESULTS, JSON.stringify(merged.slice(0, 500)));
 
-  return getResults().filter(r => r.classCode === classCode.trim().toUpperCase());
+    return cleanClass
+      ? merged.filter(r => r.classCode.trim().toUpperCase() === cleanClass)
+      : merged;
+  } catch (err) {
+    console.warn('[Firestore] fetchAllResultsFromCloud error:', err);
+    const local = getResults();
+    return cleanClass
+      ? local.filter(r => r.classCode.trim().toUpperCase() === cleanClass)
+      : local;
+  }
+}
+
+export async function fetchClassResultsFromCloud(classCode: string): Promise<ExerciseResult[]> {
+  return fetchAllResultsFromCloud(classCode);
+}
+
+/**
+ * Subscribe to real-time updates for results from Cloud Firestore.
+ * Automatically updates when any student submits an exercise from any device.
+ */
+export function subscribeToResults(
+  callback: (results: ExerciseResult[]) => void,
+  classCode?: string
+): () => void {
+  const cleanClass = classCode && classCode.toUpperCase() !== 'ALL' ? classCode.trim().toUpperCase() : undefined;
+
+  try {
+    const colRef = collection(db, 'results');
+    const q = cleanClass
+      ? query(colRef, where('classCode', '==', cleanClass))
+      : query(colRef);
+
+    const unsubscribe = onSnapshot(
+      q,
+      snapshot => {
+        const cloudResults: ExerciseResult[] = [];
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data() as ExerciseResult;
+          if (data && data.studentName && data.classCode) {
+            cloudResults.push(data);
+          }
+        });
+
+        const localResults = getResults();
+        const map = new Map<string, ExerciseResult>();
+        localResults.forEach(r => map.set(r.id, r));
+        cloudResults.forEach(r => map.set(r.id, r));
+        const merged = Array.from(map.values()).sort(
+          (a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
+        );
+        safeSetItem(STORAGE_KEYS.RESULTS, JSON.stringify(merged.slice(0, 500)));
+        callback(cleanClass ? merged.filter(r => r.classCode.trim().toUpperCase() === cleanClass) : merged);
+      },
+      err => {
+        console.warn('[Firestore] subscribeToResults snapshot error:', err);
+      }
+    );
+    return unsubscribe;
+  } catch (err) {
+    console.warn('[Firestore] subscribeToResults setup error:', err);
+    return () => {};
+  }
 }
 
 // ==========================================
@@ -489,7 +696,7 @@ export async function fetchClassResultsFromCloud(classCode: string): Promise<Exe
 export function getStudents(): StudentAccount[] {
   if (typeof window === 'undefined') return [];
   try {
-    const raw = localStorage.getItem(STORAGE_KEYS.STUDENTS);
+    const raw = safeGetItem(STORAGE_KEYS.STUDENTS);
     return raw ? JSON.parse(raw) : [];
   } catch (e) {
     return [];
@@ -520,7 +727,7 @@ export async function fetchStudentsFromCloud(classCode?: string): Promise<Studen
       local.forEach(s => map.set(s.id, s));
       cloudStudents.forEach(s => map.set(s.id, s));
       const merged = Array.from(map.values());
-      localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(merged));
+      safeSetItem(STORAGE_KEYS.STUDENTS, JSON.stringify(merged));
       return classCode
         ? merged.filter(s => s.classCode.toUpperCase() === classCode.trim().toUpperCase())
         : merged;
@@ -539,7 +746,7 @@ export async function saveStudent(student: StudentAccount): Promise<void> {
   } else {
     current.push(student);
   }
-  localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(current));
+  safeSetItem(STORAGE_KEYS.STUDENTS, JSON.stringify(current));
 
   // Sync to Cloud Firestore
   try {
@@ -565,7 +772,7 @@ export async function saveStudentsBatch(students: StudentAccount[]): Promise<voi
   current.forEach(s => map.set(s.id, s));
   students.forEach(s => map.set(s.id, s));
   const merged = Array.from(map.values());
-  localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(merged));
+  safeSetItem(STORAGE_KEYS.STUDENTS, JSON.stringify(merged));
 
   // Sync batch to cloud
   for (const s of students) {
@@ -589,7 +796,7 @@ export async function saveStudentsBatch(students: StudentAccount[]): Promise<voi
 
 export async function deleteStudent(id: string): Promise<void> {
   const current = getStudents().filter(s => s.id !== id);
-  localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(current));
+  safeSetItem(STORAGE_KEYS.STUDENTS, JSON.stringify(current));
 
   try {
     const safeId = id.replace(/[^a-zA-Z0-9_\-]/g, '_');
@@ -603,7 +810,7 @@ export async function deleteStudentsByClass(classCode: string): Promise<void> {
   const clean = classCode.trim().toUpperCase();
   const toDelete = getStudents().filter(s => s.classCode.toUpperCase() === clean);
   const remaining = getStudents().filter(s => s.classCode.toUpperCase() !== clean);
-  localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(remaining));
+  safeSetItem(STORAGE_KEYS.STUDENTS, JSON.stringify(remaining));
 
   for (const s of toDelete) {
     try {
@@ -661,4 +868,365 @@ export async function authenticateStudentCloud(
 
   return { student: matched };
 }
+
+// ==========================================
+// CLASSES MANAGEMENT (CLOUD & LOCAL)
+// ==========================================
+
+export function getClasses(): ClassRecord[] {
+  if (typeof window === 'undefined') return [{ id: '3A', classCode: '3A', name: 'Lớp 3A' }];
+  try {
+    const raw = safeGetItem(STORAGE_KEYS.CLASSES);
+    const parsed: ClassRecord[] = raw ? JSON.parse(raw) : [];
+    // Also derive from students and assignments so any existing class is never lost
+    const set = new Map<string, ClassRecord>();
+    parsed.forEach(c => set.set(c.classCode.toUpperCase(), c));
+    getStudents().forEach(s => {
+      const code = (s.classCode || '').trim().toUpperCase();
+      if (code && !set.has(code)) {
+        set.set(code, { id: code, classCode: code, name: `Lớp ${code}` });
+      }
+    });
+    getAssignments().forEach(a => {
+      const code = (a.classCode || '').trim().toUpperCase();
+      if (code && !set.has(code)) {
+        set.set(code, { id: code, classCode: code, name: `Lớp ${code}` });
+      }
+    });
+    if (set.size === 0) {
+      set.set('3A', { id: '3A', classCode: '3A', name: 'Lớp 3A' });
+    }
+    const list = Array.from(set.values()).sort((a, b) => a.classCode.localeCompare(b.classCode));
+    return list;
+  } catch (e) {
+    return [{ id: '3A', classCode: '3A', name: 'Lớp 3A' }];
+  }
+}
+
+export async function fetchClassesFromCloud(): Promise<ClassRecord[]> {
+  try {
+    const colRef = collection(db, 'classes');
+    const snapshot = await getDocs(colRef);
+    const cloudClasses: ClassRecord[] = [];
+    snapshot.forEach(docSnap => {
+      const data = docSnap.data() as ClassRecord;
+      if (data && data.classCode) {
+        cloudClasses.push(data);
+      }
+    });
+
+    const local = getClasses();
+    const map = new Map<string, ClassRecord>();
+    local.forEach(c => map.set(c.classCode.toUpperCase(), c));
+    cloudClasses.forEach(c => map.set(c.classCode.toUpperCase(), c));
+    const merged = Array.from(map.values()).sort((a, b) => a.classCode.localeCompare(b.classCode));
+
+    if (typeof window !== 'undefined') {
+      safeSetItem(STORAGE_KEYS.CLASSES, JSON.stringify(merged));
+    }
+    return merged;
+  } catch (err) {
+    console.warn('[Firestore] fetchClassesFromCloud error:', err);
+    return getClasses();
+  }
+}
+
+export async function saveClass(classCode: string, name?: string, teacherName?: string): Promise<void> {
+  const clean = classCode.trim().toUpperCase();
+  if (!clean) return;
+
+  const current = getClasses();
+  const existingIdx = current.findIndex(c => c.classCode.toUpperCase() === clean);
+  const record: ClassRecord = {
+    id: clean,
+    classCode: clean,
+    name: name?.trim() || `Lớp ${clean}`,
+    teacherName: teacherName || '',
+    createdAt: new Date().toISOString()
+  };
+
+  if (existingIdx >= 0) {
+    current[existingIdx] = { ...current[existingIdx], ...record };
+  } else {
+    current.push(record);
+  }
+  if (typeof window !== 'undefined') {
+    safeSetItem(STORAGE_KEYS.CLASSES, JSON.stringify(current));
+  }
+
+  try {
+    await setDoc(doc(db, 'classes', clean), {
+      id: clean,
+      classCode: clean,
+      name: record.name,
+      teacherName: record.teacherName,
+      createdAt: record.createdAt
+    });
+    console.log(`[Firestore] Synced class ${clean} to cloud.`);
+  } catch (err) {
+    console.warn('[Firestore] saveClass error:', err);
+  }
+}
+
+export async function deleteClass(classCode: string): Promise<void> {
+  const clean = classCode.trim().toUpperCase();
+  const remaining = getClasses().filter(c => c.classCode.toUpperCase() !== clean);
+  if (typeof window !== 'undefined') {
+    safeSetItem(STORAGE_KEYS.CLASSES, JSON.stringify(remaining));
+  }
+  try {
+    await deleteDoc(doc(db, 'classes', clean));
+  } catch (err) {
+    console.warn('[Firestore] deleteClass error:', err);
+  }
+}
+
+export function subscribeToClasses(callback: (classes: ClassRecord[]) => void): () => void {
+  try {
+    const colRef = collection(db, 'classes');
+    return onSnapshot(
+      colRef,
+      snapshot => {
+        const cloud: ClassRecord[] = [];
+        snapshot.forEach(docSnap => {
+          const d = docSnap.data() as ClassRecord;
+          if (d && d.classCode) cloud.push(d);
+        });
+        const local = getClasses();
+        const map = new Map<string, ClassRecord>();
+        local.forEach(c => map.set(c.classCode.toUpperCase(), c));
+        cloud.forEach(c => map.set(c.classCode.toUpperCase(), c));
+        const merged = Array.from(map.values()).sort((a, b) => a.classCode.localeCompare(b.classCode));
+        if (typeof window !== 'undefined') {
+          safeSetItem(STORAGE_KEYS.CLASSES, JSON.stringify(merged));
+        }
+        callback(merged);
+      },
+      err => console.warn('[Firestore] subscribeToClasses error:', err)
+    );
+  } catch (e) {
+    console.warn('[Firestore] subscribeToClasses setup error:', e);
+    return () => {};
+  }
+}
+
+export function subscribeToStudents(callback: (students: StudentAccount[]) => void, classCode?: string): () => void {
+  try {
+    const cleanClass = classCode && classCode.toUpperCase() !== 'ALL' ? classCode.trim().toUpperCase() : undefined;
+    const colRef = collection(db, 'students');
+    const q = cleanClass ? query(colRef, where('classCode', '==', cleanClass)) : query(colRef);
+    return onSnapshot(
+      q,
+      snapshot => {
+        const cloudStudents: StudentAccount[] = [];
+        snapshot.forEach(docSnap => {
+          const d = docSnap.data() as StudentAccount;
+          if (d && d.id) cloudStudents.push(d);
+        });
+        const local = getStudents();
+        const map = new Map<string, StudentAccount>();
+        local.forEach(s => map.set(s.id, s));
+        cloudStudents.forEach(s => map.set(s.id, s));
+        const merged = Array.from(map.values());
+        if (typeof window !== 'undefined') {
+          safeSetItem(STORAGE_KEYS.STUDENTS, JSON.stringify(merged));
+        }
+        callback(cleanClass ? merged.filter(s => s.classCode.toUpperCase() === cleanClass) : merged);
+      },
+      err => console.warn('[Firestore] subscribeToStudents error:', err)
+    );
+  } catch (e) {
+    console.warn('[Firestore] subscribeToStudents setup error:', e);
+    return () => {};
+  }
+}
+
+export function subscribeToAssignments(callback: (assignments: Assignment[]) => void): () => void {
+  try {
+    const colRef = collection(db, 'assignments');
+    return onSnapshot(
+      colRef,
+      snapshot => {
+        const deletedIds = getDeletedAssignmentIds();
+        const cloud: Assignment[] = [];
+        snapshot.forEach(docSnap => {
+          const d = docSnap.data() as Assignment;
+          const docId = docSnap.id;
+          if (docId === 'demo-3a' || docId === 'demo-4b' || (d && (d.id === 'demo-3a' || d.id === 'demo-4b'))) {
+            deleteDoc(docSnap.ref).catch(() => {});
+            return;
+          }
+          if (deletedIds.has(docId) || (d && deletedIds.has(d.id))) {
+            deleteDoc(docSnap.ref).catch(() => {});
+            return;
+          }
+          if (d && d.id && d.classCode) cloud.push(d);
+        });
+
+        // De-duplicate assignments per classCode (keep newest)
+        const classMap = new Map<string, Assignment>();
+        cloud.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        cloud.forEach(a => {
+          const key = a.classCode.toUpperCase();
+          if (!classMap.has(key)) {
+            classMap.set(key, a);
+          } else {
+            // Delete duplicate older assignments from cloud
+            const oldSafeId = (a.id || '').replace(/[^a-zA-Z0-9_\-]/g, '_');
+            if (oldSafeId) {
+              deleteDoc(doc(db, 'assignments', oldSafeId)).catch(() => {});
+            }
+          }
+        });
+
+        const merged = Array.from(classMap.values());
+        if (typeof window !== 'undefined') {
+          safeSetItem(STORAGE_KEYS.ASSIGNMENTS, JSON.stringify(merged));
+        }
+        callback(merged);
+      },
+      err => console.warn('[Firestore] subscribeToAssignments error:', err)
+    );
+  } catch (e) {
+    console.warn('[Firestore] subscribeToAssignments setup error:', e);
+    return () => {};
+  }
+}
+
+export function subscribeToTeachers(callback: (teachers: TeacherAccount[]) => void): () => void {
+  try {
+    const colRef = collection(db, 'teachers');
+    return onSnapshot(
+      colRef,
+      snapshot => {
+        const cloud: TeacherAccount[] = [];
+        snapshot.forEach(docSnap => {
+          const d = docSnap.data() as TeacherAccount;
+          if (d && d.username) cloud.push(d);
+        });
+        const local = getTeachers();
+        const map = new Map<string, TeacherAccount>();
+        local.forEach(t => map.set(t.username.toLowerCase(), t));
+        cloud.forEach(t => map.set(t.username.toLowerCase(), t));
+        if (!map.has('admin')) map.set('admin', DEFAULT_ADMIN_ACCOUNT);
+        const merged = Array.from(map.values());
+        if (typeof window !== 'undefined') {
+          safeSetItem(STORAGE_KEYS.TEACHERS, JSON.stringify(merged));
+        }
+        callback(merged);
+      },
+      err => console.warn('[Firestore] subscribeToTeachers error:', err)
+    );
+  } catch (e) {
+    console.warn('[Firestore] subscribeToTeachers setup error:', e);
+    return () => {};
+  }
+}
+
+/**
+ * Complete bidirectional cloud synchronization:
+ * 1. Pushes any local results, students, assignments, classes, and teachers not yet on Cloud up to Firestore.
+ * 2. Fetches all latest data from Cloud and merges with local cache.
+ * 3. Ensures 100% parity between Google AI Studio dev preview and the shared link on any device.
+ */
+export async function syncAllWithCloud(): Promise<{
+  resultsCount: number;
+  studentsCount: number;
+  classesCount: number;
+  assignmentsCount: number;
+  teachersCount: number;
+}> {
+  try {
+    // 1. Fetch Cloud collections
+    const [cloudResSnap, cloudStuSnap, cloudAssignSnap, cloudClassSnap, cloudTeacherSnap] =
+      await Promise.all([
+        getDocs(collection(db, 'results')),
+        getDocs(collection(db, 'students')),
+        getDocs(collection(db, 'assignments')),
+        getDocs(collection(db, 'classes')),
+        getDocs(collection(db, 'teachers'))
+      ]);
+
+    const cloudResIds = new Set<string>();
+    cloudResSnap.forEach(d => cloudResIds.add(d.id));
+
+    const cloudStuIds = new Set<string>();
+    cloudStuSnap.forEach(d => cloudStuIds.add(d.id));
+
+    const cloudAssignIds = new Set<string>();
+    cloudAssignSnap.forEach(d => cloudAssignIds.add(d.id));
+
+    const cloudClassCodes = new Set<string>();
+    cloudClassSnap.forEach(d => {
+      const dData = d.data() as ClassRecord;
+      if (dData && dData.classCode) cloudClassCodes.add(dData.classCode.toUpperCase());
+    });
+
+    // Clean any deleted assignments that still exist in Cloud
+    const deletedAssignIds = getDeletedAssignmentIds();
+    for (const d of cloudAssignSnap.docs) {
+      const dData = d.data() as Assignment;
+      if (deletedAssignIds.has(d.id) || (dData && deletedAssignIds.has(dData.id))) {
+        await deleteDoc(d.ref).catch(() => {});
+      }
+    }
+
+    // 2. Push any unsynced local results to Cloud
+    const localResults = getResults();
+    for (const r of localResults) {
+      const safeId = (r.id || `res_${Date.now()}`).replace(/[^a-zA-Z0-9_\-]/g, '_');
+      if (!cloudResIds.has(safeId)) {
+        await syncResultToCloud(r);
+      }
+    }
+
+    // 3. Push any unsynced local students to Cloud
+    const localStudents = getStudents();
+    for (const s of localStudents) {
+      const safeId = s.id.replace(/[^a-zA-Z0-9_\-]/g, '_');
+      if (!cloudStuIds.has(safeId)) {
+        await saveStudent(s);
+      }
+    }
+
+    // 4. Cloud assignments are authoritative (saveAssignment pushes immediately when created).
+    // Do NOT re-push local assignments that are absent in Cloud, otherwise deleted assignments in another browser would be resurrected.
+
+    // 5. Push any unsynced local classes to Cloud
+    const localClasses = getClasses();
+    for (const c of localClasses) {
+      if (!cloudClassCodes.has(c.classCode.toUpperCase())) {
+        await saveClass(c.classCode, c.name, c.teacherName);
+      }
+    }
+
+    // 6. Now pull all latest data down to refresh local cache
+    const [finalTeachers, finalAssignments, finalStudents, finalClasses, finalResults] =
+      await Promise.all([
+        fetchTeachersFromCloud(),
+        fetchAssignmentsFromCloud(),
+        fetchStudentsFromCloud(),
+        fetchClassesFromCloud(),
+        fetchAllResultsFromCloud()
+      ]);
+
+    return {
+      resultsCount: finalResults.length,
+      studentsCount: finalStudents.length,
+      classesCount: finalClasses.length,
+      assignmentsCount: finalAssignments.length,
+      teachersCount: finalTeachers.length
+    };
+  } catch (err) {
+    console.warn('[Sync] syncAllWithCloud error:', err);
+    return {
+      resultsCount: getResults().length,
+      studentsCount: getStudents().length,
+      classesCount: getClasses().length,
+      assignmentsCount: getAssignments().length,
+      teachersCount: getTeachers().length
+    };
+  }
+}
+
 

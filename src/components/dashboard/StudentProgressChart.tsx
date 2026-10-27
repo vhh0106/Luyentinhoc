@@ -49,7 +49,8 @@ const SUBJECT_COLORS: Record<SubjectId, { main: string; light: string; gradient:
   powerpoint: { main: '#ea580c', light: '#ffedd5', gradient: ['#ea580c', '#c2410c'] },
   'thuat-toan': { main: '#8b5cf6', light: '#ede9fe', gradient: ['#8b5cf6', '#6d28d9'] },
   cdso: { main: '#06b6d4', light: '#cffafe', gradient: ['#06b6d4', '#0e7490'] },
-  ai: { main: '#ec4899', light: '#fce7f3', gradient: ['#ec4899', '#be185d'] }
+  ai: { main: '#ec4899', light: '#fce7f3', gradient: ['#ec4899', '#be185d'] },
+  sgk: { main: '#0d9488', light: '#f0fdfa', gradient: ['#0d9488', '#0f766e'] }
 };
 
 export const StudentProgressChart: React.FC<StudentProgressChartProps> = ({
@@ -63,7 +64,7 @@ export const StudentProgressChart: React.FC<StudentProgressChartProps> = ({
   onClose
 }) => {
   const [chartType, setChartType] = useState<'radial' | 'donut'>('radial');
-  const [filterMode, setFilterMode] = useState<'assigned' | 'all'>('all');
+  const [filterMode, setFilterMode] = useState<'assigned' | 'all'>('assigned');
   const [selectedSubjectDetail, setSelectedSubjectDetail] = useState<SubjectId | null>(null);
 
   // Load results from storage to compute accuracy and points
@@ -71,11 +72,12 @@ export const StudentProgressChart: React.FC<StudentProgressChartProps> = ({
     return getResults().filter(r => r.studentName === studentName && r.classCode === classCode);
   }, [studentName, classCode]);
 
-  // Compute stats for all 10 subjects
+  // Compute stats for active subjects (strictly respect assignedSubjects in 'assigned' mode, including when empty)
   const allSubjectIds = Object.keys(SUBJECTS_MAP) as SubjectId[];
-  const activeSubjectIds = filterMode === 'assigned' && assignedSubjects && assignedSubjects.length > 0
-    ? assignedSubjects
-    : allSubjectIds;
+  const activeSubjectIds =
+    filterMode === 'assigned' && assignedSubjects !== undefined
+      ? assignedSubjects
+      : allSubjectIds;
 
   const subjectStats = useMemo(() => {
     return activeSubjectIds.map(sId => {
@@ -183,7 +185,7 @@ export const StudentProgressChart: React.FC<StudentProgressChartProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xl overflow-hidden">
+    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-xl overflow-hidden">
       {/* Header Banner */}
       <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white p-6 relative">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -229,6 +231,16 @@ export const StudentProgressChart: React.FC<StudentProgressChartProps> = ({
           {/* Filter subject toggle */}
           <div className="flex items-center bg-white/15 backdrop-blur-md p-1 rounded-xl border border-white/20">
             <button
+              onClick={() => setFilterMode('assigned')}
+              className={`px-3 py-1 rounded-lg font-bold transition-all ${
+                filterMode === 'assigned'
+                  ? 'bg-white text-blue-700 shadow-xs'
+                  : 'text-white hover:bg-white/10'
+              }`}
+            >
+              Môn được giao ({assignedSubjects ? assignedSubjects.length : 0} môn)
+            </button>
+            <button
               onClick={() => setFilterMode('all')}
               className={`px-3 py-1 rounded-lg font-bold transition-all ${
                 filterMode === 'all'
@@ -236,20 +248,8 @@ export const StudentProgressChart: React.FC<StudentProgressChartProps> = ({
                   : 'text-white hover:bg-white/10'
               }`}
             >
-              Toàn bộ 10 Môn học ({totalAvailableLessons} bài)
+              Tổng quan chương trình (10 môn)
             </button>
-            {assignedSubjects && assignedSubjects.length > 0 && assignedSubjects.length < 10 && (
-              <button
-                onClick={() => setFilterMode('assigned')}
-                className={`px-3 py-1 rounded-lg font-bold transition-all ${
-                  filterMode === 'assigned'
-                    ? 'bg-white text-blue-700 shadow-xs'
-                    : 'text-white hover:bg-white/10'
-                }`}
-              >
-                Môn được giao ({assignedSubjects.length} môn)
-              </button>
-            )}
           </div>
 
           {/* Chart mode toggle */}
@@ -306,7 +306,7 @@ export const StudentProgressChart: React.FC<StudentProgressChartProps> = ({
         {/* Main Chart Section */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
           {/* Left Chart Area */}
-          <div className="lg:col-span-7 bg-slate-50/70 p-6 rounded-3xl border border-slate-200/80 flex flex-col items-center justify-center relative min-h-[380px]">
+          <div className="lg:col-span-7 bg-slate-50/70 dark:bg-slate-800/60 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-700 flex flex-col items-center justify-center relative min-h-[380px]">
             {/* Center Gauge Indicator in middle of chart */}
             <div className="w-full h-80 relative flex items-center justify-center">
               {chartType === 'radial' ? (
@@ -319,7 +319,7 @@ export const StudentProgressChart: React.FC<StudentProgressChartProps> = ({
                     endAngle={-180}
                   >
                     <RadialBar
-                      background={{ fill: '#e2e8f0' }}
+                      background={{ fill: '#334155' }}
                       dataKey="percent"
                       cornerRadius={10}
                     />
@@ -350,12 +350,12 @@ export const StudentProgressChart: React.FC<StudentProgressChartProps> = ({
 
               {/* Central Badge Overlay */}
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <div className="w-24 h-24 rounded-full bg-white/95 shadow-md border-2 border-indigo-100 flex flex-col items-center justify-center text-center p-2">
+                <div className="w-24 h-24 rounded-full bg-white/95 dark:bg-slate-800 shadow-md border-2 border-indigo-100 dark:border-indigo-900 flex flex-col items-center justify-center text-center p-2">
                   <span className="text-xl">🌟</span>
-                  <div className="text-xl font-black text-slate-900 leading-none mt-0.5">
+                  <div className="text-xl font-black text-slate-900 dark:text-white leading-none mt-0.5">
                     {overallPercentage}%
                   </div>
-                  <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter mt-1">
+                  <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tighter mt-1">
                     Hoàn thành
                   </span>
                 </div>
@@ -363,7 +363,7 @@ export const StudentProgressChart: React.FC<StudentProgressChartProps> = ({
             </div>
 
             {/* Quick Chart Legend */}
-            <div className="text-center text-xs text-slate-500 mt-2">
+            <div className="text-center text-xs text-slate-500 dark:text-slate-400 mt-2">
               💡 Rê chuột vào từng vòng màu để xem số bài đã làm của từng môn
             </div>
           </div>
@@ -371,13 +371,13 @@ export const StudentProgressChart: React.FC<StudentProgressChartProps> = ({
           {/* Right Highlights & Milestones */}
           <div className="lg:col-span-5 space-y-4">
             {/* Overall status card */}
-            <div className="bg-gradient-to-br from-indigo-50 to-blue-50 p-5 rounded-3xl border border-indigo-100">
+            <div className="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-slate-800 dark:to-indigo-950/60 p-5 rounded-3xl border border-indigo-100 dark:border-indigo-900">
               <div className="flex items-center gap-3 mb-2">
                 <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold shadow-xs">
                   <Trophy className="w-5 h-5 text-amber-300" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-black text-slate-900">
+                  <h4 className="text-sm font-black text-slate-900 dark:text-white">
                     {overallPercentage >= 80
                       ? 'Xuất sắc! Em sắp chinh phục tất cả!'
                       : overallPercentage >= 50
@@ -386,14 +386,14 @@ export const StudentProgressChart: React.FC<StudentProgressChartProps> = ({
                       ? 'Khởi đầu tuyệt vời! Hãy tiếp tục phát huy!'
                       : 'Hãy bắt đầu làm bài để ghi điểm nhé!'}
                   </h4>
-                  <p className="text-xs text-slate-600">
+                  <p className="text-xs text-slate-600 dark:text-slate-300">
                     {totalCompletedLessons} bài đã làm xong trên tổng số {totalAvailableLessons} bài.
                   </p>
                 </div>
               </div>
 
               {/* Progress bar */}
-              <div className="w-full bg-indigo-200/70 h-3 rounded-full overflow-hidden mt-3">
+              <div className="w-full bg-indigo-200/70 dark:bg-indigo-950 h-3 rounded-full overflow-hidden mt-3">
                 <div
                   className="bg-gradient-to-r from-blue-500 via-indigo-600 to-purple-600 h-full rounded-full transition-all duration-700 ease-out"
                   style={{ width: `${Math.min(100, overallPercentage)}%` }}
@@ -402,22 +402,22 @@ export const StudentProgressChart: React.FC<StudentProgressChartProps> = ({
             </div>
 
             {/* Milestones list */}
-            <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs space-y-3">
+            <div className="bg-white dark:bg-slate-800/90 p-5 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-xs space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                <span className="text-xs font-bold text-slate-800 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
                   <Award className="w-4 h-4 text-amber-500" />
                   Mốc thành tích học tập
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-bold text-blue-600">
+                  <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400">
                     {milestones.filter(m => m.achieved).length} / {milestones.length} Đã đạt
                   </span>
                   {onOpenAchievements && (
                     <button
                       onClick={onOpenAchievements}
-                      className="text-[10px] font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 px-2.5 py-1 rounded-lg border border-amber-300 transition-colors flex items-center gap-1"
+                      className="text-[10px] font-bold text-amber-800 dark:text-amber-200 bg-amber-100 dark:bg-amber-950/70 hover:bg-amber-200 dark:hover:bg-amber-900 px-2.5 py-1 rounded-lg border border-amber-300 dark:border-amber-800 transition-colors flex items-center gap-1"
                     >
-                      <Trophy className="w-3 h-3 text-amber-600" />
+                      <Trophy className="w-3 h-3 text-amber-600 dark:text-amber-400" />
                       <span>Kho Huy Hiệu</span>
                     </button>
                   )}
@@ -430,8 +430,8 @@ export const StudentProgressChart: React.FC<StudentProgressChartProps> = ({
                     key={idx}
                     className={`flex items-center justify-between p-2.5 rounded-2xl border text-xs transition-all ${
                       m.achieved
-                        ? 'bg-amber-50/70 border-amber-200 text-slate-800 font-semibold'
-                        : 'bg-slate-50 border-slate-200/70 text-slate-400'
+                        ? 'bg-amber-50/70 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800 text-slate-800 dark:text-slate-100 font-semibold'
+                        : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200/70 dark:border-slate-700 text-slate-400 dark:text-slate-500'
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
@@ -440,11 +440,11 @@ export const StudentProgressChart: React.FC<StudentProgressChartProps> = ({
                     </div>
                     <div className="flex items-center gap-1">
                       {m.achieved ? (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold flex items-center gap-1">
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold flex items-center gap-1">
                           <CheckCircle2 className="w-3 h-3" /> Đạt
                         </span>
                       ) : (
-                        <span className="text-[10px] text-slate-400">
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500">
                           {totalCompletedLessons}/{m.count} bài
                         </span>
                       )}
@@ -459,11 +459,11 @@ export const StudentProgressChart: React.FC<StudentProgressChartProps> = ({
         {/* 10 Subjects Detailed Cards Grid with Circular Progress Indicators */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-blue-600" />
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               Chi tiết tiến độ từng môn học ({subjectStats.length} môn)
             </h3>
-            <span className="text-xs text-slate-500">
+            <span className="text-xs text-slate-500 dark:text-slate-400">
               Nhấp "Luyện tập ngay" để chuyển đến môn học
             </span>
           </div>
@@ -479,16 +479,16 @@ export const StudentProgressChart: React.FC<StudentProgressChartProps> = ({
                 <div
                   key={s.id}
                   onClick={() => setSelectedSubjectDetail(s.id === selectedSubjectDetail ? null : s.id)}
-                  className={`bg-white p-4 rounded-3xl border transition-all duration-200 flex flex-col justify-between cursor-pointer hover:shadow-md ${
+                  className={`bg-white dark:bg-slate-800/90 p-4 rounded-3xl border transition-all duration-200 flex flex-col justify-between cursor-pointer hover:shadow-md ${
                     isSelected
-                      ? 'border-blue-500 ring-2 ring-blue-200 shadow-md'
-                      : 'border-slate-200/80 hover:border-slate-300'
+                      ? 'border-blue-500 ring-2 ring-blue-200 dark:ring-blue-900 shadow-md'
+                      : 'border-slate-200/80 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                   }`}
                 >
                   <div>
                     {/* Top row: Emoji & Mini circular SVG gauge */}
                     <div className="flex items-center justify-between mb-2">
-                      <div className="w-10 h-10 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-xl shadow-2xs">
+                      <div className="w-10 h-10 rounded-2xl bg-slate-50 dark:bg-slate-700 border border-slate-100 dark:border-slate-600 flex items-center justify-center text-xl shadow-2xs">
                         {s.emoji}
                       </div>
 
@@ -499,7 +499,7 @@ export const StudentProgressChart: React.FC<StudentProgressChartProps> = ({
                             cx="24"
                             cy="24"
                             r={radius}
-                            stroke="#e2e8f0"
+                            stroke="#334155"
                             strokeWidth="4"
                             fill="transparent"
                           />
@@ -516,34 +516,34 @@ export const StudentProgressChart: React.FC<StudentProgressChartProps> = ({
                             className="transition-all duration-700 ease-out"
                           />
                         </svg>
-                        <span className="absolute text-[10px] font-black text-slate-800">
+                        <span className="absolute text-[10px] font-black text-slate-800 dark:text-slate-100">
                           {s.completionRate}%
                         </span>
                       </div>
                     </div>
 
-                    <h4 className="text-xs font-bold text-slate-900 line-clamp-1">
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-white line-clamp-1">
                       {s.name}
                     </h4>
 
-                    <div className="mt-2 space-y-1 text-[11px] text-slate-600">
+                    <div className="mt-2 space-y-1 text-[11px] text-slate-600 dark:text-slate-300">
                       <div className="flex items-center justify-between">
                         <span>Đã làm:</span>
-                        <strong className="text-slate-800 font-bold">
+                        <strong className="text-slate-800 dark:text-white font-bold">
                           {s.completedCount} / {s.totalLessons} bài
                         </strong>
                       </div>
                       <div className="flex items-center justify-between">
                         <span>Độ chính xác:</span>
-                        <strong className="text-emerald-600 font-bold">
+                        <strong className="text-emerald-600 dark:text-emerald-400 font-bold">
                           {s.avgAccuracy}%
                         </strong>
                       </div>
                     </div>
                   </div>
 
-                  {/* Action button */}
-                  {onSelectSubject && (
+                  {/* Action button: only allow starting exercise if subject is currently assigned */}
+                  {onSelectSubject && (!assignedSubjects || assignedSubjects.includes(s.id)) && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -560,6 +560,11 @@ export const StudentProgressChart: React.FC<StudentProgressChartProps> = ({
               );
             })}
           </div>
+          {subjectStats.length === 0 && (
+            <div className="p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-dashed border-slate-300 dark:border-slate-700 text-center text-xs text-slate-500 dark:text-slate-400">
+              Hiện chưa có môn học nào được giao cho Lớp {classCode}.
+            </div>
+          )}
         </div>
       </div>
     </div>

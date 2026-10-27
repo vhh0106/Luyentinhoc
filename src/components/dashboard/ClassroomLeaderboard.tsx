@@ -108,7 +108,7 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
   }, [entries, searchQuery, sortBy, filterMode, currentStudentEntry]);
 
   return (
-    <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300">
+    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300">
       {/* Header Banner */}
       <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white p-6 md:p-8 relative overflow-hidden">
         <div className="absolute right-0 top-0 translate-x-10 -translate-y-10 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none" />
@@ -163,35 +163,35 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
 
       {/* Current Student Standing Strip */}
       {currentStudentEntry && (
-        <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-amber-50 p-4 px-6 border-b border-indigo-100 flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-amber-50 dark:from-slate-900 dark:via-indigo-950/60 dark:to-slate-900 p-4 px-6 border-b border-indigo-100 dark:border-indigo-900 flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-blue-600 text-white font-black flex items-center justify-center text-sm shadow-md shrink-0">
               #{currentStudentEntry.rank}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-extrabold text-blue-900">
+                <span className="text-xs font-extrabold text-blue-900 dark:text-blue-200">
                   Vị trí của em ({currentStudentName})
                 </span>
                 <span className="px-2 py-0.5 bg-blue-600 text-white rounded-full text-[10px] font-bold">
                   Hạng {currentStudentEntry.rank} / {entries.length}
                 </span>
               </div>
-              <p className="text-xs text-slate-600 mt-0.5">
-                Em đã tích lũy được <strong className="text-amber-600 font-extrabold">{currentStudentEntry.totalStars} ⭐</strong> ({currentStudentEntry.completedLessonsCount} bài học · {currentStudentEntry.badgesCount} huy hiệu)
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
+                Em đã tích lũy được <strong className="text-amber-600 dark:text-amber-400 font-extrabold">{currentStudentEntry.totalStars} ⭐</strong> ({currentStudentEntry.completedLessonsCount} bài học · {currentStudentEntry.badgesCount} huy hiệu)
               </p>
             </div>
           </div>
 
           {studentAbove ? (
-            <div className="flex items-center gap-2 bg-white/80 backdrop-blur-xs px-3.5 py-1.5 rounded-xl border border-blue-200/80 shadow-2xs text-xs">
+            <div className="flex items-center gap-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xs px-3.5 py-1.5 rounded-xl border border-blue-200/80 dark:border-blue-800 shadow-2xs text-xs">
               <Zap className="w-4 h-4 text-amber-500 shrink-0" />
-              <span className="text-slate-700">
-                Chỉ cần thêm <strong className="text-amber-600 font-black">{studentAbove.totalStars - currentStudentEntry.totalStars + 1} ⭐</strong> nữa là em vượt lên hạng #{studentAbove.rank} của bạn <strong>{studentAbove.studentName}</strong>!
+              <span className="text-slate-700 dark:text-slate-300">
+                Chỉ cần thêm <strong className="text-amber-600 dark:text-amber-400 font-black">{studentAbove.totalStars - currentStudentEntry.totalStars + 1} ⭐</strong> nữa là em vượt lên hạng #{studentAbove.rank} của bạn <strong>{studentAbove.studentName}</strong>!
               </span>
             </div>
           ) : (
-            <div className="flex items-center gap-2 bg-amber-100 px-3.5 py-1.5 rounded-xl border border-amber-300 text-xs font-bold text-amber-900 shadow-2xs">
+            <div className="flex items-center gap-2 bg-amber-100 dark:bg-amber-950/80 px-3.5 py-1.5 rounded-xl border border-amber-300 dark:border-amber-700 text-xs font-bold text-amber-900 dark:text-amber-200 shadow-2xs">
               <Crown className="w-4 h-4 text-amber-600 fill-amber-500" />
               <span>Tuyệt vời! Em đang dẫn đầu toàn lớp học! 👑</span>
             </div>
@@ -200,7 +200,7 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
       )}
 
       {/* Top 3 Podium (Bục vinh quang 1-2-3) */}
-      <div className="p-6 md:p-8 bg-slate-50/60 border-b border-slate-200/80">
+      <div className="p-6 md:p-8 bg-slate-50/60 dark:bg-slate-800/40 border-b border-slate-200/80 dark:border-slate-800">
         <div className="text-center mb-6">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100/80 border border-amber-200 rounded-full text-xs font-black text-amber-900 mb-1">
             <Sparkles className="w-3.5 h-3.5 text-amber-600" />
@@ -212,22 +212,22 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end max-w-3xl mx-auto">
           {/* Top 2 - Silver (Left) */}
           {top2 && (
-            <div className="order-2 md:order-1 bg-white p-5 rounded-3xl border-2 border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col items-center text-center relative overflow-hidden">
-              <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-slate-300 via-slate-400 to-slate-300" />
-              <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-700 font-black flex items-center justify-center text-xl shadow-inner mb-3 border border-slate-200">
+            <div className="order-2 md:order-1 bg-white dark:bg-slate-800 p-5 rounded-3xl border-2 border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all flex flex-col items-center text-center relative overflow-hidden">
+              <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-slate-300 via-slate-400 to-slate-300 dark:from-slate-600 dark:via-slate-500 dark:to-slate-600" />
+              <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-black flex items-center justify-center text-xl shadow-inner mb-3 border border-slate-200 dark:border-slate-600">
                 🥈
               </div>
-              <span className="px-2.5 py-0.5 bg-slate-100 text-slate-700 rounded-full text-[11px] font-black uppercase mb-1">
+              <span className="px-2.5 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-full text-[11px] font-black uppercase mb-1">
                 Hạng 2 · Á Quân
               </span>
-              <h4 className="font-extrabold text-slate-900 text-base leading-snug line-clamp-1">
+              <h4 className="font-extrabold text-slate-900 dark:text-white text-base leading-snug line-clamp-1">
                 {top2.studentName}
               </h4>
-              <div className="mt-2 flex items-center gap-1 text-amber-600 font-black text-lg">
+              <div className="mt-2 flex items-center gap-1 text-amber-600 dark:text-amber-400 font-black text-lg">
                 <Star className="w-5 h-5 fill-amber-400 text-amber-500" />
                 <span>{top2.totalStars} Sao</span>
               </div>
-              <div className="text-[11px] text-slate-500 mt-1">
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
                 {top2.completedLessonsCount} bài · {top2.averageAccuracy}% chính xác
               </div>
               {top2.isCurrentStudent && (
@@ -240,7 +240,7 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
 
           {/* Top 1 - Gold Champion (Center, elevated) */}
           {top1 && (
-            <div className="order-1 md:order-2 bg-gradient-to-b from-amber-50 to-white p-6 rounded-3xl border-2 border-amber-400 shadow-lg hover:shadow-xl transition-all flex flex-col items-center text-center relative overflow-hidden md:-translate-y-3">
+            <div className="order-1 md:order-2 bg-gradient-to-b from-amber-50 to-white dark:from-amber-950/40 dark:to-slate-800 p-6 rounded-3xl border-2 border-amber-400 dark:border-amber-500 shadow-lg hover:shadow-xl transition-all flex flex-col items-center text-center relative overflow-hidden md:-translate-y-3">
               <div className="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500" />
               <div className="absolute top-2 right-2">
                 <Crown className="w-6 h-6 text-amber-500 fill-amber-400" />
@@ -251,14 +251,14 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
               <span className="px-3 py-0.5 bg-amber-400 text-amber-950 rounded-full text-xs font-black uppercase mb-1 shadow-2xs">
                 Quán Quân Lớp {classCode}
               </span>
-              <h3 className="font-black text-slate-950 text-lg leading-snug line-clamp-1">
+              <h3 className="font-black text-slate-950 dark:text-white text-lg leading-snug line-clamp-1">
                 {top1.studentName}
               </h3>
-              <div className="mt-2 flex items-center gap-1.5 text-amber-600 font-black text-2xl">
+              <div className="mt-2 flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-black text-2xl">
                 <Star className="w-6 h-6 fill-amber-400 text-amber-500" />
                 <span>{top1.totalStars} Sao</span>
               </div>
-              <div className="text-xs text-slate-600 mt-1 font-medium">
+              <div className="text-xs text-slate-600 dark:text-slate-300 mt-1 font-medium">
                 {top1.completedLessonsCount} bài hoàn thành · {top1.badgesCount} huy hiệu
               </div>
               {top1.isCurrentStudent && (
@@ -271,22 +271,22 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
 
           {/* Top 3 - Bronze (Right) */}
           {top3 && (
-            <div className="order-3 md:order-3 bg-white p-5 rounded-3xl border-2 border-amber-200/70 shadow-sm hover:shadow-md transition-all flex flex-col items-center text-center relative overflow-hidden">
+            <div className="order-3 md:order-3 bg-white dark:bg-slate-800 p-5 rounded-3xl border-2 border-amber-200/70 dark:border-amber-800/70 shadow-sm hover:shadow-md transition-all flex flex-col items-center text-center relative overflow-hidden">
               <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-amber-600/40 via-amber-700/50 to-amber-600/40" />
-              <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-800 font-black flex items-center justify-center text-xl shadow-inner mb-3 border border-amber-200">
+              <div className="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-black flex items-center justify-center text-xl shadow-inner mb-3 border border-amber-200 dark:border-amber-700/50">
                 🥉
               </div>
-              <span className="px-2.5 py-0.5 bg-amber-100 text-amber-900 rounded-full text-[11px] font-black uppercase mb-1">
+              <span className="px-2.5 py-0.5 bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 rounded-full text-[11px] font-black uppercase mb-1">
                 Hạng 3 · Đồng
               </span>
-              <h4 className="font-extrabold text-slate-900 text-base leading-snug line-clamp-1">
+              <h4 className="font-extrabold text-slate-900 dark:text-white text-base leading-snug line-clamp-1">
                 {top3.studentName}
               </h4>
-              <div className="mt-2 flex items-center gap-1 text-amber-600 font-black text-lg">
+              <div className="mt-2 flex items-center gap-1 text-amber-600 dark:text-amber-400 font-black text-lg">
                 <Star className="w-5 h-5 fill-amber-400 text-amber-500" />
                 <span>{top3.totalStars} Sao</span>
               </div>
-              <div className="text-[11px] text-slate-500 mt-1">
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
                 {top3.completedLessonsCount} bài · {top3.averageAccuracy}% chính xác
               </div>
               {top3.isCurrentStudent && (
@@ -300,7 +300,7 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
       </div>
 
       {/* Control Bar: Filter, Search & Sort */}
-      <div className="p-6 border-b border-slate-200 bg-white">
+      <div className="p-6 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           {/* Filter Modes */}
           <div className="flex items-center gap-2 flex-wrap">
@@ -309,7 +309,7 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 filterMode === 'all'
                   ? 'bg-blue-600 text-white shadow-xs'
-                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                  : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200'
               }`}
             >
               Tất cả ({entries.length} bạn)
@@ -319,7 +319,7 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 filterMode === 'top5'
                   ? 'bg-blue-600 text-white shadow-xs'
-                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                  : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200'
               }`}
             >
               Top 5 Xuất sắc 🏆
@@ -330,7 +330,7 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                   filterMode === 'nearMe'
                     ? 'bg-blue-600 text-white shadow-xs'
-                    : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                    : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200'
                 }`}
               >
                 Gần thứ hạng của em 🎯
@@ -347,15 +347,15 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
                 placeholder="Tìm tên bạn học..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 w-44 md:w-56"
+                className="pl-8 pr-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 w-44 md:w-56"
               />
             </div>
 
-            <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-xl text-xs font-bold text-slate-600">
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-0.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300">
               <button
                 onClick={() => setSortBy('stars')}
                 className={`px-2.5 py-1 rounded-lg transition-colors ${
-                  sortBy === 'stars' ? 'bg-white text-amber-600 shadow-2xs' : 'hover:text-slate-900'
+                  sortBy === 'stars' ? 'bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-400 shadow-2xs' : 'hover:text-slate-900 dark:hover:text-white'
                 }`}
                 title="Sắp xếp theo số Sao ⭐"
               >
@@ -364,7 +364,7 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
               <button
                 onClick={() => setSortBy('lessons')}
                 className={`px-2.5 py-1 rounded-lg transition-colors ${
-                  sortBy === 'lessons' ? 'bg-white text-blue-600 shadow-2xs' : 'hover:text-slate-900'
+                  sortBy === 'lessons' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-2xs' : 'hover:text-slate-900 dark:hover:text-white'
                 }`}
                 title="Sắp xếp theo số bài đã hoàn thành"
               >
@@ -373,7 +373,7 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
               <button
                 onClick={() => setSortBy('accuracy')}
                 className={`px-2.5 py-1 rounded-lg transition-colors ${
-                  sortBy === 'accuracy' ? 'bg-white text-emerald-600 shadow-2xs' : 'hover:text-slate-900'
+                  sortBy === 'accuracy' ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-2xs' : 'hover:text-slate-900 dark:hover:text-white'
                 }`}
                 title="Sắp xếp theo độ chính xác"
               >
@@ -388,7 +388,7 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-slate-200 bg-slate-50/70 text-[11px] font-black uppercase tracking-wider text-slate-500">
+            <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60 text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
               <th className="py-3 px-6 w-16 text-center">Hạng</th>
               <th className="py-3 px-4">Học sinh</th>
               <th className="py-3 px-4 text-center">Tổng số Sao</th>
@@ -399,7 +399,7 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
               <th className="py-3 px-6 text-right">Chi tiết</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 text-xs">
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
             {filteredEntries.map(entry => {
               const isTop1 = entry.rank === 1;
               const isTop2 = entry.rank === 2;
@@ -408,8 +408,8 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
               return (
                 <tr
                   key={entry.studentName}
-                  className={`hover:bg-slate-50/80 transition-colors ${
-                    entry.isCurrentStudent ? 'bg-blue-50/70 font-semibold' : ''
+                  className={`hover:bg-slate-50/80 dark:hover:bg-slate-800/80 transition-colors ${
+                    entry.isCurrentStudent ? 'bg-blue-50/70 dark:bg-blue-950/40 font-semibold' : ''
                   }`}
                 >
                   {/* Rank Column */}
@@ -419,15 +419,15 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
                         🥇
                       </span>
                     ) : isTop2 ? (
-                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-slate-200 text-slate-700 font-black shadow-xs">
+                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-black shadow-xs">
                         🥈
                       </span>
                     ) : isTop3 ? (
-                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-amber-100 text-amber-800 font-black border border-amber-300 shadow-xs">
+                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 font-black border border-amber-300 dark:border-amber-700 shadow-xs">
                         🥉
                       </span>
                     ) : (
-                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-slate-600 font-bold">
+                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold">
                         #{entry.rank}
                       </span>
                     )}
@@ -441,7 +441,7 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-extrabold text-slate-900 text-sm">
+                          <span className="font-extrabold text-slate-900 dark:text-white text-sm">
                             {entry.studentName}
                           </span>
                           {entry.isCurrentStudent && (
@@ -450,7 +450,7 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
                             </span>
                           )}
                         </div>
-                        <div className="flex items-center gap-1.5 text-[11px] text-slate-500 mt-0.5">
+                        <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                           <span>Môn yêu thích: {entry.favoriteSubjectEmoji} {entry.favoriteSubjectName}</span>
                         </div>
                       </div>
@@ -459,43 +459,47 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
 
                   {/* Total Stars ⭐ */}
                   <td className="py-3 px-4 text-center">
-                    <div className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-amber-50 border border-amber-200 font-black text-sm text-amber-700 shadow-2xs">
+                    <div className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800/80 font-black text-sm text-amber-700 dark:text-amber-300 shadow-2xs">
                       <Star className="w-4 h-4 fill-amber-400 text-amber-500" />
                       <span>{entry.totalStars}</span>
                     </div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">
+                    <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
                       {entry.lessonStars} bài + {entry.badgeStars} huy hiệu
                     </div>
                   </td>
 
                   {/* Completed Lessons */}
-                  <td className="py-3 px-4 text-center font-bold text-slate-700">
-                    <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800">
+                  <td className="py-3 px-4 text-center font-bold text-slate-700 dark:text-slate-200">
+                    <span className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200">
                       {entry.completedLessonsCount} bài
                     </span>
                   </td>
 
                   {/* Average Score */}
-                  <td className="py-3 px-4 text-center font-bold text-slate-800">
+                  <td className="py-3 px-4 text-center font-bold text-slate-800 dark:text-slate-200">
                     <span className={`px-2 py-0.5 rounded-md ${
-                      entry.averageScore >= 90 ? 'text-emerald-700 bg-emerald-50' : 'text-blue-700 bg-blue-50'
+                      entry.averageScore >= 90
+                        ? 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60'
+                        : 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60'
                     }`}>
                       {entry.averageScore} đ
                     </span>
                   </td>
 
                   {/* Average Accuracy */}
-                  <td className="py-3 px-4 text-center font-bold text-slate-800">
+                  <td className="py-3 px-4 text-center font-bold text-slate-800 dark:text-slate-200">
                     <span className={`px-2 py-0.5 rounded-md ${
-                      entry.averageAccuracy >= 95 ? 'text-emerald-700 bg-emerald-50' : 'text-slate-700 bg-slate-100'
+                      entry.averageAccuracy >= 95
+                        ? 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60'
+                        : 'text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800'
                     }`}>
                       {entry.averageAccuracy}%
                     </span>
                   </td>
 
                   {/* Badges count */}
-                  <td className="py-3 px-4 text-center font-bold text-amber-700">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 text-xs">
+                  <td className="py-3 px-4 text-center font-bold text-amber-700 dark:text-amber-400">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 text-xs">
                       <Trophy className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
                       <span>{entry.badgesCount}</span>
                     </span>
@@ -505,7 +509,7 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
                   <td className="py-3 px-6 text-right">
                     <button
                       onClick={() => setSelectedStudent(entry)}
-                      className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-colors inline-flex items-center gap-1"
+                      className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold transition-colors inline-flex items-center gap-1"
                     >
                       <span>Xem</span>
                       <ChevronRight className="w-3.5 h-3.5" />
@@ -517,7 +521,7 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
 
             {filteredEntries.length === 0 && (
               <tr>
-                <td colSpan={8} className="py-8 text-center text-slate-400 text-xs">
+                <td colSpan={8} className="py-8 text-center text-slate-400 dark:text-slate-500 text-xs">
                   Không tìm thấy bạn học nào phù hợp với từ khóa "{searchQuery}".
                 </td>
               </tr>
@@ -527,10 +531,10 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
       </div>
 
       {/* Footer / Star Rules Guide */}
-      <div className="p-4 px-6 bg-slate-50 border-t border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs text-slate-500">
+      <div className="p-4 px-6 bg-slate-50 dark:bg-slate-850/80 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
         <div className="flex items-center gap-2 flex-wrap">
           <Info className="w-4 h-4 text-blue-600 shrink-0" />
-          <span className="font-semibold text-slate-700">Quy tắc tích lũy Sao ⭐:</span>
+          <span className="font-semibold text-slate-700 dark:text-slate-200">Quy tắc tích lũy Sao ⭐:</span>
           <span>Đạt ≥ 90 điểm: <strong>3 ⭐</strong></span>
           <span>·</span>
           <span>Đạt ≥ 75 điểm: <strong>2 ⭐</strong></span>
@@ -540,85 +544,85 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
           <span>Mở khóa huy hiệu kĩ thuật số: <strong>+1 đến +5 ⭐</strong></span>
         </div>
 
-        <div className="text-[11px] text-slate-400">
+        <div className="text-[11px] text-slate-400 dark:text-slate-500">
           Cập nhật lần cuối: {lastUpdated.toLocaleTimeString('vi-VN')}
         </div>
       </div>
 
       {/* Student Detail Modal */}
       {selectedStudent && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-2xl bg-amber-400 text-amber-950 font-black flex items-center justify-center text-xl shadow-sm">
                   #{selectedStudent.rank}
                 </div>
                 <div>
-                  <h4 className="font-extrabold text-slate-900 text-base">
+                  <h4 className="font-extrabold text-slate-900 dark:text-white text-base">
                     {selectedStudent.studentName}
                   </h4>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Lớp {classCode} · {selectedStudent.isCurrentStudent ? 'Đang đăng nhập' : 'Học sinh'}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedStudent(null)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="py-5 space-y-4">
-              <div className="bg-amber-50 p-4 rounded-2xl border border-amber-200 flex items-center justify-between">
+              <div className="bg-amber-50 dark:bg-amber-950/40 p-4 rounded-2xl border border-amber-200 dark:border-amber-800/80 flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-bold text-amber-800 uppercase tracking-wider">
+                  <div className="text-xs font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider">
                     Tổng số Sao Tích Lũy
                   </div>
-                  <div className="text-2xl font-black text-amber-700 mt-0.5 flex items-center gap-1.5">
+                  <div className="text-2xl font-black text-amber-700 dark:text-amber-400 mt-0.5 flex items-center gap-1.5">
                     <Star className="w-6 h-6 fill-amber-400 text-amber-500" />
                     <span>{selectedStudent.totalStars} Sao</span>
                   </div>
                 </div>
-                <div className="text-right text-xs text-amber-900/80">
+                <div className="text-right text-xs text-amber-900/80 dark:text-amber-200/80">
                   <div>Bài học: <strong>+{selectedStudent.lessonStars} ⭐</strong></div>
                   <div>Huy hiệu: <strong>+{selectedStudent.badgeStars} ⭐</strong></div>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-center">
-                <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
-                  <div className="text-[11px] text-slate-500 font-semibold">Bài đã hoàn thành</div>
-                  <div className="text-lg font-black text-slate-900 mt-0.5">
+                <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700">
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">Bài đã hoàn thành</div>
+                  <div className="text-lg font-black text-slate-900 dark:text-white mt-0.5">
                     {selectedStudent.completedLessonsCount} bài
                   </div>
                 </div>
 
-                <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
-                  <div className="text-[11px] text-slate-500 font-semibold">Huy hiệu đạt được</div>
-                  <div className="text-lg font-black text-amber-700 mt-0.5">
+                <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700">
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">Huy hiệu đạt được</div>
+                  <div className="text-lg font-black text-amber-700 dark:text-amber-400 mt-0.5">
                     {selectedStudent.badgesCount} 🏆
                   </div>
                 </div>
 
-                <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
-                  <div className="text-[11px] text-slate-500 font-semibold">Điểm trung bình</div>
-                  <div className="text-lg font-black text-emerald-700 mt-0.5">
+                <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700">
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">Điểm trung bình</div>
+                  <div className="text-lg font-black text-emerald-700 dark:text-emerald-400 mt-0.5">
                     {selectedStudent.averageScore} / 100
                   </div>
                 </div>
 
-                <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
-                  <div className="text-[11px] text-slate-500 font-semibold">Độ chính xác</div>
-                  <div className="text-lg font-black text-blue-700 mt-0.5">
+                <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700">
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">Độ chính xác</div>
+                  <div className="text-lg font-black text-blue-700 dark:text-blue-400 mt-0.5">
                     {selectedStudent.averageAccuracy}%
                   </div>
                 </div>
               </div>
 
-              <div className="p-3 bg-blue-50/70 rounded-2xl border border-blue-200/70 text-xs text-blue-900 flex items-center gap-2">
+              <div className="p-3 bg-blue-50/70 dark:bg-blue-950/40 rounded-2xl border border-blue-200/70 dark:border-blue-800/80 text-xs text-blue-900 dark:text-blue-200 flex items-center gap-2">
                 <Target className="w-4 h-4 text-blue-600 shrink-0" />
                 <span>
                   Chuyên môn nổi bật nhất: <strong>{selectedStudent.favoriteSubjectEmoji} {selectedStudent.favoriteSubjectName}</strong>
@@ -628,7 +632,7 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
 
             <button
               onClick={() => setSelectedStudent(null)}
-              className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs transition-colors"
+              className="w-full py-2.5 bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white font-bold rounded-xl text-xs transition-colors"
             >
               Đóng
             </button>

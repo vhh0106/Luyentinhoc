@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Lesson } from '../../types';
 import { soundService } from '../../services/sound';
 import { ConfettiEffect } from '../common/ConfettiEffect';
+import { ThemeToggleButton } from '../common/ThemeToggleButton';
 import { ArrowLeft, RotateCcw, Award, CheckCircle2, Star, Sparkles, Heart } from 'lucide-react';
 
 interface MouseExerciseProps {
@@ -227,42 +228,45 @@ export const MouseExercise: React.FC<MouseExerciseProps> = ({
       <div className="flex items-center justify-between">
         <button
           onClick={onBack}
-          className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+          className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-2xs"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Quay lại bài học</span>
         </button>
 
-        <button
-          onClick={resetGame}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50"
-        >
-          <RotateCcw className="w-3.5 h-3.5" />
-          Chơi lại
-        </button>
+        <div className="flex items-center gap-3">
+          <ThemeToggleButton />
+          <button
+            onClick={resetGame}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 shadow-2xs"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            Chơi lại
+          </button>
+        </div>
       </div>
 
       {/* Header Info */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+      <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
         <div>
-          <div className="text-xs font-bold text-amber-600 uppercase tracking-wider mb-1">
+          <div className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-1">
             🖱️ Luyện chuột · Cấp {lesson.level} · Bài {lesson.id}
           </div>
-          <h1 className="text-xl md:text-2xl font-bold text-slate-900">{lesson.title}</h1>
-          <p className="text-sm text-slate-600 mt-1">{lesson.desc}</p>
+          <h1 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white">{lesson.title}</h1>
+          <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">{lesson.desc}</p>
         </div>
 
         {/* Progress & Score */}
         <div className="flex items-center gap-4">
           <div className="text-center">
-            <span className="block text-xs text-slate-500 font-medium">Tiến độ</span>
-            <span className="text-lg font-bold text-amber-600 tabular-nums">
+            <span className="block text-xs text-slate-500 dark:text-slate-400 font-medium">Tiến độ</span>
+            <span className="text-lg font-bold text-amber-600 dark:text-amber-400 tabular-nums">
               {targetsHit} / {totalRequired}
             </span>
           </div>
-          <div className="text-center px-4 py-2 bg-amber-50 rounded-xl border border-amber-200">
-            <span className="block text-xs text-amber-700 font-medium">Điểm số</span>
-            <span className="text-xl font-bold text-amber-800 tabular-nums">+{score}</span>
+          <div className="text-center px-4 py-2 bg-amber-50 dark:bg-amber-950/60 rounded-xl border border-amber-200 dark:border-amber-800">
+            <span className="block text-xs text-amber-700 dark:text-amber-300 font-medium">Điểm số</span>
+            <span className="text-xl font-bold text-amber-800 dark:text-amber-200 tabular-nums">+{score}</span>
           </div>
         </div>
       </div>
@@ -455,13 +459,13 @@ export const MouseExercise: React.FC<MouseExerciseProps> = ({
 
       {/* Victory Celebration Modal */}
       {isFinished && (
-        <div className="p-6 bg-gradient-to-br from-amber-50 via-orange-50 to-white rounded-3xl border-2 border-amber-300 shadow-xl text-center animate-bounce-gentle">
-          <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-inner">
+        <div className="p-6 bg-gradient-to-br from-amber-50 via-orange-50 to-white dark:from-amber-950/60 dark:via-orange-950/40 dark:to-slate-900 rounded-3xl border-2 border-amber-300 dark:border-amber-700 shadow-xl text-center animate-bounce-gentle">
+          <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/60 text-amber-600 dark:text-amber-300 rounded-full flex items-center justify-center mx-auto mb-3 shadow-inner">
             <Award className="w-8 h-8" />
           </div>
-          <h2 className="text-2xl font-black text-slate-900">Bàn tay vàng! Em điều khiển chuột siêu đỉnh!</h2>
-          <p className="text-sm text-slate-600 mt-1">
-            Tổng điểm đạt được: <strong className="text-amber-700 font-bold">{score} Điểm</strong>
+          <h2 className="text-2xl font-black text-slate-900 dark:text-white">Bàn tay vàng! Em điều khiển chuột siêu đỉnh!</h2>
+          <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
+            Tổng điểm đạt được: <strong className="text-amber-700 dark:text-amber-400 font-bold">{score} Điểm</strong>
           </p>
 
           <div className="flex justify-center gap-1.5 my-4">
@@ -473,7 +477,7 @@ export const MouseExercise: React.FC<MouseExerciseProps> = ({
           <div className="flex justify-center gap-3">
             <button
               onClick={resetGame}
-              className="px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-colors shadow-xs"
+              className="px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-xs"
             >
               Chơi lại lần nữa
             </button>

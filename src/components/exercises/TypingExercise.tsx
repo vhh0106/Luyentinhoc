@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Lesson, SubjectId } from '../../types';
 import { soundService } from '../../services/sound';
 import { ConfettiEffect } from '../common/ConfettiEffect';
+import { ThemeToggleButton } from '../common/ThemeToggleButton';
 import { getTelexKeysForChar, isVietnameseChar, getTelexExplanation } from '../../services/telex';
 import { Sparkles, RotateCcw, ArrowLeft, CheckCircle2, Award, Flame, HelpCircle, BookOpen } from 'lucide-react';
 
@@ -250,16 +251,18 @@ export const TypingExercise: React.FC<TypingExerciseProps> = ({
       <div className="flex items-center justify-between">
         <button
           onClick={onBack}
-          className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs"
+          className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-2xs"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Quay lại bài học</span>
         </button>
 
         <div className="flex items-center gap-3">
+          <ThemeToggleButton />
+
           <button
             onClick={() => setShowTelexCheatSheet(!showTelexCheatSheet)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors"
           >
             <BookOpen className="w-3.5 h-3.5" />
             <span>Quy tắc Telex</span>
@@ -267,13 +270,13 @@ export const TypingExercise: React.FC<TypingExerciseProps> = ({
 
           <button
             onClick={resetExercise}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 shadow-2xs"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 shadow-2xs"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             Luyện lại
           </button>
 
-          <label className="inline-flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
+          <label className="inline-flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300 cursor-pointer select-none">
             <input
               type="checkbox"
               checked={showKeyboard}
@@ -287,59 +290,59 @@ export const TypingExercise: React.FC<TypingExerciseProps> = ({
 
       {/* Telex Quick Reference Card (Collapsible) */}
       {showTelexCheatSheet && (
-        <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl text-xs space-y-2 animate-bounce-gentle">
-          <div className="font-bold text-blue-900 flex items-center justify-between">
+        <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/60 dark:to-indigo-950/60 border border-blue-200 dark:border-blue-800 rounded-2xl text-xs space-y-2 animate-bounce-gentle">
+          <div className="font-bold text-blue-900 dark:text-blue-200 flex items-center justify-between">
             <span className="flex items-center gap-1.5">
-              <HelpCircle className="w-4 h-4 text-blue-600" />
+              <HelpCircle className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               Bảng tra cứu quy tắc gõ tiếng Việt Telex (Sách Kết Nối Tri Thức)
             </span>
             <button
               onClick={() => setShowTelexCheatSheet(false)}
-              className="text-slate-400 hover:text-slate-600 font-bold"
+              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-bold"
             >
               Đóng ×
             </button>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 font-mono">
-            <div className="p-2 bg-white rounded-lg border border-blue-100">
-              <strong className="text-blue-700">Dấu Sắc (/)</strong>: gõ phím <strong className="text-rose-600">S</strong>
+            <div className="p-2 bg-white dark:bg-slate-800 rounded-lg border border-blue-100 dark:border-slate-700 text-slate-800 dark:text-slate-200">
+              <strong className="text-blue-700 dark:text-blue-400">Dấu Sắc (/)</strong>: gõ phím <strong className="text-rose-600 dark:text-rose-400">S</strong>
             </div>
-            <div className="p-2 bg-white rounded-lg border border-blue-100">
-              <strong className="text-blue-700">Dấu Huyền (\)</strong>: gõ phím <strong className="text-rose-600">F</strong>
+            <div className="p-2 bg-white dark:bg-slate-800 rounded-lg border border-blue-100 dark:border-slate-700 text-slate-800 dark:text-slate-200">
+              <strong className="text-blue-700 dark:text-blue-400">Dấu Huyền (\)</strong>: gõ phím <strong className="text-rose-600 dark:text-rose-400">F</strong>
             </div>
-            <div className="p-2 bg-white rounded-lg border border-blue-100">
-              <strong className="text-blue-700">Dấu Hỏi (?)</strong>: gõ phím <strong className="text-rose-600">R</strong>
+            <div className="p-2 bg-white dark:bg-slate-800 rounded-lg border border-blue-100 dark:border-slate-700 text-slate-800 dark:text-slate-200">
+              <strong className="text-blue-700 dark:text-blue-400">Dấu Hỏi (?)</strong>: gõ phím <strong className="text-rose-600 dark:text-rose-400">R</strong>
             </div>
-            <div className="p-2 bg-white rounded-lg border border-blue-100">
-              <strong className="text-blue-700">Dấu Ngã (~)</strong>: gõ phím <strong className="text-rose-600">X</strong>
+            <div className="p-2 bg-white dark:bg-slate-800 rounded-lg border border-blue-100 dark:border-slate-700 text-slate-800 dark:text-slate-200">
+              <strong className="text-blue-700 dark:text-blue-400">Dấu Ngã (~)</strong>: gõ phím <strong className="text-rose-600 dark:text-rose-400">X</strong>
             </div>
-            <div className="p-2 bg-white rounded-lg border border-blue-100">
-              <strong className="text-blue-700">Dấu Nặng (.)</strong>: gõ phím <strong className="text-rose-600">J</strong>
+            <div className="p-2 bg-white dark:bg-slate-800 rounded-lg border border-blue-100 dark:border-slate-700 text-slate-800 dark:text-slate-200">
+              <strong className="text-blue-700 dark:text-blue-400">Dấu Nặng (.)</strong>: gõ phím <strong className="text-rose-600 dark:text-rose-400">J</strong>
             </div>
-            <div className="p-2 bg-white rounded-lg border border-blue-100">
-              <strong className="text-blue-700">Chữ Â / Ê / Ô</strong>: gõ <strong className="text-rose-600">AA / EE / OO</strong>
+            <div className="p-2 bg-white dark:bg-slate-800 rounded-lg border border-blue-100 dark:border-slate-700 text-slate-800 dark:text-slate-200">
+              <strong className="text-blue-700 dark:text-blue-400">Chữ Â / Ê / Ô</strong>: gõ <strong className="text-rose-600 dark:text-rose-400">AA / EE / OO</strong>
             </div>
-            <div className="p-2 bg-white rounded-lg border border-blue-100">
-              <strong className="text-blue-700">Chữ Ă / Ơ / Ư</strong>: gõ <strong className="text-rose-600">AW / OW / UW</strong>
+            <div className="p-2 bg-white dark:bg-slate-800 rounded-lg border border-blue-100 dark:border-slate-700 text-slate-800 dark:text-slate-200">
+              <strong className="text-blue-700 dark:text-blue-400">Chữ Ă / Ơ / Ư</strong>: gõ <strong className="text-rose-600 dark:text-rose-400">AW / OW / UW</strong>
             </div>
-            <div className="p-2 bg-white rounded-lg border border-blue-100">
-              <strong className="text-blue-700">Chữ Đ</strong>: gõ <strong className="text-rose-600">DD</strong>
+            <div className="p-2 bg-white dark:bg-slate-800 rounded-lg border border-blue-100 dark:border-slate-700 text-slate-800 dark:text-slate-200">
+              <strong className="text-blue-700 dark:text-blue-400">Chữ Đ</strong>: gõ <strong className="text-rose-600 dark:text-rose-400">DD</strong>
             </div>
           </div>
         </div>
       )}
 
       {/* Lesson Title Card */}
-      <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm">
+      <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 text-xs font-bold text-blue-600 uppercase tracking-wider mb-1">
+            <div className="flex items-center gap-2 text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1">
               <span>{subjectEmoji} {subjectName}</span>
               <span>·</span>
               <span>Cấp {lesson.level} · Bài {lesson.id}</span>
             </div>
-            <h1 className="text-xl md:text-2xl font-bold text-slate-900">{lesson.title}</h1>
-            <p className="text-sm text-slate-600 mt-1">{lesson.desc}</p>
+            <h1 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white">{lesson.title}</h1>
+            <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">{lesson.desc}</p>
           </div>
 
           {/* Quick HUD Metrics */}
@@ -350,19 +353,19 @@ export const TypingExercise: React.FC<TypingExerciseProps> = ({
                 <span>Combo {combo}x</span>
               </div>
             )}
-            <div className="text-center px-3 py-2 bg-slate-50 rounded-xl border border-slate-100">
-              <span className="block text-xs text-slate-500 font-medium">Độ chính xác</span>
-              <span className={`text-lg font-bold tabular-nums ${accuracy >= 90 ? 'text-emerald-600' : 'text-amber-600'}`}>
+            <div className="text-center px-3 py-2 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700">
+              <span className="block text-xs text-slate-500 dark:text-slate-400 font-medium">Độ chính xác</span>
+              <span className={`text-lg font-bold tabular-nums ${accuracy >= 90 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
                 {accuracy}%
               </span>
             </div>
-            <div className="text-center px-3 py-2 bg-slate-50 rounded-xl border border-slate-100">
-              <span className="block text-xs text-slate-500 font-medium">Tốc độ (WPM)</span>
-              <span className="text-lg font-bold text-blue-600 tabular-nums">{wpm}</span>
+            <div className="text-center px-3 py-2 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700">
+              <span className="block text-xs text-slate-500 dark:text-slate-400 font-medium">Tốc độ (WPM)</span>
+              <span className="text-lg font-bold text-blue-600 dark:text-blue-400 tabular-nums">{wpm}</span>
             </div>
-            <div className="text-center px-3 py-2 bg-slate-50 rounded-xl border border-slate-100">
-              <span className="block text-xs text-slate-500 font-medium">Số lỗi</span>
-              <span className="text-lg font-bold text-rose-600 tabular-nums">{errors}</span>
+            <div className="text-center px-3 py-2 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700">
+              <span className="block text-xs text-slate-500 dark:text-slate-400 font-medium">Số lỗi</span>
+              <span className="text-lg font-bold text-rose-600 dark:text-rose-400 tabular-nums">{errors}</span>
             </div>
           </div>
         </div>
@@ -401,10 +404,10 @@ export const TypingExercise: React.FC<TypingExerciseProps> = ({
 
         {/* Real-time Finger & Telex Guidance Callout */}
         {!isFinished && currentChar && (
-          <div className="mt-4 p-3.5 bg-blue-50/80 border border-blue-200/80 rounded-2xl text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="mt-4 p-3.5 bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-800 rounded-2xl text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="font-bold text-slate-700">Phím cần gõ:</span>
-              <span className="px-3 py-1 font-mono text-base font-black bg-white text-blue-700 border border-blue-300 rounded-xl shadow-xs">
+              <span className="font-bold text-slate-700 dark:text-slate-200">Phím cần gõ:</span>
+              <span className="px-3 py-1 font-mono text-base font-black bg-white dark:bg-slate-800 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-slate-600 rounded-xl shadow-xs">
                 {currentExpectedKey === ' ' ? 'Phím cách (Space)' : currentExpectedKey.toUpperCase()}
               </span>
 
@@ -415,19 +418,19 @@ export const TypingExercise: React.FC<TypingExerciseProps> = ({
 
               {/* Telex Formula Tag for Vietnamese */}
               {isVN && (
-                <div className="ml-2 inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 text-amber-900 border border-amber-300 rounded-xl text-xs font-semibold shadow-2xs">
+                <div className="ml-2 inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 dark:bg-amber-950/70 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-700 rounded-xl text-xs font-semibold shadow-2xs">
                   <span>💡 Để được chữ "{currentChar}":</span>
-                  <span className="font-mono font-bold text-blue-700">
+                  <span className="font-mono font-bold text-blue-700 dark:text-blue-300">
                     {telexKeys.map(k => k.toUpperCase()).join(' + ')}
                   </span>
                   {telexStep > 0 && (
-                    <span className="text-emerald-700 font-bold ml-1">(Đã gõ bước {telexStep}/{telexKeys.length})</span>
+                    <span className="text-emerald-700 dark:text-emerald-400 font-bold ml-1">(Đã gõ bước {telexStep}/{telexKeys.length})</span>
                   )}
                 </div>
               )}
             </div>
 
-            <span className="text-[11px] text-slate-500 italic shrink-0">
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 italic shrink-0">
               Hỗ trợ gõ trực tiếp Telex hoặc bật sẵn Unikey
             </span>
           </div>
@@ -436,8 +439,8 @@ export const TypingExercise: React.FC<TypingExerciseProps> = ({
 
       {/* Interactive Color-coded Keyboard */}
       {showKeyboard && (
-        <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm select-none">
-          <div className="text-xs font-semibold text-slate-500 mb-3 flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm select-none">
+          <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-3 flex items-center justify-between">
             <span>SƠ ĐỒ BÀN PHÍM CHUẨN 10 NGÓN</span>
             <div className="flex items-center gap-2 text-[11px]">
               <span className="inline-block w-2.5 h-2.5 rounded-full bg-blue-300"></span> Ngón trỏ trái (F)
@@ -546,15 +549,15 @@ export const TypingExercise: React.FC<TypingExerciseProps> = ({
       {isFinished && (
         <>
           <ConfettiEffect durationMs={4500} />
-          <div className="p-6 bg-gradient-to-br from-emerald-50 via-teal-50 to-white rounded-3xl border-2 border-emerald-300 shadow-xl text-center animate-bounce-gentle">
-            <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-inner">
+          <div className="p-6 bg-gradient-to-br from-emerald-50 via-teal-50 to-white dark:from-emerald-950/60 dark:via-teal-950/40 dark:to-slate-900 rounded-3xl border-2 border-emerald-300 dark:border-emerald-700 shadow-xl text-center animate-bounce-gentle">
+            <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-300 rounded-full flex items-center justify-center mx-auto mb-3 shadow-inner">
               <Award className="w-8 h-8" />
             </div>
-            <h2 className="text-2xl font-black text-slate-900">Hoan hô! Em đã hoàn thành xuất sắc!</h2>
-            <p className="text-sm text-slate-600 mt-1">
-              Độ chính xác: <strong className="text-emerald-700 font-bold">{accuracy}%</strong> · Tốc độ: <strong className="text-blue-700 font-bold">{wpm} WPM</strong>
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white">Hoan hô! Em đã hoàn thành xuất sắc!</h2>
+            <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
+              Độ chính xác: <strong className="text-emerald-700 dark:text-emerald-400 font-bold">{accuracy}%</strong> · Tốc độ: <strong className="text-blue-700 dark:text-blue-400 font-bold">{wpm} WPM</strong>
               {maxCombo > 5 && (
-                <span className="block text-xs font-bold text-amber-600 mt-1">
+                <span className="block text-xs font-bold text-amber-600 dark:text-amber-400 mt-1">
                   🔥 Chuỗi gõ chuẩn xác dài nhất: {maxCombo} phím liên tục!
                 </span>
               )}
@@ -564,7 +567,7 @@ export const TypingExercise: React.FC<TypingExerciseProps> = ({
               {[1, 2, 3].map(star => (
                 <Sparkles
                   key={star}
-                  className={`w-7 h-7 ${accuracy >= 80 ? 'text-amber-400 fill-amber-400' : 'text-slate-300'}`}
+                  className={`w-7 h-7 ${accuracy >= 80 ? 'text-amber-400 fill-amber-400' : 'text-slate-300 dark:text-slate-600'}`}
                 />
               ))}
             </div>
@@ -572,7 +575,7 @@ export const TypingExercise: React.FC<TypingExerciseProps> = ({
             <div className="flex justify-center gap-3">
               <button
                 onClick={resetExercise}
-                className="px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-colors shadow-xs"
+                className="px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-xs"
               >
                 Luyện lại bài này
               </button>

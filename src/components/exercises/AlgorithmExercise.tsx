@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Lesson, MazeConfig } from '../../types';
 import { soundService } from '../../services/sound';
 import { ConfettiEffect } from '../common/ConfettiEffect';
+import { ThemeToggleButton } from '../common/ThemeToggleButton';
 import { ArrowLeft, Play, RotateCcw, Trash2, Award, CheckCircle2, ChevronRight, Bot, Flag, Lightbulb } from 'lucide-react';
 
 interface AlgorithmExerciseProps {
@@ -178,32 +179,35 @@ export const AlgorithmExercise: React.FC<AlgorithmExerciseProps> = ({
       <div className="flex items-center justify-between">
         <button
           onClick={onBack}
-          className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+          className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-2xs"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Quay lại bài học</span>
         </button>
 
-        <button
-          onClick={resetMaze}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50"
-        >
-          <RotateCcw className="w-3.5 h-3.5" />
-          Đặt lại Robot
-        </button>
+        <div className="flex items-center gap-3">
+          <ThemeToggleButton />
+          <button
+            onClick={resetMaze}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 shadow-2xs"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            Đặt lại Robot
+          </button>
+        </div>
       </div>
 
       {/* Lesson Description */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+      <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
         <div>
-          <div className="text-xs font-bold text-purple-600 uppercase tracking-wider mb-1">
+          <div className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider mb-1">
             🤖 Tư duy thuật toán · Cấp {lesson.level} · Bài {lesson.id}
           </div>
-          <h1 className="text-xl md:text-2xl font-bold text-slate-900">{lesson.title}</h1>
-          <p className="text-sm text-slate-600 mt-1">{lesson.desc}</p>
+          <h1 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white">{lesson.title}</h1>
+          <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">{lesson.desc}</p>
         </div>
 
-        <div className="text-xs bg-purple-50 text-purple-800 px-4 py-2 rounded-xl border border-purple-200 font-medium">
+        <div className="text-xs bg-purple-50 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300 px-4 py-2 rounded-xl border border-purple-200 dark:border-purple-800 font-medium">
           Tối đa: {defaultMaze.maxCommands || 8} lệnh
         </div>
       </div>
@@ -211,8 +215,8 @@ export const AlgorithmExercise: React.FC<AlgorithmExerciseProps> = ({
       {/* Interactive Two-Zone Sandbox */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
         {/* Left: Maze Grid Canvas (7 cols) */}
-        <div className="md:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center">
-          <div className="text-xs font-semibold text-slate-500 mb-3 flex items-center gap-2">
+        <div className="md:col-span-7 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col items-center justify-center">
+          <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-3 flex items-center gap-2">
             <span>SÂN ĐẤU MÊ CUNG LOGIC</span>
             <span>·</span>
             <span>Kích thước {defaultMaze.gridSize}x{defaultMaze.gridSize}</span>
@@ -263,22 +267,22 @@ export const AlgorithmExercise: React.FC<AlgorithmExerciseProps> = ({
           </div>
 
           {/* Status Bar */}
-          <div className="mt-4 w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 text-center">
+          <div className="mt-4 w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-200 text-center">
             {statusMessage}
           </div>
         </div>
 
         {/* Right: Code Block Palette & Sequence (5 cols) */}
-        <div className="md:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <div className="md:col-span-5 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
           <div>
-            <h3 className="text-sm font-bold text-slate-800 mb-3 uppercase tracking-wider">
+            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-3 uppercase tracking-wider">
               1. Khối lệnh có sẵn (Nhấp để thêm)
             </h3>
             <div className="grid grid-cols-1 gap-2 mb-6">
               <button
                 onClick={() => addCommand('forward')}
                 disabled={isRunning}
-                className="w-full py-2.5 px-4 bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 rounded-xl text-xs font-bold flex items-center justify-between transition-colors disabled:opacity-50"
+                className="w-full py-2.5 px-4 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800 rounded-xl text-xs font-bold flex items-center justify-between transition-colors disabled:opacity-50"
               >
                 <span>🚶 Đi thẳng 1 bước</span>
                 <span className="text-blue-500 font-mono">+ Thêm</span>
@@ -286,7 +290,7 @@ export const AlgorithmExercise: React.FC<AlgorithmExerciseProps> = ({
               <button
                 onClick={() => addCommand('turn_left')}
                 disabled={isRunning}
-                className="w-full py-2.5 px-4 bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 rounded-xl text-xs font-bold flex items-center justify-between transition-colors disabled:opacity-50"
+                className="w-full py-2.5 px-4 bg-purple-50 dark:bg-purple-950/60 hover:bg-purple-100 dark:hover:bg-purple-900/60 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-800 rounded-xl text-xs font-bold flex items-center justify-between transition-colors disabled:opacity-50"
               >
                 <span>↩️ Quay trái 90°</span>
                 <span className="text-purple-500 font-mono">+ Thêm</span>
@@ -294,7 +298,7 @@ export const AlgorithmExercise: React.FC<AlgorithmExerciseProps> = ({
               <button
                 onClick={() => addCommand('turn_right')}
                 disabled={isRunning}
-                className="w-full py-2.5 px-4 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-xl text-xs font-bold flex items-center justify-between transition-colors disabled:opacity-50"
+                className="w-full py-2.5 px-4 bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 rounded-xl text-xs font-bold flex items-center justify-between transition-colors disabled:opacity-50"
               >
                 <span>↪️ Quay phải 90°</span>
                 <span className="text-amber-500 font-mono">+ Thêm</span>
@@ -302,14 +306,14 @@ export const AlgorithmExercise: React.FC<AlgorithmExerciseProps> = ({
             </div>
 
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">
+              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
                 2. Chương trình của em ({commands.length})
               </h3>
               {commands.length > 0 && (
                 <button
                   onClick={clearAllCommands}
                   disabled={isRunning}
-                  className="text-xs text-rose-600 hover:text-rose-700 inline-flex items-center gap-1 font-medium disabled:opacity-50"
+                  className="text-xs text-rose-600 hover:text-rose-700 dark:text-rose-400 inline-flex items-center gap-1 font-medium disabled:opacity-50"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   Xóa hết
@@ -317,9 +321,9 @@ export const AlgorithmExercise: React.FC<AlgorithmExerciseProps> = ({
               )}
             </div>
 
-            <div className="min-h-[160px] max-h-[220px] overflow-y-auto space-y-1.5 p-2 bg-slate-50 rounded-xl border border-slate-200">
+            <div className="min-h-[160px] max-h-[220px] overflow-y-auto space-y-1.5 p-2 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700">
               {commands.length === 0 ? (
-                <div className="h-28 flex items-center justify-center text-xs text-slate-400 italic">
+                <div className="h-28 flex items-center justify-center text-xs text-slate-400 dark:text-slate-500 italic">
                   Chưa có lệnh nào. Hãy nhấp các nút phía trên!
                 </div>
               ) : (
@@ -328,12 +332,12 @@ export const AlgorithmExercise: React.FC<AlgorithmExerciseProps> = ({
                     key={idx}
                     className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
                       activeStep === idx
-                        ? 'bg-amber-100 border-amber-400 text-amber-900 shadow-xs scale-102 font-bold ring-2 ring-amber-300'
-                        : 'bg-white border-slate-200 text-slate-700'
+                        ? 'bg-amber-100 dark:bg-amber-950/80 border-amber-400 dark:border-amber-600 text-amber-900 dark:text-amber-200 shadow-xs scale-102 font-bold ring-2 ring-amber-300 dark:ring-amber-500'
+                        : 'bg-white dark:bg-slate-700/80 border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200'
                     }`}
                   >
                     <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-[10px]">
+                      <span className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-200 flex items-center justify-center text-[10px]">
                         {idx + 1}
                       </span>
                       <span>
@@ -345,7 +349,7 @@ export const AlgorithmExercise: React.FC<AlgorithmExerciseProps> = ({
                     <button
                       onClick={() => removeCommand(idx)}
                       disabled={isRunning}
-                      className="text-slate-400 hover:text-rose-600 px-1 font-bold disabled:opacity-50"
+                      className="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 px-1 font-bold disabled:opacity-50"
                     >
                       ×
                     </button>
@@ -373,19 +377,19 @@ export const AlgorithmExercise: React.FC<AlgorithmExerciseProps> = ({
       {isFinished && (
         <>
           <ConfettiEffect durationMs={4500} />
-          <div className="p-6 bg-gradient-to-br from-purple-50 via-indigo-50 to-white rounded-3xl border-2 border-purple-300 shadow-xl text-center animate-bounce-gentle">
-            <div className="w-16 h-16 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-inner">
+          <div className="p-6 bg-gradient-to-br from-purple-50 via-indigo-50 to-white dark:from-purple-950/60 dark:via-indigo-950/40 dark:to-slate-900 rounded-3xl border-2 border-purple-300 dark:border-purple-700 shadow-xl text-center animate-bounce-gentle">
+            <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/60 text-purple-600 dark:text-purple-300 rounded-full flex items-center justify-center mx-auto mb-3 shadow-inner">
               <Award className="w-8 h-8" />
             </div>
-            <h2 className="text-2xl font-black text-slate-900">Tư duy logic tuyệt đỉnh!</h2>
-          <p className="text-sm text-slate-600 mt-1">
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white">Tư duy logic tuyệt đỉnh!</h2>
+          <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
             Robot đã giải xong mê cung với chuỗi {commands.length} khối lệnh chuẩn xác!
           </p>
 
           <div className="flex justify-center gap-3 mt-4">
             <button
               onClick={resetMaze}
-              className="px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-colors shadow-xs"
+              className="px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-xs"
             >
               Thử lại thuật toán khác
             </button>

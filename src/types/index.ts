@@ -1,4 +1,5 @@
 export type SubjectId =
+  | 'sgk'
   | 'go'
   | 'go-tv'
   | 'chuot'
@@ -26,6 +27,8 @@ export interface Lesson {
   level: number;
   title: string;
   desc: string;
+  grade?: 3 | 4 | 5;
+  topicCode?: string;
   type?: string;
   target?: string;
   content?: string;
@@ -41,6 +44,8 @@ export interface QuizQuestion {
   options: string[];
   correctIndex: number;
   explanation: string;
+  grade?: 3 | 4 | 5;
+  topicCode?: string;
 }
 
 export interface MazeConfig {
@@ -71,6 +76,15 @@ export interface StudentAccount {
   pin?: string;
   createdAt: string;
   note?: string;
+}
+
+export interface ClassRecord {
+  id: string;
+  classCode: string;
+  name?: string;
+  grade?: number | string;
+  teacherName?: string;
+  createdAt?: string;
 }
 
 export interface Assignment {

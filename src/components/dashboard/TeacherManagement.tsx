@@ -174,21 +174,21 @@ export const TeacherManagement: React.FC<TeacherManagementProps> = ({
       )}
 
       {/* Header Toolbar */}
-      <div className="bg-white p-5 rounded-3xl border border-slate-200/90 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-900/90 p-5 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-xs">
             <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-black text-slate-900">
+              <h2 className="text-lg font-black text-slate-900 dark:text-white">
                 Phân Quyền Quản Trị & Tài Khoản Giáo Viên
               </h2>
-              <span className="px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-800 text-[10px] font-black uppercase">
+              <span className="px-2 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 text-[10px] font-black uppercase">
                 Chỉ dành cho Admin
               </span>
             </div>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Cấp tài khoản, mật khẩu và phân công lớp dạy cho từng giáo viên trong trường (không cho phép tự do đăng nhập)
             </p>
           </div>
@@ -206,7 +206,7 @@ export const TeacherManagement: React.FC<TeacherManagementProps> = ({
           <button
             onClick={onRefresh}
             disabled={isSyncing}
-            className="p-2.5 text-slate-600 hover:bg-slate-100 rounded-xl border border-slate-200 transition-colors"
+            className="p-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors"
             title="Đồng bộ danh sách giáo viên từ Cloud Firestore"
           >
             <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin text-indigo-600' : ''}`} />
@@ -215,11 +215,11 @@ export const TeacherManagement: React.FC<TeacherManagementProps> = ({
       </div>
 
       {/* Teachers Table */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs overflow-hidden">
+      <div className="bg-white dark:bg-slate-900/90 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[10px] font-black tracking-wider">
+              <tr className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 uppercase text-[10px] font-black tracking-wider">
                 <th className="py-3.5 px-4 w-12 text-center">STT</th>
                 <th className="py-3.5 px-4">Họ và tên Giáo viên</th>
                 <th className="py-3.5 px-4">Tên đăng nhập</th>
@@ -230,22 +230,22 @@ export const TeacherManagement: React.FC<TeacherManagementProps> = ({
                 <th className="py-3.5 px-4 text-right">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {teachers.map((acc, idx) => {
                 const isRootAdmin = acc.username.toLowerCase() === 'admin';
                 const isShowPass = !!visiblePasswords[acc.username];
                 const isDeleting = confirmDeleteUser === acc.username;
 
                 return (
-                  <tr key={acc.username} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3.5 px-4 text-center font-bold text-slate-400 tabular-nums">
+                  <tr key={acc.username} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors">
+                    <td className="py-3.5 px-4 text-center font-bold text-slate-400 dark:text-slate-500 tabular-nums">
                       {idx + 1}
                     </td>
                     <td className="py-3.5 px-4">
-                      <div className="font-bold text-slate-900 text-sm">{acc.name}</div>
+                      <div className="font-bold text-slate-900 dark:text-white text-sm">{acc.name}</div>
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="font-mono font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 rounded-lg">
+                      <span className="font-mono font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-800 px-2.5 py-0.5 rounded-lg">
                         {acc.username}
                       </span>
                     </td>
@@ -353,34 +353,34 @@ export const TeacherManagement: React.FC<TeacherManagementProps> = ({
       {/* CREATE / EDIT TEACHER MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 md:p-8 shadow-2xl border border-slate-200">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 md:p-8 shadow-2xl border border-slate-200 dark:border-slate-800">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800 mb-5">
               <div>
-                <h3 className="text-lg font-black text-slate-900">
+                <h3 className="text-lg font-black text-slate-900 dark:text-white">
                   {editingAccount ? 'Cập Nhật Tài Khoản Giáo Viên' : 'Tạo Tài Khoản Giáo Viên Mới'}
                 </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                   Chỉ tài khoản được tạo tại đây mới có quyền đăng nhập vào cổng Giáo viên
                 </p>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100"
+                className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {formError && (
-              <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+              <div className="mb-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/70 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
                 <span>{formError}</span>
               </div>
             )}
 
             <form onSubmit={handleSave} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider mb-1">
                   Họ và tên Giáo viên *
                 </label>
                 <input
@@ -389,13 +389,13 @@ export const TeacherManagement: React.FC<TeacherManagementProps> = ({
                   placeholder="Ví dụ: Cô Nguyễn Thị Hoa"
                   value={formName}
                   onChange={e => setFormName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-semibold focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl text-sm font-semibold focus:bg-white dark:focus:bg-slate-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider mb-1">
                     Tên đăng nhập *
                   </label>
                   <input
@@ -405,12 +405,12 @@ export const TeacherManagement: React.FC<TeacherManagementProps> = ({
                     placeholder="VD: gv_hoa01"
                     value={formUsername}
                     onChange={e => setFormUsername(e.target.value.toLowerCase())}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 disabled:bg-slate-100 disabled:text-slate-500 border border-slate-300 rounded-xl text-sm font-mono font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 disabled:bg-slate-100 dark:disabled:bg-slate-800/50 disabled:text-slate-500 dark:disabled:text-slate-400 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl text-sm font-mono font-bold focus:bg-white dark:focus:bg-slate-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider mb-1">
                     Mật khẩu đăng nhập *
                   </label>
                   <input
@@ -419,29 +419,29 @@ export const TeacherManagement: React.FC<TeacherManagementProps> = ({
                     placeholder="Nhập mật khẩu..."
                     value={formPassword}
                     onChange={e => setFormPassword(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-mono font-bold text-indigo-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-mono font-bold text-indigo-900 dark:text-indigo-300 focus:bg-white dark:focus:bg-slate-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider mb-1">
                     Phân quyền hệ thống
                   </label>
                   <select
                     value={formRole}
                     disabled={editingAccount?.username.toLowerCase() === 'admin'}
                     onChange={e => setFormRole(e.target.value as 'teacher' | 'admin')}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-semibold focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl text-sm font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   >
-                    <option value="teacher">Giáo viên bộ môn</option>
-                    <option value="admin">Quản trị viên (Admin)</option>
+                    <option value="teacher" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white">Giáo viên bộ môn</option>
+                    <option value="admin" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white">Quản trị viên (Admin)</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider mb-1">
                     Các lớp phụ trách (cách nhau dấu phẩy)
                   </label>
                   <input
@@ -449,28 +449,28 @@ export const TeacherManagement: React.FC<TeacherManagementProps> = ({
                     placeholder="VD: 3A, 3B, 4A (để trống = tất cả)"
                     value={formClasses}
                     onChange={e => setFormClasses(e.target.value.toUpperCase())}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold uppercase focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl text-sm font-bold uppercase focus:bg-white dark:focus:bg-slate-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider mb-1">
                   Đơn vị / Trường học
                 </label>
                 <input
                   type="text"
                   value={formSchool}
                   onChange={e => setFormSchool(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl text-sm font-medium focus:bg-white dark:focus:bg-slate-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100">
+              <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl"
+                  className="px-4 py-2.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl"
                 >
                   Hủy
                 </button>

@@ -14,13 +14,30 @@ function getStorageKey(studentName: string, classCode: string): string {
   return `tinhoc_achievements_${studentName.trim().toLowerCase()}_${classCode.trim().toLowerCase()}`;
 }
 
+function safeGetItem(key: string): string | null {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      return window.localStorage.getItem(key);
+    }
+  } catch (e) {}
+  return null;
+}
+
+function safeSetItem(key: string, value: string): void {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem(key, value);
+    }
+  } catch (e) {}
+}
+
 export function getStudentUnlockedAchievements(
   studentName: string,
   classCode: string
 ): StudentAchievementRecord[] {
   if (typeof window === 'undefined') return [];
   try {
-    const raw = localStorage.getItem(getStorageKey(studentName, classCode));
+    const raw = safeGetItem(getStorageKey(studentName, classCode));
     return raw ? JSON.parse(raw) : [];
   } catch (e) {
     console.error('Failed to parse student achievements', e);
@@ -43,7 +60,7 @@ export function saveStudentAchievement(
         unlockedAt
       }
     ];
-    localStorage.setItem(getStorageKey(studentName, classCode), JSON.stringify(updated));
+    safeSetItem(getStorageKey(studentName, classCode), JSON.stringify(updated));
 
     // Sync to Cloud Firestore so it is retained across all computers
     syncAchievementToCloud(studentName, classCode, achievementId, unlockedAt).catch(err => {
@@ -107,7 +124,7 @@ export async function fetchStudentAchievementsFromCloud(
       localRecords.forEach(r => map.set(r.achievementId, r));
       cloudRecords.forEach(r => map.set(r.achievementId, r));
       const merged = Array.from(map.values());
-      localStorage.setItem(getStorageKey(studentName, classCode), JSON.stringify(merged));
+      safeSetItem(getStorageKey(studentName, classCode), JSON.stringify(merged));
       return merged;
     }
   } catch (err) {

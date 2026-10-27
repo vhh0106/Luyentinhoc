@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Lesson, SubjectId } from '../../types';
 import { soundService } from '../../services/sound';
 import { ConfettiEffect } from '../common/ConfettiEffect';
+import { ThemeToggleButton } from '../common/ThemeToggleButton';
 import {
   ArrowLeft,
   RotateCcw,
@@ -577,32 +578,35 @@ export const OfficeSimulator: React.FC<OfficeSimulatorProps> = ({
       <div className="flex items-center justify-between">
         <button
           onClick={onBack}
-          className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+          className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-2xs"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Quay lại danh sách bài học</span>
         </button>
 
-        <div className="text-xs text-slate-500 font-medium">
-          Thực hành tương tác trực tiếp · Tự động chấm từng bước
+        <div className="flex items-center gap-3">
+          <ThemeToggleButton />
+          <div className="text-xs text-slate-500 dark:text-slate-400 font-medium hidden sm:block">
+            Thực hành tương tác trực tiếp · Tự động chấm từng bước
+          </div>
         </div>
       </div>
 
       {/* Title Card */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-1">
+          <div className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1">
             {subjectEmoji} {subjectName} · Cấp {lesson.level} · Bài {lesson.id}
           </div>
-          <h1 className="text-xl md:text-2xl font-bold text-slate-900">{lesson.title}</h1>
-          <p className="text-xs text-slate-600 mt-1">
+          <h1 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white">{lesson.title}</h1>
+          <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
             Em hãy thực hiện trực tiếp các thao tác trên phần mềm giả lập bên dưới. Hệ thống sẽ <strong>tự động kiểm tra và đánh dấu hoàn thành</strong> từng bước!
           </p>
         </div>
 
-        <div className="text-right shrink-0 bg-slate-50 px-4 py-2.5 rounded-2xl border border-slate-200">
-          <span className="text-[11px] text-slate-500 font-semibold block">Tiến độ thực hành</span>
-          <span className="text-xl font-black text-emerald-600 tabular-nums">
+        <div className="text-right shrink-0 bg-slate-50 dark:bg-slate-800 px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700">
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold block">Tiến độ thực hành</span>
+          <span className="text-xl font-black text-emerald-600 dark:text-emerald-400 tabular-nums">
             {completedCount} / {totalSteps} bước ({Math.round((completedCount / totalSteps) * 100)} điểm)
           </span>
         </div>
@@ -1403,12 +1407,12 @@ export const OfficeSimulator: React.FC<OfficeSimulatorProps> = ({
         </div>
 
         {/* Right: Auto-Verified Requirements Panel (4 cols) */}
-        <div className="lg:col-span-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <div className="lg:col-span-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
-                <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider">
+                <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">
                   Các Bước Cần Thực Hiện
                 </h3>
               </div>
@@ -1417,8 +1421,8 @@ export const OfficeSimulator: React.FC<OfficeSimulatorProps> = ({
                 onClick={() => setShowHint(prev => !prev)}
                 className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-colors flex items-center gap-1 ${
                   showHint
-                    ? 'bg-amber-100 text-amber-900 border-amber-300'
-                    : 'bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200'
+                    ? 'bg-amber-100 dark:bg-amber-950/70 text-amber-900 dark:text-amber-200 border-amber-300 dark:border-amber-700'
+                    : 'bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800'
                 }`}
               >
                 <Sparkles className="w-3 h-3" />
@@ -1426,13 +1430,13 @@ export const OfficeSimulator: React.FC<OfficeSimulatorProps> = ({
               </button>
             </div>
 
-            <p className="text-xs text-slate-500 mb-4 leading-relaxed">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
               Các ô dưới đây <strong>không thể bấm tích thủ công</strong>. Khi em làm đúng từng thao tác trên phần mềm bên trái, hệ thống sẽ tự động tích xanh ✅ và cộng điểm!
             </p>
 
             {submitWarning && (
-              <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+              <div className="mb-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200 text-xs flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
                 <span>{submitWarning}</span>
               </div>
             )}
@@ -1443,15 +1447,15 @@ export const OfficeSimulator: React.FC<OfficeSimulatorProps> = ({
                   key={idx}
                   className={`p-3.5 rounded-2xl border transition-all flex items-start gap-3 ${
                     step.done
-                      ? 'bg-emerald-50 border-emerald-300 text-emerald-950 shadow-2xs'
-                      : 'bg-slate-50 border-slate-200 text-slate-700'
+                      ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-700 text-emerald-950 dark:text-emerald-200 shadow-2xs'
+                      : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200'
                   }`}
                 >
                   <div
                     className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5 border text-xs font-black ${
                       step.done
                         ? 'bg-emerald-600 border-emerald-600 text-white'
-                        : 'bg-white border-slate-300 text-slate-400'
+                        : 'bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-400 dark:text-slate-400'
                     }`}
                   >
                     {step.done ? '✓' : idx + 1}
@@ -1459,14 +1463,14 @@ export const OfficeSimulator: React.FC<OfficeSimulatorProps> = ({
                   <div className="flex-1">
                     <span
                       className={`text-xs font-bold leading-relaxed block ${
-                        step.done ? 'text-emerald-900' : 'text-slate-700'
+                        step.done ? 'text-emerald-900 dark:text-emerald-200' : 'text-slate-700 dark:text-slate-200'
                       }`}
                     >
                       {step.label}
                     </span>
                     <span
                       className={`text-[10px] font-bold mt-1 inline-block ${
-                        step.done ? 'text-emerald-600' : 'text-amber-600'
+                        step.done ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'
                       }`}
                     >
                       {step.done ? '✅ Đã hoàn thành (+25 điểm)' : '⏳ Chưa thực hiện'}
@@ -1477,7 +1481,7 @@ export const OfficeSimulator: React.FC<OfficeSimulatorProps> = ({
             </div>
           </div>
 
-          <div className="pt-6 mt-6 border-t border-slate-100 space-y-2">
+          <div className="pt-6 mt-6 border-t border-slate-100 dark:border-slate-800 space-y-2">
             <button
               type="button"
               onClick={handleSubmitPractice}
@@ -1502,14 +1506,14 @@ export const OfficeSimulator: React.FC<OfficeSimulatorProps> = ({
       {isFinished && (
         <>
           <ConfettiEffect durationMs={4500} />
-          <div className="p-6 bg-gradient-to-br from-emerald-50 via-sky-50 to-white rounded-3xl border-2 border-emerald-300 shadow-xl text-center">
-            <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-inner">
+          <div className="p-6 bg-gradient-to-br from-emerald-50 via-sky-50 to-white dark:from-emerald-950/60 dark:via-sky-950/40 dark:to-slate-900 rounded-3xl border-2 border-emerald-300 dark:border-emerald-700 shadow-xl text-center">
+            <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-300 rounded-full flex items-center justify-center mx-auto mb-3 shadow-inner">
               <Award className="w-8 h-8" />
             </div>
-            <h2 className="text-2xl font-black text-slate-900">
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white">
               Đã lưu kết quả bài thực hành: {finalScore} / 100 điểm!
             </h2>
-            <p className="text-sm text-slate-600 mt-1">
+            <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
               Em đã hoàn thành {completedCount}/{totalSteps} bước kỹ năng {subjectName}. Bài học này đã được đánh dấu Hoàn thành (Done) kèm điểm số!
             </p>
 

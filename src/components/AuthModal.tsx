@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { StudentSession, TeacherAccount, StudentAccount, Assignment, SubjectId } from '../types';
-import { SUBJECTS_MAP } from '../data/curriculum';
+import { StudentSession, TeacherAccount, StudentAccount } from '../types';
 import {
   authenticateTeacherCloud,
   authenticateStudentCloud,
@@ -16,8 +15,7 @@ import {
   AlertCircle,
   Cloud,
   Loader2,
-  Users,
-  ShieldCheck
+  Users
 } from 'lucide-react';
 
 interface AuthModalProps {
@@ -78,26 +76,25 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     e.preventDefault();
     setError(null);
 
-    if (!username.trim()) {
-      setError('Vui lòng nhập tên đăng nhập Giáo viên hoặc Admin.');
-      return;
-    }
-    if (!password.trim()) {
-      setError('Vui lòng nhập mật khẩu đăng nhập.');
+    const cleanUser = username.trim();
+    const cleanPass = password.trim();
+
+    if (!cleanUser || !cleanPass) {
+      setError('Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.');
       return;
     }
 
     setIsValidating(true);
     try {
-      const result = await authenticateTeacherCloud(username, password);
-      if (result.error || !result.account) {
-        setError(result.error || 'Sai tên đăng nhập hoặc mật khẩu.');
+      const authRes = await authenticateTeacherCloud(cleanUser, cleanPass);
+      if (authRes.error || !authRes.account) {
+        setError(authRes.error || 'Tài khoản hoặc mật khẩu không chính xác.');
         setIsValidating(false);
         return;
       }
-      onTeacherLogin(result.account);
+      onTeacherLogin(authRes.account);
     } catch (err) {
-      setError('Không thể xác thực tài khoản lúc này. Vui lòng thử lại.');
+      setError('Có lỗi xảy ra khi xác thực với hệ thống Cloud.');
     } finally {
       setIsValidating(false);
     }
@@ -107,26 +104,26 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     e.preventDefault();
     setError(null);
 
-    const cleanClass = classCode.trim().toUpperCase();
     const cleanName = studentName.trim();
+    const cleanClass = classCode.trim().toUpperCase();
     const cleanPin = pin.trim().toUpperCase();
 
     if (!cleanClass) {
-      setError('Em vui lòng chọn hoặc nhập Mã lớp học (Ví dụ: 3A, 4B).');
+      setError('Vui lòng nhập mã lớp học (Ví dụ: 3A, 4B, 5C).');
       return;
     }
     if (!cleanName) {
-      setError('Em vui lòng chọn hoặc nhập Họ và tên (hoặc Mã học sinh) của mình.');
+      setError('Vui lòng chọn hoặc nhập họ và tên của em.');
       return;
     }
     if (!cleanPin) {
-      setError('Em vui lòng nhập Mã PIN cá nhân của mình do thầy/cô cấp.');
+      setError('Vui lòng nhập mã PIN cá nhân do thầy cô cung cấp.');
       return;
     }
 
     setIsValidating(true);
     try {
-      // 1. Authenticate student using their personal Student Account & single Student PIN
+      // 1. Authenticate personal PIN with Firestore Cloud
       const authRes = await authenticateStudentCloud(cleanClass, cleanName, cleanPin);
       if (authRes.error || !authRes.student) {
         setError(authRes.error || 'Thông tin đăng nhập học sinh chưa chính xác.');
@@ -136,17 +133,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
       const verifiedStudent = authRes.student;
 
-      // 2. Load curriculum subjects assigned to this student's class (or all 10 subjects by default)
+      // 2. Load curriculum subjects currently assigned to this student's class
       let classAssignment = await findAssignmentByClassCloud(cleanClass);
       if (!classAssignment) {
         classAssignment = {
-          id: `default-${cleanClass}`,
+          id: `unassigned-${cleanClass}`,
           classCode: cleanClass,
           pin: verifiedStudent.pin || cleanPin,
-          subjects: Object.keys(SUBJECTS_MAP) as SubjectId[],
-          teacherName: 'Giáo viên Tin học',
+          subjects: [],
+          teacherName: '',
           createdAt: new Date().toISOString(),
-          note: `Chương trình Tin học Lớp ${cleanClass}`
+          note: ''
         };
       }
 
@@ -166,28 +163,30 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   return (
     <div className="max-w-md mx-auto">
-      <button
-        onClick={onBack}
-        className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors mb-6 shadow-xs"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        <span>Quay lại trang chọn vai trò</span>
-      </button>
+      <div className="flex items-center justify-between mb-6">
+        <button
+          onClick={onBack}
+          className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 bg-white/95 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors shadow-xs"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Quay lại trang chọn vai trò</span>
+        </button>
+      </div>
 
-      <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-xl">
+      <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl p-8 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-2xl transition-colors">
         <div className="text-center mb-6">
           <div
             className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-3 shadow-inner ${
-              role === 'teacher' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'
+              role === 'teacher' ? 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300' : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300'
             }`}
           >
             {role === 'teacher' ? '👨‍🏫' : '👧👦'}
           </div>
 
-          <h2 className="text-2xl font-black text-slate-900">
+          <h2 className="text-2xl font-black text-slate-900 dark:text-white">
             {role === 'teacher' ? 'Đăng Nhập Giáo Viên / Admin' : 'Đăng Nhập Tài Khoản Học Sinh'}
           </h2>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 font-medium">
             {role === 'teacher'
               ? 'Dành cho Admin và các tài khoản Giáo viên đã được cấp quyền'
               : 'Chọn lớp, tên học sinh và nhập Mã PIN cá nhân của em'}
@@ -195,8 +194,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         </div>
 
         {error && (
-          <div className="mb-5 p-3.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs leading-relaxed flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+          <div className="mb-5 p-3.5 bg-rose-50 dark:bg-rose-950/70 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200 rounded-2xl text-xs leading-relaxed flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
         )}
@@ -204,7 +203,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         {role === 'teacher' ? (
           <form onSubmit={handleTeacherSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-1">
                 Tên đăng nhập *
               </label>
               <div className="relative">
@@ -212,16 +211,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <input
                   type="text"
                   required
-                  placeholder="Nhập tên đăng nhập (VD: admin hoặc gv_hoa)"
+                  placeholder="Nhập tên đăng nhập"
                   value={username}
                   onChange={e => setUsername(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-1">
                 Mật khẩu *
               </label>
               <div className="relative">
@@ -232,20 +231,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   placeholder="Nhập mật khẩu"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
               </div>
-            </div>
-
-            {/* Admin RBAC Notice */}
-            <div className="p-3 rounded-2xl bg-indigo-50/80 border border-indigo-200/80 text-xs text-indigo-950 space-y-1.5">
-              <div className="flex items-center gap-1.5 font-bold text-indigo-800">
-                <ShieldCheck className="w-4 h-4 text-indigo-600 shrink-0" />
-                <span>Phân quyền Quản trị viên (Admin):</span>
-              </div>
-              <p className="text-[11px] text-indigo-900/80 leading-relaxed">
-                Chỉ tài khoản do <strong>Admin</strong> cấp mới đăng nhập được. Tài khoản Admin mặc định để tạo giáo viên: Tên đăng nhập <code className="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-indigo-200">admin</code> / Mật khẩu <code className="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-indigo-200">admin123</code>
-              </p>
             </div>
 
             <button
@@ -266,7 +254,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         ) : (
           <form onSubmit={handleStudentSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-1">
                 1. Lớp của em *
               </label>
               <input
@@ -278,11 +266,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   setClassCode(e.target.value.toUpperCase());
                   setStudentName('');
                 }}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold tracking-wider focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none uppercase"
+                className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl text-sm font-bold tracking-wider focus:ring-2 focus:ring-emerald-500 focus:outline-none uppercase"
               />
               {rosterClasses.length > 0 && (
                 <div className="flex items-center gap-1.5 flex-wrap mt-2">
-                  <span className="text-[11px] text-slate-400 font-medium">Chọn nhanh lớp:</span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Chọn nhanh lớp:</span>
                   {rosterClasses.map(c => (
                     <button
                       key={c}
@@ -294,7 +282,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       className={`px-2.5 py-0.5 rounded-lg text-xs font-bold border transition-all ${
                         classCode.toUpperCase() === c
                           ? 'bg-emerald-600 text-white border-emerald-600'
-                          : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                          : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
                       }`}
                     >
                       Lớp {c}
@@ -305,7 +293,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-1">
                 2. Tài khoản học sinh (Họ tên hoặc Mã HS) *
               </label>
               {studentsInSelectedClass.length > 0 ? (
@@ -314,16 +302,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     required
                     value={studentName}
                     onChange={e => setStudentName(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-semibold focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                    className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-pointer"
                   >
-                    <option value="">-- Chọn tên của em trong Lớp {classCode.toUpperCase()} --</option>
+                    <option value="" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-medium">
+                      -- Chọn tên của em trong Lớp {classCode.toUpperCase()} --
+                    </option>
                     {studentsInSelectedClass.map(s => (
-                      <option key={s.id} value={s.studentName}>
+                      <option
+                        key={s.id}
+                        value={s.studentName}
+                        className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-medium"
+                      >
                         {s.studentCode ? `${s.studentCode} - ` : ''}{s.studentName}
                       </option>
                     ))}
                   </select>
-                  <div className="flex items-center gap-1.5 text-[11px] text-emerald-700">
+                  <div className="flex items-center gap-1.5 text-[11px] text-emerald-700 dark:text-emerald-400 font-medium">
                     <Users className="w-3.5 h-3.5 shrink-0" />
                     <span>Lớp {classCode.toUpperCase()} có {studentsInSelectedClass.length} tài khoản học sinh.</span>
                   </div>
@@ -335,13 +329,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   placeholder="Nhập Họ và tên hoặc Mã học sinh của em"
                   value={studentName}
                   onChange={e => setStudentName(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-semibold focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                 />
               )}
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-1">
                 3. Mã PIN học sinh của em *
               </label>
               <div className="relative">
@@ -352,16 +346,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   placeholder="Nhập mã PIN riêng của em"
                   value={pin}
                   onChange={e => setPin(e.target.value.toUpperCase())}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-mono font-black tracking-widest text-emerald-800 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none uppercase"
+                  className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-emerald-700 dark:text-emerald-400 rounded-xl text-sm font-mono font-black tracking-widest focus:ring-2 focus:ring-emerald-500 focus:outline-none uppercase"
                 />
               </div>
-            </div>
-
-            {/* Cloud Sync Announcement */}
-            <div className="p-2.5 rounded-xl bg-blue-50/80 border border-blue-200/80 text-[11.5px] text-blue-900 flex items-start gap-2">
-              <Cloud className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-              <p className="leading-snug">
-                <strong className="font-semibold text-blue-950">1 Mã PIN học sinh duy nhất:</strong> Em dùng đúng Mã PIN tài khoản của mình để đăng nhập trên bất kỳ máy tính nào và lưu toàn bộ tiến độ.
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                Mỗi học sinh có 1 Mã PIN cá nhân riêng (Ví dụ: 3A-01, PIN12...). Nếu chưa nhớ, em hãy hỏi Thầy/Cô nhé.
               </p>
             </div>
 
@@ -373,10 +362,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               {isValidating ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Đang đăng nhập tài khoản...</span>
+                  <span>Đang kiểm tra tài khoản & bài tập...</span>
                 </>
               ) : (
-                <span>Đăng Nhập Vào Học 🚀</span>
+                <span>Vào Làm Bài Tập Ngay →</span>
               )}
             </button>
           </form>

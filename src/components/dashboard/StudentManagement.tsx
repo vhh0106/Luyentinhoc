@@ -1,11 +1,14 @@
-import React, { useState, useMemo } from 'react';
-import { StudentAccount, ExerciseResult, Assignment } from '../../types';
+import React, { useState, useMemo, useEffect } from 'react';
+import { StudentAccount, ExerciseResult, Assignment, ClassRecord } from '../../types';
 import {
   saveStudent,
   saveStudentsBatch,
   deleteStudent,
   deleteStudentsByClass,
-  generateRandomPin
+  generateRandomPin,
+  getClasses,
+  saveClass,
+  subscribeToClasses
 } from '../../services/storage';
 import {
   Users,
@@ -40,24 +43,31 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
   onRefresh,
   isSyncing = false
 }) => {
-  // Collect all distinct class codes from students, assignments, and custom created classes
-  const [customClasses, setCustomClasses] = useState<string[]>([]);
+  // Collect all distinct class codes from cloud classes collection, students, and assignments
+  const [classesList, setClassesList] = useState<ClassRecord[]>(() => getClasses());
   const [newClassInput, setNewClassInput] = useState('');
   const [showAddClassInput, setShowAddClassInput] = useState(false);
 
+  useEffect(() => {
+    const unsub = subscribeToClasses(liveClasses => {
+      setClassesList(liveClasses);
+    });
+    return () => unsub();
+  }, []);
+
   const classCodes = useMemo(() => {
     const set = new Set<string>();
+    classesList.forEach(c => {
+      if (c.classCode.trim()) set.add(c.classCode.trim().toUpperCase());
+    });
     students.forEach(s => {
       if (s.classCode.trim()) set.add(s.classCode.trim().toUpperCase());
     });
     assignments.forEach(a => {
       if (a.classCode.trim()) set.add(a.classCode.trim().toUpperCase());
     });
-    customClasses.forEach(c => {
-      if (c.trim()) set.add(c.trim().toUpperCase());
-    });
     return Array.from(set).sort();
-  }, [students, assignments, customClasses]);
+  }, [classesList, students, assignments]);
 
   const [selectedClass, setSelectedClass] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
@@ -117,11 +127,26 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
   const studentStatsMap = useMemo(() => {
     const map = new Map<string, { submissions: number; avgScore: number; totalStars: number }>();
     students.forEach(s => {
-      const sResults = results.filter(
-        r =>
-          r.classCode.toUpperCase() === s.classCode.toUpperCase() &&
-          r.studentName.trim().toLowerCase() === s.studentName.trim().toLowerCase()
-      );
+      const sNameNorm = (s.studentName || '').trim().normalize('NFC').toLowerCase();
+      const sClassNorm = (s.classCode || '').trim().toUpperCase();
+      const sPinNorm = (s.pin || '').trim().toUpperCase();
+
+      const sResults = results.filter(r => {
+        const rClassNorm = (r.classCode || '').trim().toUpperCase();
+        if (rClassNorm !== sClassNorm) return false;
+
+        const rNameNorm = (r.studentName || '').trim().normalize('NFC').toLowerCase();
+        const rPinNorm = (r.pin || '').trim().toUpperCase();
+
+        // 1. Match by exact normalized Vietnamese name
+        if (rNameNorm === sNameNorm) return true;
+
+        // 2. Match by student personal PIN within same class
+        if (sPinNorm && rPinNorm && sPinNorm === rPinNorm) return true;
+
+        return false;
+      });
+
       const submissions = sResults.length;
       const avgScore =
         submissions > 0
@@ -139,16 +164,16 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
   }, [students, results]);
 
   // Add new custom class filter tab
-  const handleAddClassTab = (e: React.FormEvent) => {
+  const handleAddClassTab = async (e: React.FormEvent) => {
     e.preventDefault();
     const clean = newClassInput.trim().toUpperCase();
     if (!clean) return;
-    if (!customClasses.includes(clean)) {
-      setCustomClasses(prev => [...prev, clean]);
-    }
+    await saveClass(clean, `Lớp ${clean}`);
     setSelectedClass(clean);
     setNewClassInput('');
     setShowAddClassInput(false);
+    await onRefresh();
+    showToast(`Đã thêm Lớp ${clean} và đồng bộ lên đám mây Cloud!`);
   };
 
   // Open Modal for Creating a Student
@@ -217,6 +242,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
         note: formNote.trim()
       };
 
+      await saveClass(cleanClass, `Lớp ${cleanClass}`);
       await saveStudent(record);
       await onRefresh();
       setIsFormOpen(false);
@@ -292,6 +318,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
         };
       });
 
+      await saveClass(cleanClass, `Lớp ${cleanClass}`);
       await saveStudentsBatch(newStudents);
       await onRefresh();
       setSelectedClass(cleanClass);
@@ -374,17 +401,17 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
       )}
 
       {/* Top Toolbar: Class Tabs + Action Buttons */}
-      <div className="bg-white p-5 rounded-3xl border border-slate-200/90 shadow-xs space-y-4">
+      <div className="bg-white dark:bg-slate-900/90 p-5 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-xs space-y-4">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-xs">
               <GraduationCap className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-black text-slate-900">
+              <h2 className="text-lg font-black text-slate-900 dark:text-white">
                 Quản Lý Danh Sách Tài Khoản Học Sinh Theo Lớp
               </h2>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Thêm mới, nhập theo danh sách lớp, chỉnh sửa, xóa và đồng bộ trực tiếp lên Cloud Firestore
               </p>
             </div>
@@ -410,34 +437,40 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
             {filteredStudents.length > 0 && (
               <button
                 onClick={handleExportCsv}
-                className="px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
+                className="px-3 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
                 title="Xuất danh sách ra file Excel/CSV"
               >
-                <Download className="w-3.5 h-3.5 text-slate-500" />
+                <Download className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                 <span>Xuất CSV</span>
               </button>
             )}
 
             <button
-              onClick={onRefresh}
+              onClick={async () => {
+                await onRefresh();
+                showToast('Đã đồng bộ dữ liệu học sinh & điểm nộp bài từ Cloud Firestore!');
+              }}
               disabled={isSyncing}
-              className="p-2 text-slate-600 hover:bg-slate-100 rounded-xl border border-slate-200 transition-colors"
-              title="Đồng bộ danh sách từ Cloud Firestore"
+              className="px-3 py-2 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors flex items-center gap-1.5 shadow-2xs bg-white dark:bg-slate-800"
+              title="Đồng bộ danh sách & điểm nộp bài từ Cloud Firestore"
             >
-              <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin text-blue-600' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-blue-600' : 'text-slate-500 dark:text-slate-400'}`} />
+              <span className="text-xs font-bold">
+                {isSyncing ? 'Đang đồng bộ...' : 'Đồng bộ danh sách'}
+              </span>
             </button>
           </div>
         </div>
 
         {/* Class Filter Bar & Search */}
-        <div className="pt-3 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div className="flex items-center gap-1.5 flex-wrap">
             <button
               onClick={() => setSelectedClass('ALL')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 selectedClass === 'ALL'
                   ? 'bg-blue-600 text-white shadow-2xs'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
               }`}
             >
               Tất cả ({students.length})
@@ -452,7 +485,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                     selectedClass === code
                       ? 'bg-blue-600 text-white shadow-2xs'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                   }`}
                 >
                   <span>Lớp {code}</span>
@@ -460,7 +493,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
                     className={`px-1.5 py-0.2 rounded-md text-[10px] ${
                       selectedClass === code
                         ? 'bg-blue-700 text-white'
-                        : 'bg-slate-200 text-slate-600'
+                        : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
                     }`}
                   >
                     {count}
@@ -476,7 +509,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
                   placeholder="VD: 3A"
                   value={newClassInput}
                   onChange={e => setNewClassInput(e.target.value.toUpperCase())}
-                  className="w-20 px-2.5 py-1 text-xs font-bold border border-blue-400 rounded-xl focus:outline-none"
+                  className="w-20 px-2.5 py-1 text-xs font-bold border border-blue-400 dark:border-blue-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none"
                   autoFocus
                 />
                 <button
@@ -488,7 +521,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowAddClassInput(false)}
-                  className="p-1.5 text-slate-400 hover:text-slate-600"
+                  className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -496,7 +529,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
             ) : (
               <button
                 onClick={() => setShowAddClassInput(true)}
-                className="px-2.5 py-1.5 rounded-xl text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors flex items-center gap-1"
+                className="px-2.5 py-1.5 rounded-xl text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/70 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors flex items-center gap-1"
               >
                 <FolderPlus className="w-3.5 h-3.5" />
                 <span>+ Thêm lớp</span>
@@ -506,18 +539,18 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
 
           <div className="flex items-center gap-2">
             <div className="relative flex-1 md:w-64">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+              <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-2.5" />
               <input
                 type="text"
                 placeholder="Tìm tên hoặc mã học sinh..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-8 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="w-full pl-9 pr-8 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-xl text-xs font-medium focus:bg-white dark:focus:bg-slate-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600"
+                  className="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -527,8 +560,8 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
             {selectedClass !== 'ALL' && filteredStudents.length > 0 && (
               <>
                 {confirmClearClass === selectedClass ? (
-                  <div className="flex items-center gap-1 bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-xl text-xs">
-                    <span className="text-rose-800 font-bold">Xóa cả lớp {selectedClass}?</span>
+                  <div className="flex items-center gap-1 bg-rose-50 dark:bg-rose-950/70 border border-rose-200 dark:border-rose-800 px-2.5 py-1 rounded-xl text-xs">
+                    <span className="text-rose-800 dark:text-rose-200 font-bold">Xóa cả lớp {selectedClass}?</span>
                     <button
                       onClick={() => handleConfirmClearClass(selectedClass)}
                       className="px-2 py-0.5 bg-rose-600 text-white rounded-lg font-bold hover:bg-rose-700"
@@ -537,7 +570,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
                     </button>
                     <button
                       onClick={() => setConfirmClearClass(null)}
-                      className="px-1.5 py-0.5 text-slate-600 hover:text-slate-900 font-semibold"
+                      className="px-1.5 py-0.5 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-semibold"
                     >
                       Hủy
                     </button>
@@ -545,7 +578,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
                 ) : (
                   <button
                     onClick={() => setConfirmClearClass(selectedClass)}
-                    className="px-2.5 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-xl transition-colors flex items-center gap-1"
+                    className="px-2.5 py-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl transition-colors flex items-center gap-1"
                     title={`Xóa toàn bộ học sinh lớp ${selectedClass}`}
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -559,7 +592,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
       </div>
 
       {/* Student Roster Table */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs overflow-hidden">
+      <div className="bg-white dark:bg-slate-900/90 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-xs overflow-hidden">
         {filteredStudents.length === 0 ? (
           <div className="p-12 text-center space-y-3">
             <div className="w-14 h-14 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
@@ -600,7 +633,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[10px] font-black tracking-wider">
+                <tr className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 uppercase text-[10px] font-black tracking-wider">
                   <th className="py-3.5 px-4 w-12 text-center">STT</th>
                   <th className="py-3.5 px-4">Mã HS</th>
                   <th className="py-3.5 px-4">Họ và tên học sinh</th>
@@ -613,7 +646,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
                   <th className="py-3.5 px-4 text-right">Thao tác</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {filteredStudents.map((student, idx) => {
                   const stats = studentStatsMap.get(student.id) || {
                     submissions: 0,
@@ -623,36 +656,36 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
                   const isDeleting = confirmDeleteId === student.id;
 
                   return (
-                    <tr key={student.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-3 px-4 text-center font-bold text-slate-400 tabular-nums">
+                    <tr key={student.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors">
+                      <td className="py-3 px-4 text-center font-bold text-slate-400 dark:text-slate-500 tabular-nums">
                         {idx + 1}
                       </td>
-                      <td className="py-3 px-4 font-mono font-bold text-slate-700">
+                      <td className="py-3 px-4 font-mono font-bold text-slate-700 dark:text-slate-300">
                         {student.studentCode || '—'}
                       </td>
                       <td className="py-3 px-4">
-                        <div className="font-bold text-slate-900 text-sm">
+                        <div className="font-bold text-slate-900 dark:text-white text-sm">
                           {student.studentName}
                         </div>
                       </td>
                       <td className="py-3 px-4 text-center">
-                        <span className="px-2.5 py-0.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 font-black text-xs">
+                        <span className="px-2.5 py-0.5 rounded-lg bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 font-black text-xs">
                           {student.classCode}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-center text-slate-600 font-medium">
+                      <td className="py-3 px-4 text-center text-slate-600 dark:text-slate-300 font-medium">
                         {student.gender || 'Nam'}
                       </td>
                       <td className="py-3 px-4 text-center">
-                        <span className="font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
+                        <span className="font-mono font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-md">
                           {student.pin || '—'}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-center font-bold tabular-nums">
                         {stats.submissions > 0 ? (
-                          <span className="text-blue-700">{stats.submissions} bài</span>
+                          <span className="text-blue-700 dark:text-blue-400">{stats.submissions} bài</span>
                         ) : (
-                          <span className="text-slate-400 font-normal">Chưa nộp</span>
+                          <span className="text-slate-400 dark:text-slate-500 font-normal">Chưa nộp</span>
                         )}
                       </td>
                       <td className="py-3 px-4 text-center">
@@ -660,17 +693,17 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
                           <span
                             className={`px-2 py-0.5 rounded-md font-bold ${
                               stats.avgScore >= 80
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : 'bg-amber-100 text-amber-800'
+                                ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300'
+                                : 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300'
                             }`}
                           >
                             {stats.avgScore} đ
                           </span>
                         ) : (
-                          <span className="text-slate-300">—</span>
+                          <span className="text-slate-300 dark:text-slate-600">—</span>
                         )}
                       </td>
-                      <td className="py-3 px-4 text-slate-500 max-w-[180px] truncate">
+                      <td className="py-3 px-4 text-slate-500 dark:text-slate-400 max-w-[180px] truncate">
                         {student.note || '—'}
                       </td>
                       <td className="py-3 px-4 text-right">

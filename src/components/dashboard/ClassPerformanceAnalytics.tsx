@@ -54,7 +54,8 @@ const SUBJECT_COLORS: Record<SubjectId, { main: string; light: string; border: s
   powerpoint: { main: '#ea580c', light: '#fff7ed', border: '#fed7aa' },
   'thuat-toan': { main: '#7c3aed', light: '#f5f3ff', border: '#ddd6fe' },
   cdso: { main: '#0891b2', light: '#ecfeff', border: '#a5f3fc' },
-  ai: { main: '#db2777', light: '#fdf2f8', border: '#fbcfe8' }
+  ai: { main: '#db2777', light: '#fdf2f8', border: '#fbcfe8' },
+  sgk: { main: '#0d9488', light: '#f0fdfa', border: '#99f6e4' }
 };
 
 export const ClassPerformanceAnalytics: React.FC<ClassPerformanceAnalyticsProps> = ({
