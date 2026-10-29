@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { ClassroomLeaderboardEntry, fetchClassroomLeaderboard } from '../../services/leaderboard';
+import {
+  ClassroomLeaderboardEntry,
+  fetchClassroomLeaderboard,
+  subscribeToClassroomLeaderboard
+} from '../../services/leaderboard';
 import {
   Trophy,
   Star,
@@ -17,7 +21,8 @@ import {
   Info,
   X,
   Zap,
-  Target
+  Target,
+  Radio
 } from 'lucide-react';
 
 interface ClassroomLeaderboardProps {
@@ -34,6 +39,7 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
   const [entries, setEntries] = useState<ClassroomLeaderboardEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [justUpdated, setJustUpdated] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'stars' | 'lessons' | 'accuracy'>('stars');
   const [filterMode, setFilterMode] = useState<'all' | 'top5' | 'nearMe'>('all');
@@ -45,6 +51,8 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
       const data = await fetchClassroomLeaderboard(classCode, currentStudentName);
       setEntries(data);
       setLastUpdated(new Date());
+      setJustUpdated(true);
+      setTimeout(() => setJustUpdated(false), 2000);
     } catch (err) {
       console.error('Error fetching leaderboard:', err);
     } finally {
@@ -53,7 +61,19 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
   };
 
   useEffect(() => {
-    loadLeaderboardData();
+    setIsLoading(true);
+    const unsubscribe = subscribeToClassroomLeaderboard(classCode, currentStudentName, (data) => {
+      setEntries(data);
+      setLastUpdated(new Date());
+      setIsLoading(false);
+      setJustUpdated(true);
+      const timer = setTimeout(() => setJustUpdated(false), 2000);
+      return () => clearTimeout(timer);
+    });
+
+    return () => {
+      unsubscribe();
+    };
   }, [classCode, currentStudentName]);
 
   // Current student entry
@@ -119,20 +139,30 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap text-xs font-bold text-amber-100 uppercase tracking-wider mb-1">
-                <span className="px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-xs">
+                <span className="px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-xs font-bold">
                   Bảng Vàng Lớp {classCode}
                 </span>
                 <span>·</span>
-                <span className="flex items-center gap-1 text-emerald-200">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block" />
-                  Dữ liệu trực tiếp Firestore
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border transition-all ${
+                  justUpdated
+                    ? 'bg-emerald-400 text-slate-950 border-white shadow-md scale-105'
+                    : 'bg-emerald-500/30 border-emerald-300/40 text-emerald-100'
+                }`}>
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+                  </span>
+                  <span>{justUpdated ? 'Vừa nhận điểm mới!' : 'Realtime: Cập nhật trực tiếp'}</span>
+                </span>
+                <span className="text-[11px] text-amber-200/90 font-mono font-medium hidden sm:inline">
+                  {lastUpdated.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                 </span>
               </div>
               <h2 className="text-2xl md:text-3xl font-black tracking-tight flex items-center gap-2">
                 Bảng Xếp Hạng Tích Lũy Sao ⭐
               </h2>
               <p className="text-xs md:text-sm text-amber-100 mt-1 max-w-xl">
-                Tuyên dương các bạn có tổng số Sao cao nhất từ kết quả luyện tập và huy hiệu kĩ năng Tin học.
+                Tuyên dương các bạn có tổng số Sao cao nhất từ kết quả luyện tập và huy hiệu kĩ năng Tin học. Tự động cập nhật tức thì khi có bạn nộp bài.
               </p>
             </div>
           </div>
@@ -141,11 +171,11 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
             <button
               onClick={loadLeaderboardData}
               disabled={isLoading}
-              className="px-3.5 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-xs text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border border-white/20 shadow-xs"
-              title="Tải lại dữ liệu mới nhất từ Firestore"
+              className="px-3.5 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-xs text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border border-white/20 shadow-xs cursor-pointer active:scale-95"
+              title="Đồng bộ lại tức thời với Cloud Firestore"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-              <span>{isLoading ? 'Đang cập nhật...' : 'Cập nhật'}</span>
+              <span>{isLoading ? 'Đang cập nhật...' : 'Đồng bộ lại'}</span>
             </button>
 
             {onClose && (

@@ -1,7 +1,9 @@
-import { ExerciseResult } from '../types';
-import { fetchClassResultsFromCloud, getResults, fetchStudentsFromCloud } from './storage';
+import { ExerciseResult, StudentAccount } from '../types';
+import { fetchClassResultsFromCloud, getResults, fetchStudentsFromCloud, getStudents } from './storage';
 import { fetchClassAchievementsFromCloud } from './achievements';
 import { ACHIEVEMENTS_MAP } from '../data/achievements';
+import { db } from './firebase';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 
 export interface ClassroomLeaderboardEntry {
   studentName: string;
@@ -18,7 +20,6 @@ export interface ClassroomLeaderboardEntry {
   favoriteSubjectEmoji: string;
   favoriteSubjectName: string;
 }
-
 
 /**
  * Calculates accumulated stars for a lesson based on score.
@@ -50,29 +51,21 @@ export function calculateBadgeStars(badgeId: string): number {
 }
 
 /**
- * Fetches real-time exercise results and achievements from Firestore for the classroom,
- * aggregates stars per student, and generates an ordered leaderboard.
+ * Pure aggregation function that calculates stars, scores, rankings and favorites
+ * from given class results, achievements, and registered student accounts.
  */
-export async function fetchClassroomLeaderboard(
+export function buildLeaderboardEntries(
   classCode: string,
-  currentStudentName: string
-): Promise<ClassroomLeaderboardEntry[]> {
+  currentStudentName: string,
+  allResults: ExerciseResult[],
+  classAchievements: Map<string, string[]>,
+  registeredStudents: StudentAccount[]
+): ClassroomLeaderboardEntry[] {
   const cleanClass = classCode.trim().toUpperCase();
   const cleanCurrentName = currentStudentName.trim();
 
-  // 1. Fetch live classroom results, achievements and real registered students from Firestore
-  const [classResults, classAchievements, registeredStudents] = await Promise.all([
-    fetchClassResultsFromCloud(cleanClass),
-    fetchClassAchievementsFromCloud(cleanClass),
-    fetchStudentsFromCloud(cleanClass)
-  ]);
-
-  // Merge with local results in case offline or newly submitted
-  const localResults = getResults().filter(r => r.classCode.toUpperCase() === cleanClass);
-  const resultMap = new Map<string, ExerciseResult>();
-  classResults.forEach(r => resultMap.set(r.id, r));
-  localResults.forEach(r => resultMap.set(r.id, r));
-  const allResults = Array.from(resultMap.values());
+  // Filter results for this classroom
+  const filteredResults = allResults.filter(r => r.classCode.trim().toUpperCase() === cleanClass);
 
   // Group by student
   const studentMap = new Map<
@@ -87,22 +80,25 @@ export async function fetchClassroomLeaderboard(
     }
   >();
 
-  // Initialize studentMap with all real registered students in this class
-  registeredStudents.forEach(st => {
-    const sName = st.studentName.trim();
-    if (!studentMap.has(sName)) {
-      studentMap.set(sName, {
-        studentName: sName,
-        lessonScores: new Map(),
-        totalScoreSum: 0,
-        totalAccuracySum: 0,
-        exerciseCount: 0,
-        subjectCounts: new Map()
-      });
-    }
-  });
+  // 1. Initialize studentMap with all real registered students in this class
+  registeredStudents
+    .filter(st => (st.classCode || '').trim().toUpperCase() === cleanClass)
+    .forEach(st => {
+      const sName = st.studentName.trim();
+      if (!studentMap.has(sName)) {
+        studentMap.set(sName, {
+          studentName: sName,
+          lessonScores: new Map(),
+          totalScoreSum: 0,
+          totalAccuracySum: 0,
+          exerciseCount: 0,
+          subjectCounts: new Map()
+        });
+      }
+    });
 
-  for (const res of allResults) {
+  // 2. Accumulate exercise results
+  for (const res of filteredResults) {
     const sName = res.studentName.trim();
     if (!studentMap.has(sName)) {
       studentMap.set(sName, {
@@ -136,8 +132,8 @@ export async function fetchClassroomLeaderboard(
     sData.subjectCounts.set(res.subjectId, prevSubCount + 1);
   }
 
-  // Ensure current student exists in map even if they haven't completed an exercise yet
-  if (!studentMap.has(cleanCurrentName)) {
+  // Ensure current student exists in map even if they haven't submitted yet
+  if (cleanCurrentName && !studentMap.has(cleanCurrentName)) {
     studentMap.set(cleanCurrentName, {
       studentName: cleanCurrentName,
       lessonScores: new Map(),
@@ -148,7 +144,7 @@ export async function fetchClassroomLeaderboard(
     });
   }
 
-  // 2. Build list of entries
+  // 3. Build list of entries
   const entries: ClassroomLeaderboardEntry[] = [];
 
   studentMap.forEach(sData => {
@@ -189,7 +185,8 @@ export async function fetchClassroomLeaderboard(
       powerpoint: { emoji: '🎨', name: 'Trình chiếu PPT' },
       'thuat-toan': { emoji: '🧩', name: 'Thuật toán Maze' },
       cdso: { emoji: '🛡️', name: 'An toàn mạng' },
-      ai: { emoji: '🤖', name: 'Khám phá AI' }
+      ai: { emoji: '🤖', name: 'Khám phá AI' },
+      sgk: { emoji: '📖', name: 'Bài học SGK' }
     };
 
     const favInfo = subjectEmojis[favoriteSub] || { emoji: '💻', name: 'Tin học' };
@@ -204,14 +201,14 @@ export async function fetchClassroomLeaderboard(
       averageAccuracy,
       badgesCount: badges.length,
       rank: 0,
-      isCurrentStudent: sData.studentName.toLowerCase() === cleanCurrentName.toLowerCase(),
+      isCurrentStudent: cleanCurrentName ? sData.studentName.toLowerCase() === cleanCurrentName.toLowerCase() : false,
       streakCount: Math.min(completedLessonsCount, 7),
       favoriteSubjectEmoji: favInfo.emoji,
       favoriteSubjectName: favInfo.name
     });
   });
 
-  // 3. Sort entries descending: totalStars > averageScore > completedLessonsCount
+  // 4. Sort entries descending: totalStars > averageScore > completedLessonsCount
   entries.sort((a, b) => {
     if (b.totalStars !== a.totalStars) {
       return b.totalStars - a.totalStars;
@@ -228,4 +225,183 @@ export async function fetchClassroomLeaderboard(
   });
 
   return entries;
+}
+
+/**
+ * Fetches one-off classroom leaderboard from Firestore and local cache.
+ */
+export async function fetchClassroomLeaderboard(
+  classCode: string,
+  currentStudentName: string
+): Promise<ClassroomLeaderboardEntry[]> {
+  const cleanClass = classCode.trim().toUpperCase();
+
+  // 1. Fetch live classroom results, achievements and real registered students from Firestore
+  const [classResults, classAchievements, registeredStudents] = await Promise.all([
+    fetchClassResultsFromCloud(cleanClass),
+    fetchClassAchievementsFromCloud(cleanClass),
+    fetchStudentsFromCloud(cleanClass)
+  ]);
+
+  // Merge with local results
+  const localResults = getResults().filter(r => r.classCode.toUpperCase() === cleanClass);
+  const resultMap = new Map<string, ExerciseResult>();
+  classResults.forEach(r => resultMap.set(r.id, r));
+  localResults.forEach(r => resultMap.set(r.id, r));
+  const allResults = Array.from(resultMap.values());
+
+  // Merge registered students with local storage
+  const studentMap = new Map<string, StudentAccount>();
+  getStudents().filter(s => s.classCode.toUpperCase() === cleanClass).forEach(s => studentMap.set(s.id, s));
+  registeredStudents.forEach(s => studentMap.set(s.id, s));
+
+  return buildLeaderboardEntries(
+    cleanClass,
+    currentStudentName,
+    allResults,
+    classAchievements,
+    Array.from(studentMap.values())
+  );
+}
+
+/**
+ * Subscribes to real-time updates for Classroom Leaderboard using Firestore onSnapshot.
+ * Whenever any student in the class completes an exercise, gets higher scores,
+ * unlocks an achievement badge, or a teacher adds new students to the class roster,
+ * the leaderboard updates instantly in real-time across all devices.
+ */
+export function subscribeToClassroomLeaderboard(
+  classCode: string,
+  currentStudentName: string,
+  onUpdate: (entries: ClassroomLeaderboardEntry[]) => void
+): () => void {
+  const cleanClass = classCode.trim().toUpperCase();
+  const cleanCurrentName = currentStudentName.trim();
+
+  // State caches for real-time aggregation
+  let latestResults: ExerciseResult[] = getResults().filter(r => r.classCode.toUpperCase() === cleanClass);
+  let latestAchievements = new Map<string, string[]>();
+  let latestStudents: StudentAccount[] = getStudents().filter(s => s.classCode.toUpperCase() === cleanClass);
+
+  // Initial immediate call with cached/local data (0ms initial render)
+  const initial = buildLeaderboardEntries(
+    cleanClass,
+    cleanCurrentName,
+    latestResults,
+    latestAchievements,
+    latestStudents
+  );
+  onUpdate(initial);
+
+  const notify = () => {
+    const updated = buildLeaderboardEntries(
+      cleanClass,
+      cleanCurrentName,
+      latestResults,
+      latestAchievements,
+      latestStudents
+    );
+    onUpdate(updated);
+  };
+
+  const unsubscribers: (() => void)[] = [];
+
+  // 1. Real-time Results Subscription
+  try {
+    const resultsCol = collection(db, 'results');
+    const qResults = query(resultsCol, where('classCode', '==', cleanClass));
+    const unsubResults = onSnapshot(
+      qResults,
+      snapshot => {
+        const cloudResults: ExerciseResult[] = [];
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data() as ExerciseResult;
+          if (data && data.studentName && data.classCode) {
+            cloudResults.push(data);
+          }
+        });
+
+        const resultMap = new Map<string, ExerciseResult>();
+        getResults().filter(r => r.classCode.toUpperCase() === cleanClass).forEach(r => resultMap.set(r.id, r));
+        cloudResults.forEach(r => resultMap.set(r.id, r));
+        latestResults = Array.from(resultMap.values());
+        notify();
+      },
+      err => {
+        console.warn('[Firestore] Realtime leaderboard results listener error:', err);
+      }
+    );
+    unsubscribers.push(unsubResults);
+  } catch (err) {
+    console.warn('[Firestore] Realtime leaderboard results listener setup error:', err);
+  }
+
+  // 2. Real-time Achievements Subscription
+  try {
+    const achievementsCol = collection(db, 'achievements');
+    const qAchievements = query(achievementsCol, where('classCode', '==', cleanClass));
+    const unsubAchievements = onSnapshot(
+      qAchievements,
+      snapshot => {
+        const map = new Map<string, string[]>();
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          if (data && data.studentName && data.achievementId) {
+            const key = data.studentName.trim();
+            const existing = map.get(key) || [];
+            if (!existing.includes(data.achievementId)) {
+              existing.push(data.achievementId);
+              map.set(key, existing);
+            }
+          }
+        });
+        latestAchievements = map;
+        notify();
+      },
+      err => {
+        console.warn('[Firestore] Realtime leaderboard achievements listener error:', err);
+      }
+    );
+    unsubscribers.push(unsubAchievements);
+  } catch (err) {
+    console.warn('[Firestore] Realtime leaderboard achievements listener setup error:', err);
+  }
+
+  // 3. Real-time Students Roster Subscription
+  try {
+    const studentsCol = collection(db, 'students');
+    const qStudents = query(studentsCol, where('classCode', '==', cleanClass));
+    const unsubStudents = onSnapshot(
+      qStudents,
+      snapshot => {
+        const cloudStudents: StudentAccount[] = [];
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data() as StudentAccount;
+          if (data && data.studentName && data.classCode) {
+            cloudStudents.push(data);
+          }
+        });
+
+        const studentMap = new Map<string, StudentAccount>();
+        getStudents().filter(s => s.classCode.toUpperCase() === cleanClass).forEach(s => studentMap.set(s.id, s));
+        cloudStudents.forEach(s => studentMap.set(s.id, s));
+        latestStudents = Array.from(studentMap.values());
+        notify();
+      },
+      err => {
+        console.warn('[Firestore] Realtime leaderboard students listener error:', err);
+      }
+    );
+    unsubscribers.push(unsubStudents);
+  } catch (err) {
+    console.warn('[Firestore] Realtime leaderboard students listener setup error:', err);
+  }
+
+  return () => {
+    unsubscribers.forEach(u => {
+      try {
+        u();
+      } catch (e) {}
+    });
+  };
 }

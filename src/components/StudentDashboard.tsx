@@ -390,6 +390,9 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ session, onL
           subjectEmoji={selectedSubject.emoji}
           subjectName={selectedSubject.name}
           grade={selectedGrade}
+          studentName={name}
+          studentCode={session.studentCode}
+          classCode={classCode}
           onComplete={handleExerciseComplete}
           onBack={() => setCurrentView('lessons')}
         />
@@ -897,13 +900,14 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ session, onL
 
             <button
               onClick={() => setShowLeaderboard(!showLeaderboard)}
-              className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+              className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                 showLeaderboard ? 'bg-amber-400 text-slate-900 shadow-sm' : 'bg-white/20 hover:bg-white/30 text-white'
               }`}
-              title="Bảng vàng vinh danh tích lũy Sao của lớp từ Firestore"
+              title="Bảng vàng vinh danh tích lũy Sao của lớp (Cập nhật trực tiếp Realtime)"
             >
               <Medal className="w-4 h-4 text-amber-300" />
               <span>{showLeaderboard ? 'Ẩn Bảng Vàng' : 'Bảng Vàng Lớp ⭐'}</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse" title="Realtime" />
             </button>
 
             <button
@@ -1234,16 +1238,16 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ session, onL
               const pctDone = totalInSub > 0 ? Math.round((completedInSub / totalInSub) * 100) : 0;
 
               return (
-                <div
-                  key={sId}
-                  onClick={() => handleSelectSubject(sId)}
-                  className={`bg-white/85 dark:bg-slate-900/85 backdrop-blur-md p-6 rounded-3xl border shadow-xs hover:border-blue-400 dark:hover:border-blue-400 hover:shadow-lg dark:hover:shadow-blue-950/50 transition-all cursor-pointer flex flex-col justify-between space-y-4 group ${
-                    completedInSub > 0 ? 'border-emerald-200/90 dark:border-emerald-900/60' : 'border-slate-200/80 dark:border-slate-800'
-                  }`}
-                >
-                  <div>
-                    <div className="flex items-start justify-between gap-3 mb-3">
-                      <div className="w-14 h-14 rounded-2xl bg-slate-50 dark:bg-slate-800 group-hover:bg-blue-50 dark:group-hover:bg-blue-950 border border-slate-100 dark:border-slate-700 flex items-center justify-center text-3xl transition-colors">
+                  <div
+                    key={sId}
+                    onClick={() => handleSelectSubject(sId)}
+                    className={`bg-white/85 dark:bg-slate-900/85 backdrop-blur-md p-6 rounded-3xl border shadow-xs hover:border-blue-400 dark:hover:border-blue-400 hover:ring-2 hover:ring-blue-500/20 hover:shadow-xl hover:shadow-blue-500/15 dark:hover:shadow-blue-950/50 hover:-translate-y-1.5 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 ease-out cursor-pointer flex flex-col justify-between space-y-4 group will-change-transform ${
+                      completedInSub > 0 ? 'border-emerald-200/90 dark:border-emerald-900/60' : 'border-slate-200/80 dark:border-slate-800'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div className="w-14 h-14 rounded-2xl bg-slate-50 dark:bg-slate-800 group-hover:bg-blue-50 dark:group-hover:bg-blue-950/70 border border-slate-100 dark:border-slate-700 flex items-center justify-center text-3xl group-hover:scale-110 group-hover:rotate-2 transition-all duration-300">
                         {subject.emoji}
                       </div>
                       <div className="flex flex-col items-end gap-1">

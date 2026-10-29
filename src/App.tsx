@@ -642,10 +642,10 @@ export default function App() {
                   <div
                     key={sub.id}
                     onClick={() => handleStartRole('student')}
-                    className="bg-white/95 dark:bg-slate-900/95 p-5 rounded-3xl border border-slate-200/90 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-400 transition-all cursor-pointer flex flex-col justify-between group"
+                    className="bg-white/95 dark:bg-slate-900/95 p-5 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-xs hover:shadow-xl hover:shadow-blue-500/15 dark:hover:shadow-blue-500/10 hover:border-blue-500 dark:hover:border-blue-400 hover:ring-2 hover:ring-blue-500/20 dark:hover:ring-blue-400/20 hover:-translate-y-1.5 hover:scale-[1.03] active:scale-[0.98] transition-all duration-300 ease-out cursor-pointer flex flex-col justify-between group will-change-transform"
                   >
                     <div>
-                      <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xl mb-3 group-hover:scale-105 transition-transform">
+                      <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 group-hover:bg-blue-50 dark:group-hover:bg-blue-950/70 border border-slate-200/50 dark:border-slate-700/50 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                         {sub.emoji}
                       </div>
 
@@ -667,7 +667,7 @@ export default function App() {
 
                     <div className="mt-4 pt-2.5 border-t border-slate-100 dark:border-slate-800 text-[11px] font-bold text-blue-600 dark:text-blue-400 flex items-center justify-between">
                       <span>Vào luyện tập</span>
-                      <span>→</span>
+                      <span className="group-hover:translate-x-1.5 transition-transform duration-300 font-bold">→</span>
                     </div>
                   </div>
                 ))}
