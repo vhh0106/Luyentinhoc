@@ -44,7 +44,8 @@ import {
   CloudCheck,
   ArrowLeft,
   ChevronDown,
-  MessageSquare
+  MessageSquare,
+  Pencil
 } from 'lucide-react';
 import { ClassPerformanceAnalytics } from './dashboard/ClassPerformanceAnalytics';
 import { StudentManagement } from './dashboard/StudentManagement';
@@ -75,6 +76,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
   const [selectedClassFilter, setSelectedClassFilter] = useState<string | null>(null);
 
   // Assignment Form state (assigned per classCode, no separate assignment PIN)
+  const [editingAssignment, setEditingAssignment] = useState<Assignment | null>(null);
   const [classCode, setClassCode] = useState('');
   const [note, setNote] = useState('');
   const [selectedSubjects, setSelectedSubjects] = useState<SubjectId[]>([
@@ -148,7 +150,29 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
     setSelectedSubjects([]);
   };
 
-  const handleCreateAssignment = async (e: React.FormEvent) => {
+  const handleOpenCreateModal = () => {
+    setEditingAssignment(null);
+    setClassCode('');
+    setNote('');
+    setSelectedSubjects(['go', 'go-tv', 'chuot', 'thuat-toan']);
+    setFormError(null);
+    setShowModal(true);
+  };
+
+  const handleOpenEditModal = (assign: Assignment) => {
+    setEditingAssignment(assign);
+    setClassCode(assign.classCode);
+    setNote(assign.note || '');
+    setSelectedSubjects(
+      assign.subjects && assign.subjects.length > 0
+        ? [...assign.subjects]
+        : (Object.keys(SUBJECTS_MAP) as SubjectId[])
+    );
+    setFormError(null);
+    setShowModal(true);
+  };
+
+  const handleSaveAssignment = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
     const cleanClass = classCode.trim().toUpperCase();
@@ -161,25 +185,29 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
       return;
     }
 
-    const newAssignment: Assignment = {
-      id: `assign-${cleanClass}`,
+    const isEditing = !!editingAssignment;
+    const targetAssignment: Assignment = {
+      id: editingAssignment ? editingAssignment.id : `assign-${cleanClass}`,
       classCode: cleanClass,
-      pin: '',
+      pin: editingAssignment ? editingAssignment.pin || '' : '',
       subjects: selectedSubjects,
       teacherName: teacher.name,
-      createdAt: new Date().toISOString(),
+      createdAt: editingAssignment ? editingAssignment.createdAt : new Date().toISOString(),
       note: note.trim() || `Bài tập Tin học Lớp ${cleanClass}`
     };
 
     await saveClass(cleanClass, `Lớp ${cleanClass}`, teacher.name);
-    saveAssignment(newAssignment);
+    saveAssignment(targetAssignment);
     loadData();
     setShowModal(false);
+    setEditingAssignment(null);
     setClassCode('');
     setNote('');
     setActiveTab('assignments');
     setBannerNotice(
-      `Đã cập nhật chương trình bài tập cho Lớp ${newAssignment.classCode} (${newAssignment.subjects.length} chủ đề). Học sinh lớp ${newAssignment.classCode} chỉ cần đăng nhập bằng Mã PIN cá nhân của mình để làm bài!`
+      isEditing
+        ? `Đã cập nhật bài tập cho Lớp ${targetAssignment.classCode} (${targetAssignment.subjects.length} chủ đề thành công). Học sinh lớp ${targetAssignment.classCode} sẽ thấy ngay cấu hình mới!`
+        : `Đã giao chương trình bài tập cho Lớp ${targetAssignment.classCode} (${targetAssignment.subjects.length} chủ đề). Học sinh lớp ${targetAssignment.classCode} chỉ cần đăng nhập bằng Mã PIN cá nhân của mình để làm bài!`
     );
   };
 
@@ -532,27 +560,34 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
             <div>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
-                <h2 className="text-lg font-bold text-slate-900">
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                   Cấu Hình Bài Tập Theo Lớp ({assignments.length})
                 </h2>
               </div>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                 Học sinh đăng nhập bằng <strong>Mã PIN cá nhân của học sinh</strong> sẽ tự động thấy danh sách chủ đề được giao cho lớp mình.
               </p>
             </div>
+            <button
+              onClick={handleOpenCreateModal}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs inline-flex items-center gap-1.5 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Giao bài tập cho lớp mới
+            </button>
           </div>
 
           {assignments.length === 0 ? (
-            <div className="bg-white p-12 rounded-3xl border border-dashed border-slate-300 text-center">
+            <div className="bg-white dark:bg-slate-900/90 p-12 rounded-3xl border border-dashed border-slate-300 dark:border-slate-800 text-center">
               <BookOpen className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-              <h3 className="text-base font-bold text-slate-700">
+              <h3 className="text-base font-bold text-slate-700 dark:text-slate-300">
                 Mặc định mở cả 10 chủ đề cho tất cả các lớp
               </h3>
-              <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto">
                 Nếu Thầy/Cô muốn giới hạn các chủ đề bài tập riêng cho từng lớp (VD: Lớp 3A chỉ học Gõ phím & Chuột), hãy bấm nút "Giao bài tập cho lớp" nhé!
               </p>
               <button
-                onClick={() => setShowModal(true)}
+                onClick={handleOpenCreateModal}
                 className="mt-4 px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 inline-flex items-center gap-2"
               >
                 <Plus className="w-4 h-4" />
@@ -587,31 +622,41 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
                           </span>
                         </div>
 
-                        {confirmDeleteAssignId === item.id ? (
-                          <div className="flex items-center gap-1 bg-rose-50 dark:bg-rose-950/70 border border-rose-200 dark:border-rose-800 px-2 py-1 rounded-xl text-xs">
-                            <span className="text-rose-800 dark:text-rose-200 font-bold">Xóa?</span>
-                            <button
-                              onClick={() => handleDeleteAssignment(item.id)}
-                              className="px-2 py-0.5 bg-rose-600 text-white rounded-md font-bold hover:bg-rose-700"
-                            >
-                              Có
-                            </button>
-                            <button
-                              onClick={() => setConfirmDeleteAssignId(null)}
-                              className="px-1.5 py-0.5 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-semibold"
-                            >
-                              Hủy
-                            </button>
-                          </div>
-                        ) : (
+                        <div className="flex items-center gap-1">
                           <button
-                            onClick={() => setConfirmDeleteAssignId(item.id)}
-                            className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
-                            title="Xóa cấu hình bài tập lớp này"
+                            onClick={() => handleOpenEditModal(item)}
+                            className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors"
+                            title="Chỉnh sửa cấu hình bài tập lớp này"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Pencil className="w-4 h-4" />
                           </button>
-                        )}
+
+                          {confirmDeleteAssignId === item.id ? (
+                            <div className="flex items-center gap-1 bg-rose-50 dark:bg-rose-950/70 border border-rose-200 dark:border-rose-800 px-2 py-1 rounded-xl text-xs">
+                              <span className="text-rose-800 dark:text-rose-200 font-bold">Xóa?</span>
+                              <button
+                                onClick={() => handleDeleteAssignment(item.id)}
+                                className="px-2 py-0.5 bg-rose-600 text-white rounded-md font-bold hover:bg-rose-700"
+                              >
+                                Có
+                              </button>
+                              <button
+                                onClick={() => setConfirmDeleteAssignId(null)}
+                                className="px-1.5 py-0.5 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-semibold"
+                              >
+                                Hủy
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setConfirmDeleteAssignId(item.id)}
+                              className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                              title="Xóa cấu hình bài tập lớp này"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
                       </div>
 
                       <h3 className="font-bold text-slate-900 dark:text-white text-base">{item.note}</h3>
@@ -639,20 +684,31 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
                       </div>
                     </div>
 
-                    {/* Submissions button */}
+                    {/* Submissions & Edit button */}
                     <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                       <span className="text-xs text-slate-500 dark:text-slate-400">
                         GV giao bài: <strong className="text-slate-700 dark:text-slate-300">{item.teacherName}</strong>
                       </span>
-                      <button
-                        onClick={() => {
-                          setSelectedClassFilter(item.classCode);
-                          setShowResultsModal(true);
-                        }}
-                        className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
-                      >
-                        Xem điểm Lớp {item.classCode} →
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleOpenEditModal(item)}
+                          className="px-2.5 py-1 text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded-lg transition-colors flex items-center gap-1"
+                          title="Chỉnh sửa chủ đề & lời dặn"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                          <span>Chỉnh sửa</span>
+                        </button>
+                        <span className="text-slate-300 dark:text-slate-700">|</span>
+                        <button
+                          onClick={() => {
+                            setSelectedClassFilter(item.classCode);
+                            setShowResultsModal(true);
+                          }}
+                          className="text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                        >
+                          Xem điểm Lớp {item.classCode} →
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -747,19 +803,33 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
         </div>
       )}
 
-      {/* CREATE ASSIGNMENT MODAL */}
+      {/* CREATE / EDIT ASSIGNMENT MODAL */}
       {showModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 md:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 overflow-y-auto max-h-[90vh]">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800 mb-6">
               <div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white">Giao Bài Tập Theo Lớp</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                    {editingAssignment ? `Chỉnh Sửa Giao Bài Tập - Lớp ${editingAssignment.classCode}` : 'Giao Bài Tập Theo Lớp'}
+                  </h3>
+                  {editingAssignment && (
+                    <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                      Chỉnh sửa
+                    </span>
+                  )}
+                </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  Chọn các chủ đề cho lớp học. Học sinh của lớp dùng Mã PIN cá nhân của mình để đăng nhập và làm bài.
+                  {editingAssignment
+                    ? `Điều chỉnh danh sách chủ đề được mở và lời dặn của Thầy/Cô cho học sinh Lớp ${editingAssignment.classCode}.`
+                    : 'Chọn các chủ đề cho lớp học. Học sinh của lớp dùng Mã PIN cá nhân của mình để đăng nhập và làm bài.'}
                 </p>
               </div>
               <button
-                onClick={() => setShowModal(false)}
+                onClick={() => {
+                  setShowModal(false);
+                  setEditingAssignment(null);
+                }}
                 className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800"
               >
                 <X className="w-5 h-5" />
@@ -773,7 +843,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
               </div>
             )}
 
-            <form onSubmit={handleCreateAssignment} className="space-y-6">
+            <form onSubmit={handleSaveAssignment} className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider mb-1.5">
@@ -782,13 +852,18 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
                   <input
                     type="text"
                     required
+                    disabled={!!editingAssignment}
                     placeholder="Ví dụ: 3A, 4B, 5C..."
                     value={classCode}
                     onChange={e => setClassCode(e.target.value.toUpperCase())}
-                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl font-semibold text-sm focus:bg-white dark:focus:bg-slate-700 focus:ring-2 focus:ring-blue-500 focus:outline-none uppercase"
+                    className={`w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl font-semibold text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none uppercase ${
+                      editingAssignment ? 'opacity-70 cursor-not-allowed bg-slate-100 dark:bg-slate-800/50' : 'focus:bg-white dark:focus:bg-slate-700'
+                    }`}
                   />
                   <span className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 block">
-                    Áp dụng tự động cho toàn bộ học sinh thuộc lớp này
+                    {editingAssignment
+                      ? 'Mã lớp được cố định khi chỉnh sửa bài tập đã giao'
+                      : 'Áp dụng tự động cho toàn bộ học sinh thuộc lớp này'}
                   </span>
                 </div>
 
@@ -869,7 +944,10 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
                 <button
                   type="button"
-                  onClick={() => setShowModal(false)}
+                  onClick={() => {
+                    setShowModal(false);
+                    setEditingAssignment(null);
+                  }}
                   className="px-5 py-2.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
                 >
                   Hủy bỏ
@@ -878,8 +956,17 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
                   type="submit"
                   className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-2"
                 >
-                  <BookOpen className="w-4 h-4" />
-                  <span>Lưu bài tập cho lớp</span>
+                  {editingAssignment ? (
+                    <>
+                      <Check className="w-4 h-4" />
+                      <span>Lưu thay đổi bài tập</span>
+                    </>
+                  ) : (
+                    <>
+                      <BookOpen className="w-4 h-4" />
+                      <span>Lưu bài tập cho lớp</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>
