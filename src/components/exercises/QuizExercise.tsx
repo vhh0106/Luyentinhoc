@@ -427,47 +427,47 @@ export const QuizExercise: React.FC<QuizExerciseProps> = ({
           <ConfettiEffect durationMs={4500} />
 
           {/* Celebration Score Summary Card */}
-          <div className="p-8 bg-gradient-to-br from-indigo-50/90 via-white to-teal-50/80 dark:from-slate-900 dark:via-slate-850 dark:to-teal-950/40 rounded-3xl border-2 border-indigo-200 dark:border-indigo-800 shadow-xl text-center space-y-4">
+          <div className="p-8 bg-gradient-to-br from-indigo-50/90 via-white to-teal-50/80 dark:from-slate-900 dark:via-slate-900 dark:to-indigo-950/70 rounded-3xl border-2 border-indigo-200 dark:border-slate-800 shadow-xl text-center space-y-4">
             <div className="w-16 h-16 bg-gradient-to-tr from-amber-400 to-orange-400 text-white rounded-2xl flex items-center justify-center mx-auto shadow-md text-3xl">
               🏆
             </div>
 
             <div>
-              <div className="text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-1">
-                Kết Quả Bài Kiểm Tra Cá Nhân Hóa · {examCode}
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/80 uppercase tracking-wider mb-2">
+                <span>Kết Quả Bài Kiểm Tra Cá Nhân Hóa · {examCode}</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white leading-tight">
                 Chúc mừng {studentName} đã hoàn thành bài!
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1 max-w-lg mx-auto">
-                Điểm số đã được ghi nhận vào hệ thống và đồng bộ tức thời lên Bảng Vàng Lớp {classCode}.
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1 max-w-lg mx-auto leading-relaxed">
+                Điểm số đã được ghi nhận vào hệ thống và đồng bộ tức thời lên Bảng Vàng Lớp <strong className="text-slate-900 dark:text-white font-bold">{classCode}</strong>.
               </p>
             </div>
 
             {/* Score Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-xl mx-auto pt-2">
-              <div className="p-3 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-2xs">
+              <div className="p-3.5 bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-2xs">
                 <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400">Số câu đúng</div>
                 <div className="text-xl font-black text-indigo-600 dark:text-indigo-400 mt-0.5 font-mono">
                   {correctCount} / {questions.length}
                 </div>
               </div>
 
-              <div className="p-3 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-2xs">
+              <div className="p-3.5 bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-2xs">
                 <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400">Độ chính xác</div>
                 <div className="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-0.5 font-mono">
                   {accuracy}%
                 </div>
               </div>
 
-              <div className="p-3 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-2xs">
+              <div className="p-3.5 bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-2xs">
                 <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400">Thời gian</div>
-                <div className="text-xl font-black text-slate-800 dark:text-slate-200 mt-0.5 font-mono">
+                <div className="text-xl font-black text-slate-800 dark:text-white mt-0.5 font-mono">
                   {formatTime(secondsElapsed)}
                 </div>
               </div>
 
-              <div className="p-3 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-2xs">
+              <div className="p-3.5 bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-2xs">
                 <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400">Đánh giá Sao</div>
                 <div className="flex items-center justify-center gap-1 mt-1 text-amber-400">
                   {[1, 2, 3].map(s => (
@@ -489,7 +489,7 @@ export const QuizExercise: React.FC<QuizExerciseProps> = ({
               <button
                 type="button"
                 onClick={handleRestartWithNewExam}
-                className="px-5 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 transition-colors shadow-2xs flex items-center gap-2 cursor-pointer"
+                className="px-5 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-2xs flex items-center gap-2 cursor-pointer"
               >
                 <RotateCcw className="w-4 h-4 text-indigo-500" />
                 <span>Làm lại bài này (Đổi mã đề mới)</span>

@@ -343,75 +343,75 @@ export const ClassPerformanceAnalytics: React.FC<ClassPerformanceAnalyticsProps>
       {/* KPI Cards: 4 Core Analytics Pillars */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Average Completion */}
-        <div className="bg-gradient-to-br from-blue-50/80 via-white to-blue-50/30 p-5 rounded-3xl border border-blue-200/80 shadow-xs relative overflow-hidden">
-          <div className="flex items-center justify-between text-xs font-bold text-blue-700 uppercase tracking-wider mb-2">
+        <div className="bg-gradient-to-br from-blue-50/80 via-white to-blue-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-blue-950/40 p-5 rounded-3xl border border-blue-200/80 dark:border-slate-800 shadow-xs relative overflow-hidden">
+          <div className="flex items-center justify-between text-xs font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider mb-2">
             <span>Tỉ Lệ Hoàn Thành TB</span>
-            <CheckCircle2 className="w-4 h-4 text-blue-600" />
+            <CheckCircle2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
           </div>
-          <div className="text-3xl font-black text-slate-900">
+          <div className="text-3xl font-black text-slate-900 dark:text-white">
             {classSummary.avgCompletion}%
           </div>
-          <div className="mt-2 w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+          <div className="mt-2 w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
             <div
               className="bg-blue-600 h-full rounded-full transition-all duration-700"
               style={{ width: `${classSummary.avgCompletion}%` }}
             />
           </div>
-          <div className="text-[11px] text-slate-500 mt-2 flex items-center justify-between">
-            <span>Sĩ số tham gia: <strong>{classSummary.studentCount} bạn</strong></span>
-            <span className="text-blue-600 font-semibold">Chuẩn BGD</span>
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-2 flex items-center justify-between">
+            <span>Sĩ số tham gia: <strong className="text-slate-700 dark:text-slate-200">{classSummary.studentCount} bạn</strong></span>
+            <span className="text-blue-600 dark:text-blue-400 font-semibold">Chuẩn BGD</span>
           </div>
         </div>
 
         {/* Card 2: Total Time Spent */}
-        <div className="bg-gradient-to-br from-amber-50/80 via-white to-amber-50/30 p-5 rounded-3xl border border-amber-200/80 shadow-xs relative overflow-hidden">
-          <div className="flex items-center justify-between text-xs font-bold text-amber-700 uppercase tracking-wider mb-2">
+        <div className="bg-gradient-to-br from-amber-50/80 via-white to-amber-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-amber-950/40 p-5 rounded-3xl border border-amber-200/80 dark:border-slate-800 shadow-xs relative overflow-hidden">
+          <div className="flex items-center justify-between text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider mb-2">
             <span>Tổng Thời Gian Luyện</span>
-            <Clock className="w-4 h-4 text-amber-600" />
+            <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400" />
           </div>
-          <div className="text-3xl font-black text-amber-950">
-            {classSummary.totalHours} <span className="text-base font-bold text-amber-700">giờ</span>
+          <div className="text-3xl font-black text-amber-950 dark:text-amber-300">
+            {classSummary.totalHours} <span className="text-base font-bold text-amber-700 dark:text-amber-400">giờ</span>
           </div>
-          <div className="text-xs text-amber-900/80 font-medium mt-1">
+          <div className="text-xs text-amber-900/80 dark:text-amber-300/80 font-medium mt-1">
             Tương đương {classSummary.totalMinutes.toLocaleString('vi-VN')} phút
           </div>
-          <div className="text-[11px] text-slate-500 mt-2">
-            Trung bình <strong>{classSummary.studentCount > 0 ? Math.round(classSummary.totalMinutes / classSummary.studentCount) : 0} phút</strong> / học sinh
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-2">
+            Trung bình <strong className="text-slate-700 dark:text-slate-200">{classSummary.studentCount > 0 ? Math.round(classSummary.totalMinutes / classSummary.studentCount) : 0} phút</strong> / học sinh
           </div>
         </div>
 
         {/* Card 3: Highest Completed Subject */}
-        <div className="bg-gradient-to-br from-emerald-50/80 via-white to-emerald-50/30 p-5 rounded-3xl border border-emerald-200/80 shadow-xs relative overflow-hidden">
-          <div className="flex items-center justify-between text-xs font-bold text-emerald-700 uppercase tracking-wider mb-2">
+        <div className="bg-gradient-to-br from-emerald-50/80 via-white to-emerald-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-emerald-950/40 p-5 rounded-3xl border border-emerald-200/80 dark:border-slate-800 shadow-xs relative overflow-hidden">
+          <div className="flex items-center justify-between text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider mb-2">
             <span>Môn Dẫn Đầu Tiến Độ</span>
-            <TrendingUp className="w-4 h-4 text-emerald-600" />
+            <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           </div>
-          <div className="text-xl font-black text-slate-900 line-clamp-1 flex items-center gap-1.5">
+          <div className="text-xl font-black text-slate-900 dark:text-white line-clamp-1 flex items-center gap-1.5">
             <span>{classSummary.highestCompletionSubject?.emoji}</span>
             <span>{classSummary.highestCompletionSubject?.subjectName}</span>
           </div>
-          <div className="text-2xl font-black text-emerald-600 mt-1">
+          <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
             {classSummary.highestCompletionSubject?.completionRate}% hoàn thành
           </div>
-          <div className="text-[11px] text-slate-500 mt-1">
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
             Đạt chuẩn kiến thức nhanh nhất
           </div>
         </div>
 
         {/* Card 4: Most Time Spent Subject */}
-        <div className="bg-gradient-to-br from-purple-50/80 via-white to-purple-50/30 p-5 rounded-3xl border border-purple-200/80 shadow-xs relative overflow-hidden">
-          <div className="flex items-center justify-between text-xs font-bold text-purple-700 uppercase tracking-wider mb-2">
+        <div className="bg-gradient-to-br from-purple-50/80 via-white to-purple-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-purple-950/40 p-5 rounded-3xl border border-purple-200/80 dark:border-slate-800 shadow-xs relative overflow-hidden">
+          <div className="flex items-center justify-between text-xs font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider mb-2">
             <span>Môn Dành Nhiều Thời Gian</span>
-            <Zap className="w-4 h-4 text-purple-600" />
+            <Zap className="w-4 h-4 text-purple-600 dark:text-purple-400" />
           </div>
-          <div className="text-xl font-black text-slate-900 line-clamp-1 flex items-center gap-1.5">
+          <div className="text-xl font-black text-slate-900 dark:text-white line-clamp-1 flex items-center gap-1.5">
             <span>{classSummary.mostTimeSubject?.emoji}</span>
             <span>{classSummary.mostTimeSubject?.subjectName}</span>
           </div>
-          <div className="text-2xl font-black text-purple-700 mt-1">
+          <div className="text-2xl font-black text-purple-700 dark:text-purple-400 mt-1">
             {classSummary.mostTimeSubject?.totalTimeMinutes} phút
           </div>
-          <div className="text-[11px] text-slate-500 mt-1">
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
             Các em tập trung thực hành sâu
           </div>
         </div>

@@ -561,7 +561,7 @@ export const ClassroomLeaderboard: React.FC<ClassroomLeaderboardProps> = ({
       </div>
 
       {/* Footer / Star Rules Guide */}
-      <div className="p-4 px-6 bg-slate-50 dark:bg-slate-850/80 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
+      <div className="p-4 px-6 bg-slate-50 dark:bg-slate-900/80 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
         <div className="flex items-center gap-2 flex-wrap">
           <Info className="w-4 h-4 text-blue-600 shrink-0" />
           <span className="font-semibold text-slate-700 dark:text-slate-200">Quy tắc tích lũy Sao ⭐:</span>
