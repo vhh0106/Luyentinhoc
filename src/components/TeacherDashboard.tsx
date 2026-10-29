@@ -121,11 +121,15 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
     setFeedbacks(getFeedbacks());
     setIsCloudSyncing(true);
     try {
-      await syncAllWithCloud();
+      const syncRes = await syncAllWithCloud();
       setTeachersList(getTeachers());
       setAssignments(getAssignments());
       setStudents(getStudents());
-      setResults(getResults());
+      if (syncRes && syncRes.results && syncRes.results.length > 0) {
+        setResults(syncRes.results);
+      } else {
+        setResults(getResults());
+      }
       setClassesList(getClasses());
       setFeedbacks(getFeedbacks());
     } catch (err) {

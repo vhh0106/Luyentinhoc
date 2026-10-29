@@ -101,6 +101,19 @@ export function initializeStorage() {
     console.warn('Error cleaning demo assignments:', e);
   }
 
+  // Auto-upgrade legacy truncated 500-result cache to full real dataset from Cloud
+  try {
+    const rawResults = safeGetItem(STORAGE_KEYS.RESULTS);
+    if (rawResults) {
+      const parsedResults = JSON.parse(rawResults);
+      if (Array.isArray(parsedResults) && parsedResults.length === 500) {
+        fetchAllResultsFromCloud().then(res => {
+          saveResultsToStorage(res);
+        }).catch(() => {});
+      }
+    }
+  } catch (e) {}
+
   // Ensure default Admin account exists locally
   const teachers = getTeachers();
   if (!teachers.some(t => t.username.toLowerCase() === 'admin')) {
@@ -485,6 +498,20 @@ export async function authenticateTeacherCloud(
 }
 
 // Results & Progress
+function saveResultsToStorage(results: ExerciseResult[]): void {
+  if (typeof window === 'undefined') return;
+  try {
+    safeSetItem(STORAGE_KEYS.RESULTS, JSON.stringify(results));
+  } catch (e) {
+    try {
+      // In case localStorage quota is exceeded, keep latest 3,000 results
+      safeSetItem(STORAGE_KEYS.RESULTS, JSON.stringify(results.slice(0, 3000)));
+    } catch {
+      safeSetItem(STORAGE_KEYS.RESULTS, JSON.stringify(results.slice(0, 1000)));
+    }
+  }
+}
+
 export function getResults(): ExerciseResult[] {
   if (typeof window === 'undefined') return [];
   try {
@@ -503,10 +530,8 @@ export async function saveResult(result: ExerciseResult): Promise<void> {
   } else {
     list.unshift(result);
   }
-  // Keep last 500 results locally
-  if (typeof window !== 'undefined') {
-    safeSetItem(STORAGE_KEYS.RESULTS, JSON.stringify(list.slice(0, 500)));
-  }
+  // Persist full results locally
+  saveResultsToStorage(list);
 
   // Sync to Cloud Firestore immediately
   try {
@@ -574,7 +599,7 @@ export async function fetchStudentResultsFromCloud(
       const merged = Array.from(map.values()).sort(
         (a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
       );
-      safeSetItem(STORAGE_KEYS.RESULTS, JSON.stringify(merged.slice(0, 500)));
+      saveResultsToStorage(merged);
 
       const normTarget = cleanName.normalize('NFC').toLowerCase();
       return merged.filter(
@@ -624,7 +649,7 @@ export async function fetchAllResultsFromCloud(classCode?: string): Promise<Exer
     const merged = Array.from(map.values()).sort(
       (a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
     );
-    safeSetItem(STORAGE_KEYS.RESULTS, JSON.stringify(merged.slice(0, 500)));
+    saveResultsToStorage(merged);
 
     return cleanClass
       ? merged.filter(r => r.classCode.trim().toUpperCase() === cleanClass)
@@ -676,7 +701,7 @@ export function subscribeToResults(
         const merged = Array.from(map.values()).sort(
           (a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
         );
-        safeSetItem(STORAGE_KEYS.RESULTS, JSON.stringify(merged.slice(0, 500)));
+        saveResultsToStorage(merged);
         callback(cleanClass ? merged.filter(r => r.classCode.trim().toUpperCase() === cleanClass) : merged);
       },
       err => {
@@ -1131,6 +1156,7 @@ export function subscribeToTeachers(callback: (teachers: TeacherAccount[]) => vo
  * 3. Ensures 100% parity between Google AI Studio dev preview and the shared link on any device.
  */
 export async function syncAllWithCloud(): Promise<{
+  results: ExerciseResult[];
   resultsCount: number;
   studentsCount: number;
   classesCount: number;
@@ -1214,6 +1240,7 @@ export async function syncAllWithCloud(): Promise<{
       ]);
 
     return {
+      results: finalResults,
       resultsCount: finalResults.length,
       studentsCount: finalStudents.length,
       classesCount: finalClasses.length,
@@ -1223,8 +1250,10 @@ export async function syncAllWithCloud(): Promise<{
     };
   } catch (err) {
     console.warn('[Sync] syncAllWithCloud error:', err);
+    const fallbackResults = getResults();
     return {
-      resultsCount: getResults().length,
+      results: fallbackResults,
+      resultsCount: fallbackResults.length,
       studentsCount: getStudents().length,
       classesCount: getClasses().length,
       assignmentsCount: getAssignments().length,
