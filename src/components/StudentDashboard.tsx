@@ -130,7 +130,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ session, onL
     );
   });
   const [showRobotMascot, setShowRobotMascot] = useState(false);
-  const [showProgressDashboard, setShowProgressDashboard] = useState(true);
+  const [showProgressDashboard, setShowProgressDashboard] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showAchievementShowcase, setShowAchievementShowcase] = useState(false);
   const [newlyUnlockedBadges, setNewlyUnlockedBadges] = useState<Achievement[]>([]);
@@ -251,6 +251,37 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ session, onL
   }, [name, classCode, completedLessonIds, studentResults]);
 
   const unlockedAchievementsCount = evaluatedAchievements.filter(a => a.isUnlocked).length;
+
+  // Total stars collected by student
+  const totalStars = useMemo(() => {
+    let count = 0;
+    lessonStatsMap.forEach(stat => {
+      count += stat.stars;
+    });
+    return count;
+  }, [lessonStatsMap]);
+
+  // Total lessons in currently assigned subjects for this grade
+  const totalLessonsInCurriculum = useMemo(() => {
+    return availableSubjects.reduce((acc, sId) => {
+      return acc + getLessonsForGrade(sId, selectedGrade).length;
+    }, 0);
+  }, [availableSubjects, selectedGrade]);
+
+  // Completed lessons within assigned subjects
+  const completedLessonsInCurriculum = useMemo(() => {
+    return availableSubjects.reduce((acc, sId) => {
+      const lessons = getLessonsForGrade(sId, selectedGrade);
+      const count = lessons.filter(
+        l => completedLessonIds.includes(`${sId}-${l.id}`) || lessonStatsMap.has(`${sId}-${l.id}`)
+      ).length;
+      return acc + count;
+    }, 0);
+  }, [availableSubjects, selectedGrade, completedLessonIds, lessonStatsMap]);
+
+  const overallPercent = totalLessonsInCurriculum > 0
+    ? Math.round((completedLessonsInCurriculum / totalLessonsInCurriculum) * 100)
+    : 0;
 
   const toggleSound = () => {
     const next = !isMuted;
@@ -454,23 +485,20 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ session, onL
 
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400">
-            <span>Học sinh: {name}</span>
+            <span>Học sinh: <strong className="text-slate-800 dark:text-white">{name}</strong></span>
             <span>·</span>
             <span>Lớp {classCode}</span>
           </div>
 
-          <div className="flex items-center gap-2">
-            <ThemeToggleButton />
-            <button
-              onClick={toggleSound}
-              className="p-2 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors"
-              title={isMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}
-            >
-              {isMuted ? <VolumeX className="w-4 h-4 text-rose-500" /> : <Volume2 className="w-4 h-4 text-emerald-500" />}
-            </button>
-          </div>
+          <button
+            onClick={toggleSound}
+            className="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors"
+            title={isMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}
+          >
+            {isMuted ? <VolumeX className="w-4 h-4 text-rose-500" /> : <Volume2 className="w-4 h-4 text-emerald-500" />}
+          </button>
         </div>
 
         {ExerciseComponent}
@@ -486,22 +514,19 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ session, onL
         <div className="flex items-center justify-between">
           <button
             onClick={() => setCurrentView('subjects')}
-            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-xs"
+            className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-xs cursor-pointer active:scale-95"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Trở về danh sách môn</span>
+            <span>← Trở về danh sách môn</span>
           </button>
 
-          <div className="flex items-center gap-2">
-            <ThemeToggleButton />
-            <button
-              onClick={toggleSound}
-              className="p-2 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors"
-              title={isMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}
-            >
-              {isMuted ? <VolumeX className="w-4 h-4 text-rose-500" /> : <Volume2 className="w-4 h-4 text-emerald-500" />}
-            </button>
-          </div>
+          <button
+            onClick={toggleSound}
+            className="p-2 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors"
+            title={isMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}
+          >
+            {isMuted ? <VolumeX className="w-4 h-4 text-rose-500" /> : <Volume2 className="w-4 h-4 text-emerald-500" />}
+          </button>
         </div>
 
         {/* Subject Header */}
@@ -846,120 +871,139 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ session, onL
     <div className="space-y-6">
 
 
-      {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white p-8 rounded-3xl shadow-lg relative overflow-hidden">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 flex-wrap text-xs font-semibold text-blue-100 uppercase tracking-wider mb-2">
-              <div className="flex items-center gap-1.5">
-                <GraduationCap className="w-4 h-4 text-amber-300" />
-                <span>Chương trình Kết Nối Tri Thức · Lớp {classCode}</span>
-              </div>
-              <span className="hidden sm:inline">·</span>
-              {/* Cloud Sync Status Chip */}
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-white/20 backdrop-blur-xs text-white border border-white/30">
+      {/* Streamlined Welcome Banner */}
+      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white p-6 sm:p-8 rounded-3xl shadow-lg relative overflow-hidden">
+        {/* Subtle decorative glow */}
+        <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-white/10 blur-2xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          {/* Left: Friendly Greeting & Class Info */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-xs font-semibold text-blue-100 flex-wrap">
+              <span>Lớp {classCode}</span>
+              <span>·</span>
+              <span>Mã PIN: <strong className="font-mono text-white">{pin}</strong></span>
+              {session.studentCode && (
+                <>
+                  <span>·</span>
+                  <span>Mã HS: <strong className="text-white">{session.studentCode}</strong></span>
+                </>
+              )}
+              <span>·</span>
+              <button
+                type="button"
+                onClick={syncWithCloud}
+                disabled={isCloudSyncing}
+                className="inline-flex items-center gap-1 text-[11px] text-emerald-200 hover:text-white transition-colors cursor-pointer"
+                title="Nhấn để kiểm tra điểm mới nhất từ Đám mây"
+              >
                 <Cloud className={`w-3.5 h-3.5 ${isCloudSyncing ? 'text-amber-300 animate-pulse' : 'text-emerald-300'}`} />
-                <span>{isCloudSyncing ? 'Đang đồng bộ Đám mây...' : 'Đám mây: Lưu trên mọi máy'}</span>
-                <button
-                  type="button"
-                  onClick={syncWithCloud}
-                  disabled={isCloudSyncing}
-                  className="hover:text-amber-300 transition-colors p-0.5"
-                  title="Nhấn để kiểm tra và tải điểm mới nhất từ Đám mây"
-                >
-                  <RefreshCw className={`w-3 h-3 ${isCloudSyncing ? 'animate-spin text-amber-300' : ''}`} />
-                </button>
-              </div>
+                <span>{isCloudSyncing ? 'Đang đồng bộ...' : 'Đã lưu đám mây'}</span>
+                <RefreshCw className={`w-3 h-3 ${isCloudSyncing ? 'animate-spin text-amber-300' : ''}`} />
+              </button>
             </div>
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-              Chào mừng em {name}! 👧👦
+
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-2">
+              <span>Chào mừng em {name}!</span>
+              <span className="text-2xl">👧👦</span>
             </h1>
-            <p className="text-sm text-blue-100 mt-1 max-w-xl">
-              Tài khoản học sinh: <strong>{session.studentCode ? `${session.studentCode} · ` : ''}{name}</strong> (Lớp <strong>{classCode}</strong> · Mã PIN cá nhân: <strong className="font-mono">{pin}</strong>).
-            </p>
+
+            {/* Teacher's note if available */}
+            {currentAssignment.note && availableSubjects.length > 0 && (
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/15 backdrop-blur-xs text-xs text-amber-200 font-medium">
+                <span>📌</span>
+                <span><strong>Lời dặn của Thầy/Cô:</strong> {currentAssignment.note}</span>
+              </div>
+            )}
           </div>
 
+          {/* Right: Key Kid-Friendly Action Buttons */}
           <div className="flex items-center gap-2.5 flex-wrap">
             <button
-              onClick={() => setActiveArcadeGame('space-typing')}
-              className="px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 bg-sky-400 hover:bg-sky-300 text-slate-950 shadow-sm whitespace-nowrap shrink-0"
-              title="Mở Đấu Trường 3 Trò Chơi Tin Học Tương Tác"
+              type="button"
+              onClick={() => {
+                setShowLeaderboard(prev => !prev);
+                setShowProgressDashboard(false);
+              }}
+              className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs ${
+                showLeaderboard
+                  ? 'bg-amber-400 text-slate-950 font-black ring-2 ring-white/50'
+                  : 'bg-white/20 hover:bg-white/30 text-white'
+              }`}
+              title="Xem Bảng Vàng vinh danh điểm số của lớp"
             >
-              <Gamepad2 className="w-4 h-4" />
-              <span>Chơi Game Tin Học 🎮</span>
+              <Trophy className="w-4 h-4 text-amber-300" />
+              <span>{showLeaderboard ? 'Ẩn Bảng Vàng' : 'Bảng Vàng Lớp ⭐'}</span>
             </button>
 
             <button
+              type="button"
               onClick={() => setShowAchievementShowcase(true)}
-              className="px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-sm whitespace-nowrap shrink-0"
-              title="Xem Kho Huy Hiệu & Vinh Danh 10 Môn Học"
+              className="px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white shadow-xs cursor-pointer"
+              title="Xem Kho Huy Hiệu Tin Học"
             >
-              <Trophy className="w-4 h-4" />
+              <Award className="w-4 h-4 text-amber-300" />
               <span>Kho Huy Hiệu ({unlockedAchievementsCount}/{evaluatedAchievements.length})</span>
             </button>
 
             <button
-              onClick={() => setShowLeaderboard(!showLeaderboard)}
-              className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                showLeaderboard ? 'bg-amber-400 text-slate-900 shadow-sm' : 'bg-white/20 hover:bg-white/30 text-white'
-              }`}
-              title="Bảng vàng vinh danh tích lũy Sao của lớp (Cập nhật trực tiếp Realtime)"
+              type="button"
+              onClick={() => setActiveArcadeGame('space-typing')}
+              className="px-4 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-xs cursor-pointer active:scale-95"
+              title="Vào Đấu trường 3 Trò chơi Tin học rèn phản xạ"
             >
-              <Medal className="w-4 h-4 text-amber-300" />
-              <span>{showLeaderboard ? 'Ẩn Bảng Vàng' : 'Bảng Vàng Lớp ⭐'}</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse" title="Realtime" />
+              <Gamepad2 className="w-4 h-4" />
+              <span>Chơi Game 🎮</span>
             </button>
 
             <button
-              onClick={() => setShowProgressDashboard(!showProgressDashboard)}
-              className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                showProgressDashboard ? 'bg-amber-400 text-slate-900 shadow-sm' : 'bg-white/20 hover:bg-white/30 text-white'
-              }`}
-              title="Bật/Tắt Bảng tiến độ tròn 10 môn Recharts"
-            >
-              <PieChartIcon className="w-3.5 h-3.5" />
-              <span>{showProgressDashboard ? 'Ẩn Biểu Đồ' : 'Bảng Tiến Độ 📊'}</span>
-            </button>
-
-            <button
-              onClick={() => setShowRobotMascot(!showRobotMascot)}
-              className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                showRobotMascot ? 'bg-amber-400 text-slate-900 shadow-sm' : 'bg-white/20 hover:bg-white/30 text-white'
-              }`}
-              title="Bật/Tắt bạn Robot 3D đồng hành"
-            >
-              <Bot className="w-3.5 h-3.5" />
-              <span>{showRobotMascot ? 'Ẩn Robot 3D' : 'Bạn Robot 3D'}</span>
-            </button>
-
-            <button
+              type="button"
               onClick={toggleSound}
-              className="p-2.5 bg-white/20 hover:bg-white/30 rounded-xl text-white transition-colors"
+              className="p-2.5 bg-white/20 hover:bg-white/30 rounded-xl text-white transition-colors cursor-pointer"
               title={isMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}
             >
               {isMuted ? <VolumeX className="w-4 h-4 text-rose-300" /> : <Volume2 className="w-4 h-4 text-emerald-300" />}
             </button>
-
-            <button
-              onClick={onLogout}
-              className="px-4 py-2 bg-rose-500/90 hover:bg-rose-600 text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-xs"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span>Đăng xuất</span>
-            </button>
           </div>
         </div>
 
-        {/* Note / Task info from teacher */}
-        {currentAssignment.note && availableSubjects.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-white/20 text-xs text-blue-100 flex items-center gap-2">
-            <span className="font-bold text-amber-300">📌 Lời dặn của thầy/cô:</span>
-            <span>{currentAssignment.note}</span>
+        {/* Motivating Progress Summary Strip */}
+        <div className="mt-6 pt-4 border-t border-white/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex items-center gap-1.5">
+              <span className="text-blue-100">Tiến độ bài học:</span>
+              <strong className="text-white font-bold">{completedLessonsInCurriculum}/{totalLessonsInCurriculum} bài ({overallPercent}%)</strong>
+            </div>
+            <span className="text-white/30 hidden sm:inline">·</span>
+            <div className="flex items-center gap-1 text-amber-300 font-bold">
+              <Star className="w-3.5 h-3.5 fill-amber-300" />
+              <span>{totalStars} Sao tích lũy</span>
+            </div>
           </div>
-        )}
+
+          <button
+            type="button"
+            onClick={() => {
+              setShowProgressDashboard(prev => !prev);
+              setShowLeaderboard(false);
+            }}
+            className="inline-flex items-center gap-1 text-[11px] text-blue-100 hover:text-white font-semibold underline underline-offset-2 transition-colors cursor-pointer"
+          >
+            <PieChartIcon className="w-3.5 h-3.5" />
+            <span>{showProgressDashboard ? 'Thu gọn biểu đồ' : 'Xem biểu đồ tiến độ chi tiết'}</span>
+          </button>
+        </div>
+
+        {/* Visual Progress Bar */}
+        <div className="mt-2 w-full h-2.5 bg-black/25 rounded-full overflow-hidden p-0.5">
+          <div
+            className="h-full bg-gradient-to-r from-emerald-400 to-teal-300 rounded-full transition-all duration-500"
+            style={{ width: `${Math.max(3, overallPercent)}%` }}
+          />
+        </div>
       </div>
 
-      {/* Classroom Leaderboard from live Firestore */}
+      {/* Classroom Leaderboard (Shown directly when student clicks "Bảng Vàng Lớp") */}
       {showLeaderboard && (
         <ClassroomLeaderboard
           classCode={classCode}
@@ -968,7 +1012,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ session, onL
         />
       )}
 
-      {/* Visual Recharts Progress Dashboard */}
+      {/* Detailed Analytics Chart (Shown when student clicks "Xem biểu đồ tiến độ") */}
       {showProgressDashboard && (
         <StudentProgressChart
           completedLessonIds={completedLessonIds}
@@ -982,218 +1026,46 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ session, onL
         />
       )}
 
-      {/* 3D Robot Cheer Companion Card */}
-      {showRobotMascot && (
-        <div className="bg-gradient-to-r from-blue-50/90 via-indigo-50/70 to-teal-50/90 p-6 rounded-3xl border border-blue-200/80 shadow-md grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-          <div className="md:col-span-7 space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white text-blue-700 rounded-full text-xs font-bold border border-blue-200 shadow-2xs">
-              <span>🤖 Bạn Đồng Hành Học Tập</span>
-            </div>
-            <h3 className="text-xl font-black text-slate-900">
-              Chào em {name}! Cùng chinh phục các thử thách Tin học nhé!
-            </h3>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Em đã hoàn thành <strong>{completedLessonIds.length}</strong> bài tập. Hãy nhấp chuột vào chú Robot bên cạnh để xem bạn ấy vẫy tay chào em và đổi màu sắc nhé!
+      {/* Assigned Subjects Grid */}
+      <div className="space-y-4 pt-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-black text-slate-900 dark:text-white">
+              Chủ Đề Tin Học ({availableSubjects.length} môn)
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Chọn chủ đề bên dưới để bắt đầu làm bài tập nhé!
             </p>
           </div>
-          <div className="md:col-span-5 max-w-sm mx-auto w-full">
-            <HeroRobotCanvas />
-          </div>
-        </div>
-      )}
 
-      {/* Progress & Badges Showcase */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-white/85 dark:bg-slate-900/85 backdrop-blur-md p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold shadow-xs">
-              <Star className="w-6 h-6 fill-amber-400 text-amber-400 animate-pulse-subtle" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-slate-800 dark:text-slate-100">Tiến độ bài học đã hoàn thành</div>
-              <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                Đã xong <strong>{completedLessonIds.length}</strong> bài tập thực hành
-              </div>
-            </div>
-          </div>
-
-          <button
-            onClick={() => setShowProgressDashboard(!showProgressDashboard)}
-            className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/70 hover:bg-blue-100 dark:hover:bg-blue-900 px-3 py-1.5 rounded-full border border-blue-200 dark:border-blue-800 transition-colors flex items-center gap-1.5 shrink-0"
-          >
-            <PieChartIcon className="w-3.5 h-3.5" />
-            <span>{showProgressDashboard ? 'Thu gọn biểu đồ' : 'Xem biểu đồ tròn'}</span>
-            {showProgressDashboard ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-          </button>
-        </div>
-
-        {/* Badges Collection Showcase */}
-        <div
-          onClick={() => setShowAchievementShowcase(true)}
-          className="bg-white/85 dark:bg-slate-900/85 backdrop-blur-md p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between hover:border-amber-300 dark:hover:border-amber-500 hover:shadow-md transition-all cursor-pointer group"
-        >
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/80 border border-amber-200 dark:border-amber-800 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl shadow-2xs">
-                🏆
-              </div>
-              <div>
-                <div className="text-xs font-black text-slate-800 dark:text-white flex items-center gap-1.5">
-                  <span>Hệ Thống Huy Hiệu Tin Học</span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800 font-bold">
-                    {unlockedAchievementsCount}/{evaluatedAchievements.length} Đã Đạt
-                  </span>
-                </div>
-                <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                  {unlockedAchievementsCount > 0
-                    ? `Em đã mở khóa ${unlockedAchievementsCount} danh hiệu vinh quang!`
-                    : 'Hoàn thành bài tập để mở khóa huy hiệu 10 môn học'}
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowAchievementShowcase(true);
-              }}
-              className="text-xs font-bold text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/70 hover:bg-amber-200 dark:hover:bg-amber-900 px-3 py-1.5 rounded-full border border-amber-300 dark:border-amber-700 transition-colors flex items-center gap-1 shrink-0"
-            >
-              <span>Mở Kho Huy Hiệu</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          {/* Miniature Badges Row */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-0.5 scrollbar-thin">
-            {evaluatedAchievements.slice(0, 8).map(item => (
-              <div
-                key={item.achievement.id}
-                title={`${item.achievement.title} (${item.isUnlocked ? 'Đã đạt' : 'Chưa đạt'})`}
-                className={`relative w-9 h-9 rounded-2xl flex items-center justify-center text-base border transition-all shrink-0 ${
-                  item.isUnlocked
-                    ? 'bg-amber-50 dark:bg-amber-950/80 border-amber-300 dark:border-amber-700 shadow-2xs scale-105'
-                    : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 grayscale opacity-45'
+          {/* Clean, quiet Grade Selector */}
+          <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-2xl border border-slate-200/80 dark:border-slate-700 self-start sm:self-auto">
+            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 pl-2 pr-1">
+              Khối lớp:
+            </span>
+            {([3, 4, 5] as const).map(g => (
+              <button
+                key={g}
+                type="button"
+                onClick={() => {
+                  soundService.playKeyCorrect();
+                  setSelectedGrade(g);
+                }}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  selectedGrade === g
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                <span>{item.achievement.icon}</span>
-                {item.isUnlocked && (
-                  <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border border-white flex items-center justify-center text-[8px] text-white font-bold">
-                    ✓
+                <span>Lớp {g}</span>
+                {detectedGrade === g && (
+                  <span className={`ml-1 text-[10px] ${selectedGrade === g ? 'text-blue-100' : 'text-slate-400'}`}>
+                    (Em)
                   </span>
                 )}
-              </div>
+              </button>
             ))}
-            <div className="text-[11px] font-bold text-slate-400 dark:text-slate-500 pl-1 shrink-0">
-              +{Math.max(0, evaluatedAchievements.length - 8)} danh hiệu...
-            </div>
           </div>
-        </div>
-      </div>
-
-      {/* Grade Switcher Banner on Student Dashboard */}
-      <div className="bg-gradient-to-r from-indigo-50 via-blue-50 to-teal-50 dark:from-slate-900/90 dark:via-indigo-950/40 dark:to-slate-900/90 border border-indigo-200/80 dark:border-indigo-800 p-5 rounded-3xl shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold text-2xl shadow-sm shrink-0">
-            📚
-          </div>
-          <div>
-            <div className="text-xs font-black text-indigo-950 dark:text-indigo-200 uppercase tracking-wider flex items-center gap-2">
-              <span>Chương trình SGK Tin học Kết Nối Tri Thức</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-md bg-indigo-200/80 dark:bg-indigo-900/80 text-indigo-900 dark:text-indigo-200 font-black">
-                BGD 2018
-              </span>
-            </div>
-            <div className="text-xs text-indigo-800 dark:text-indigo-300 mt-1">
-              Đang chọn chương trình & câu hỏi: <strong className="font-black text-indigo-950 dark:text-white text-sm">Lớp {selectedGrade}</strong> (Khối lớp {classCode} của em)
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs font-bold text-slate-600 dark:text-slate-300">Đổi khối lớp:</span>
-          {([3, 4, 5] as const).map(g => (
-            <button
-              key={g}
-              onClick={() => {
-                soundService.playKeyCorrect();
-                setSelectedGrade(g);
-              }}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                selectedGrade === g
-                  ? g === 3
-                    ? 'bg-blue-600 text-white shadow-sm ring-2 ring-blue-300'
-                    : g === 4
-                    ? 'bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-300'
-                    : 'bg-purple-600 text-white shadow-sm ring-2 ring-purple-300'
-                  : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
-              }`}
-            >
-              <span>{g === 3 ? '📘 Lớp 3' : g === 4 ? '📗 Lớp 4' : '📙 Lớp 5'}</span>
-              {detectedGrade === g && (
-                <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-white/25 text-white font-semibold">
-                  Lớp của em
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Interactive Educational Arcade Games Section on Student Dashboard */}
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <div className="text-xs font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
-              <Gamepad2 className="w-4 h-4" />
-              <span>Góc Trò Chơi Rèn Phản Xạ · Tích Lũy Điểm & Huy Hiệu</span>
-            </div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white mt-0.5">
-              Đấu Trường Trò Chơi Tin Học (3 Mini-Game Tương Tác)
-            </h2>
-          </div>
-          <span className="text-xs text-slate-500 dark:text-slate-400">
-            Hoàn thành màn chơi để cộng điểm vào Bảng Vàng Lớp {classCode}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {ARCADE_GAMES_CATALOG.map((game, idx) => (
-            <div
-              key={game.id}
-              onClick={() => setActiveArcadeGame(game.id)}
-              className="bg-white/95 dark:bg-slate-900/95 p-5 rounded-3xl border border-slate-200/90 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-400 transition-all cursor-pointer flex flex-col justify-between group"
-            >
-              <div className="space-y-2">
-                <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                  0{idx + 1} · {game.subtitle}
-                </div>
-                <h3 className="text-base font-black text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                  {game.title}
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-2">
-                  {game.objective}
-                </p>
-              </div>
-
-              <div className="pt-3 mt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-blue-600 dark:text-blue-400">
-                <span>Vào chơi ngay (Cấp Lớp {selectedGrade})</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Assigned Subjects Grid */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-            Các Chủ Đề Bài Tập Được Giao ({availableSubjects.length} môn)
-          </h2>
-          <span className="text-xs text-slate-500 dark:text-slate-400">
-            Câu hỏi & bài tập theo chuẩn SGK Lớp {selectedGrade}
-          </span>
         </div>
 
         {availableSubjects.length === 0 ? (
@@ -1306,6 +1178,31 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ session, onL
             })}
           </div>
         )}
+      </div>
+
+      {/* Playful & Sleek Educational Games Banner */}
+      <div className="p-6 rounded-3xl bg-gradient-to-r from-blue-50 via-indigo-50 to-sky-50 dark:from-slate-800/90 dark:via-indigo-950/40 dark:to-slate-800/90 border border-blue-200/80 dark:border-slate-700 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-sky-500 to-blue-600 text-white flex items-center justify-center text-2xl shadow-sm shrink-0">
+            🎮
+          </div>
+          <div>
+            <h3 className="font-extrabold text-slate-900 dark:text-white text-base">
+              Đấu Trường Trò Chơi Tin Học
+            </h3>
+            <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
+              Rèn phản xạ gõ phím 10 ngón, an toàn không gian mạng và thuật toán qua 3 mini-game hấp dẫn!
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => setActiveArcadeGame('space-typing')}
+          className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-black shadow-xs flex items-center gap-2 shrink-0 transition-all active:scale-95 cursor-pointer"
+        >
+          <Gamepad2 className="w-4 h-4" />
+          <span>Chơi trò chơi ngay</span>
+        </button>
       </div>
 
       {/* Achievement Showcase Modal */}
