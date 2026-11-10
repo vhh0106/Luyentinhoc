@@ -19,6 +19,7 @@ import {
 
 interface TopicCompletionTimeTableProps {
   onOpenTeacherPortal?: () => void;
+  results?: ExerciseResult[];
 }
 
 interface SubjectStatRow {
@@ -35,14 +36,23 @@ interface SubjectStatRow {
 }
 
 export const TopicCompletionTimeTable: React.FC<TopicCompletionTimeTableProps> = ({
-  onOpenTeacherPortal
+  onOpenTeacherPortal,
+  results: propResults
 }) => {
-  const [results, setResults] = useState<ExerciseResult[]>(() => getResults());
+  const [results, setResults] = useState<ExerciseResult[]>(() => propResults || getResults());
   const [selectedGrade, setSelectedGrade] = useState<'ALL' | '3' | '4' | '5'>('ALL');
   const [sortBy, setSortBy] = useState<'time-asc' | 'time-desc' | 'count-desc' | 'score-desc'>('count-desc');
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    if (propResults) {
+      setResults(propResults);
+    }
+  }, [propResults]);
+
+  useEffect(() => {
+    if (propResults) return; // Parent already owns and passes live results
+
     // 1. Initial load
     const initial = getResults();
     if (initial.length > 0) {
@@ -291,7 +301,7 @@ export const TopicCompletionTimeTable: React.FC<TopicCompletionTimeTableProps> =
             {formatSeconds(overallAvgTime)}
           </div>
           <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-            Trung bình mỗi lượt kiểm tra 5 câu
+            Trung bình mỗi lượt kiểm tra 10 câu (Phần 1 & 2)
           </div>
         </div>
 
@@ -526,7 +536,7 @@ export const TopicCompletionTimeTable: React.FC<TopicCompletionTimeTableProps> =
             </span>
           </div>
           <div className="text-[11px] font-medium">
-            Chuẩn thời gian tham chiếu: 30s - 60s cho mỗi bộ 5 câu hỏi thực hành.
+            Chuẩn thời gian tham chiếu: 60s - 120s cho mỗi bộ 10 câu hỏi thực hành (Phần 1 & Phần 2).
           </div>
         </div>
       </div>

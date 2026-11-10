@@ -15,7 +15,7 @@ import {
 import { FacebookIcon } from './FacebookIcon';
 
 import { UserFeedback } from '../../types';
-import { saveFeedback, getFeedbacks, subscribeToFeedbacks } from '../../services/storage';
+import { saveFeedback, getFeedbacks, subscribeToFeedbacks, fetchFeedbacksFromCloud } from '../../services/storage';
 
 interface FeedbackModalProps {
   isOpen: boolean;
@@ -51,6 +51,12 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
   useEffect(() => {
     if (!isOpen) return;
     setRecentFeedbacks(getFeedbacks());
+    fetchFeedbacksFromCloud()
+      .then(cloud => {
+        if (Array.isArray(cloud)) setRecentFeedbacks(cloud);
+      })
+      .catch(() => {});
+
     const unsub = subscribeToFeedbacks(live => {
       setRecentFeedbacks(live);
     });

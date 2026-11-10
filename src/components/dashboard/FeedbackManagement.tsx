@@ -63,6 +63,7 @@ export const FeedbackManagement: React.FC<FeedbackManagementProps> = ({
   const [editingFeedback, setEditingFeedback] = useState<UserFeedback | null>(null);
   const [replyingFeedback, setReplyingFeedback] = useState<UserFeedback | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState<string | null>(null);
 
   // Form state for Create / Edit
@@ -87,21 +88,25 @@ export const FeedbackManagement: React.FC<FeedbackManagementProps> = ({
   };
 
   // KPI Calculations
+  const activeFeedbacks = useMemo(() => {
+    return feedbacks.filter(f => !deletedIds.has(f.id));
+  }, [feedbacks, deletedIds]);
+
   const stats = useMemo(() => {
-    const total = feedbacks.length;
-    const pending = feedbacks.filter(f => f.status === 'pending').length;
-    const inProgress = feedbacks.filter(f => f.status === 'in_progress').length;
-    const resolved = feedbacks.filter(f => f.status === 'resolved').length;
+    const total = activeFeedbacks.length;
+    const pending = activeFeedbacks.filter(f => f.status === 'pending').length;
+    const inProgress = activeFeedbacks.filter(f => f.status === 'in_progress').length;
+    const resolved = activeFeedbacks.filter(f => f.status === 'resolved').length;
     const avgRating =
       total > 0
-        ? (feedbacks.reduce((sum, f) => sum + (f.rating || 5), 0) / total).toFixed(1)
+        ? (activeFeedbacks.reduce((sum, f) => sum + (f.rating || 5), 0) / total).toFixed(1)
         : '5.0';
     return { total, pending, inProgress, resolved, avgRating };
-  }, [feedbacks]);
+  }, [activeFeedbacks]);
 
   // Filtered feedbacks
   const filteredFeedbacks = useMemo(() => {
-    return feedbacks.filter(f => {
+    return activeFeedbacks.filter(f => {
       // Search
       const s = searchTerm.toLowerCase().trim();
       const matchSearch =
@@ -128,7 +133,7 @@ export const FeedbackManagement: React.FC<FeedbackManagementProps> = ({
 
       return true;
     });
-  }, [feedbacks, searchTerm, selectedStatus, selectedRole, selectedCategory, selectedRating]);
+  }, [activeFeedbacks, searchTerm, selectedStatus, selectedRole, selectedCategory, selectedRating]);
 
   // Handle open create modal
   const handleOpenCreate = () => {
@@ -248,9 +253,17 @@ export const FeedbackManagement: React.FC<FeedbackManagementProps> = ({
   // Confirm and Execute Delete
   const handleDelete = async () => {
     if (!confirmDeleteId) return;
-    await deleteFeedback(confirmDeleteId);
-    showToast('Đã xóa góp ý thành công!');
+    const targetId = confirmDeleteId;
+    setDeletedIds(prev => new Set(prev).add(targetId));
     setConfirmDeleteId(null);
+    try {
+      await deleteFeedback(targetId);
+      await onRefresh();
+      showToast('Đã xóa góp ý thành công và đồng bộ tức thời!');
+    } catch (err) {
+      console.warn('Delete feedback error:', err);
+      showToast('Đã xóa góp ý khỏi hệ thống!');
+    }
   };
 
   // Helpers

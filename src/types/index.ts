@@ -46,6 +46,7 @@ export interface QuizQuestion {
   explanation: string;
   grade?: 3 | 4 | 5;
   topicCode?: string;
+  part?: 1 | 2;
 }
 
 export interface MazeConfig {

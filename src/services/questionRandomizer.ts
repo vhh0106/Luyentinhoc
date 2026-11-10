@@ -157,7 +157,7 @@ export function generatePersonalizedQuiz(params: {
     grade = 3,
     studentIdentifier,
     attempt = 1,
-    targetCount = 5
+    targetCount = 10
   } = params;
 
   // Build unique account seed
@@ -170,33 +170,54 @@ export function generatePersonalizedQuiz(params: {
   const examNumber = 100 + (Math.abs(seedNum) % 900);
   const examCode = `MĐ-${examNumber}`;
 
+  // Target count per part (default: 5 in Part 1, 5 in Part 2)
+  const part1Target = Math.floor(targetCount / 2);
+  const part2Target = targetCount - part1Target;
+
   // Gather candidate pool
   const candidatePool = getCandidatePoolForLesson(lesson, subjectId, grade);
+  const lessonQuestions = lesson.questions && Array.isArray(lesson.questions) ? lesson.questions : [];
 
-  // If pool has more questions than targetCount, shuffle with account PRNG and slice
-  let selectedQuestions: QuizQuestion[] = [];
-  if (candidatePool.length <= targetCount) {
-    selectedQuestions = shuffleWithPRNG(candidatePool, prng);
-  } else {
-    // Prioritize the base questions of the lesson first if available
-    const primaryQuestions = lesson.questions && lesson.questions.length > 0 ? lesson.questions : [];
-    const poolWithoutPrimary = candidatePool.filter(
-      q => !primaryQuestions.some(pq => pq.question.trim().toLowerCase() === q.question.trim().toLowerCase())
-    );
-
-    // Shuffle both parts
-    const shuffledPrimary = shuffleWithPRNG(primaryQuestions, prng);
-    const shuffledExtra = shuffleWithPRNG(poolWithoutPrimary, prng);
-
-    // Merge: pick a mix of primary and extra questions so each student gets unique questions
-    const combinedShuffled = shuffleWithPRNG([...shuffledPrimary, ...shuffledExtra], prng);
-    selectedQuestions = combinedShuffled.slice(0, targetCount);
+  // Group candidate questions into Part 1 and Part 2 pools
+  let part1Pool = candidatePool.filter(q => q.part === 1);
+  if (part1Pool.length === 0) {
+    // If not explicitly tagged, take the first 5 questions from base lesson
+    part1Pool = lessonQuestions.slice(0, 5).map(q => ({ ...q, part: 1 as const }));
   }
+
+  let part2Pool = candidatePool.filter(q => q.part === 2);
+  if (part2Pool.length === 0) {
+    // If not explicitly tagged, take questions from index 5 onwards, or remaining
+    part2Pool = lessonQuestions.slice(5).map(q => ({ ...q, part: 2 as const }));
+  }
+
+  // Fallbacks if one part has fewer questions than targeted
+  if (part1Pool.length < part1Target) {
+    const supplement = candidatePool.filter(
+      q => !part1Pool.some(p => p.question.trim().toLowerCase() === q.question.trim().toLowerCase())
+    );
+    part1Pool = [...part1Pool, ...supplement];
+  }
+  if (part2Pool.length < part2Target) {
+    const supplement = candidatePool.filter(
+      q => !part2Pool.some(p => p.question.trim().toLowerCase() === q.question.trim().toLowerCase())
+    );
+    part2Pool = [...part2Pool, ...supplement];
+  }
+
+  // Shuffle each part deterministically with PRNG
+  const shuffledP1 = shuffleWithPRNG(part1Pool, prng).slice(0, part1Target);
+  const shuffledP2 = shuffleWithPRNG(part2Pool, prng).slice(0, part2Target);
+
+  const selectedQuestions: QuizQuestion[] = [
+    ...shuffledP1.map(q => ({ ...q, part: 1 as const })),
+    ...shuffledP2.map(q => ({ ...q, part: 2 as const }))
+  ];
 
   // Shuffle the options (A, B, C, D) inside each question and update correctIndex
   const finalizedQuestions: QuizQuestion[] = selectedQuestions.map((q, idx) => {
     if (!q.options || q.options.length <= 1) {
-      return { ...q, id: idx + 1 };
+      return { ...q, id: idx + 1, part: idx < part1Target ? (1 as const) : (2 as const) };
     }
 
     const originalCorrectText = q.options[q.correctIndex];
@@ -209,6 +230,7 @@ export function generatePersonalizedQuiz(params: {
     return {
       ...q,
       id: idx + 1,
+      part: idx < part1Target ? (1 as const) : (2 as const),
       options: shuffledOptions,
       correctIndex: newCorrectIndex >= 0 ? newCorrectIndex : 0
     };

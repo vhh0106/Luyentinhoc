@@ -71,7 +71,7 @@ export const QuizExercise: React.FC<QuizExerciseProps> = ({
       grade,
       studentIdentifier,
       attempt,
-      targetCount: 5
+      targetCount: 10
     });
   }, [lesson, subjectId, grade, studentIdentifier, attempt]);
 
@@ -97,6 +97,14 @@ export const QuizExercise: React.FC<QuizExerciseProps> = ({
   const currentSelectedOption = userAnswers[currentIndex];
   const answeredCount = Object.keys(userAnswers).length;
   const isAllAnswered = answeredCount >= questions.length;
+
+  const part1AnsweredCount = useMemo(() => {
+    return questions.slice(0, 5).filter((_, idx) => userAnswers[idx] !== undefined).length;
+  }, [questions, userAnswers]);
+
+  const part2AnsweredCount = useMemo(() => {
+    return questions.slice(5).filter((_, idx) => userAnswers[idx + 5] !== undefined).length;
+  }, [questions, userAnswers]);
 
   const handleSelectOption = (optIdx: number) => {
     if (isSubmitted) return;
@@ -135,6 +143,16 @@ export const QuizExercise: React.FC<QuizExerciseProps> = ({
   const correctCount = useMemo(() => {
     if (!isSubmitted) return 0;
     return questions.filter((q, idx) => userAnswers[idx] === q.correctIndex).length;
+  }, [isSubmitted, questions, userAnswers]);
+
+  const part1CorrectCount = useMemo(() => {
+    if (!isSubmitted) return 0;
+    return questions.slice(0, 5).filter((q, idx) => userAnswers[idx] === q.correctIndex).length;
+  }, [isSubmitted, questions, userAnswers]);
+
+  const part2CorrectCount = useMemo(() => {
+    if (!isSubmitted) return 0;
+    return questions.slice(5).filter((q, idx) => userAnswers[idx + 5] === q.correctIndex).length;
   }, [isSubmitted, questions, userAnswers]);
 
   const accuracy = questions.length > 0 ? Math.round((correctCount / questions.length) * 100) : 100;
@@ -221,6 +239,11 @@ export const QuizExercise: React.FC<QuizExerciseProps> = ({
                 <User className="w-3 h-3 text-blue-500" />
                 <span>{studentName}{studentCode ? ` (${studentCode})` : ''}</span>
               </span>
+
+              {/* Total 10 Questions Badge */}
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                <span>10 câu (P.1: 5 câu · P.2: 5 câu)</span>
+              </span>
             </div>
 
             <h1 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
@@ -251,78 +274,157 @@ export const QuizExercise: React.FC<QuizExerciseProps> = ({
                 <Lock className="w-3.5 h-3.5" />
               </div>
               <span className="font-medium">
-                <strong>Chế độ Kiểm tra Cá nhân hóa:</strong> Khóa hiển thị đúng/sai để chống nhìn bài bạn. Đáp án và giải thích chi tiết sẽ mở ngay sau khi em nộp bài!
+                <strong>Chế độ Kiểm tra Cá nhân hóa (10 câu - 2 phần):</strong> Khóa hiển thị đúng/sai để chống sao chép. Toàn bộ đáp án & lời giải chi tiết sẽ mở ngay sau khi em nộp bài!
               </span>
             </div>
             <span className="hidden sm:inline-block px-2 py-0.5 rounded-md bg-amber-200/60 dark:bg-amber-900/60 text-[10px] font-black uppercase tracking-wider shrink-0">
-              Chống sao chép
+              2 Phần · 10 Câu
             </span>
           </div>
         ) : (
           <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center gap-2 text-xs text-emerald-900 dark:text-emerald-200 font-medium">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
             <span>
-              Đã mở khóa đáp án và lời giải chi tiết cho <strong>{examCode}</strong>. Em hãy xem lại các câu làm đúng và câu cần rút kinh nghiệm ở bên dưới nhé!
+              Đã mở khóa đáp án và lời giải chi tiết cả <strong>Phần 1 (Câu 1 - 5)</strong> và <strong>Phần 2 (Câu 6 - 10)</strong> cho đề <strong>{examCode}</strong>.
             </span>
           </div>
         )}
 
-        {/* Question Pill Navigator */}
-        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2 overflow-x-auto pb-1">
-          <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 shrink-0 mr-1">
-            Câu hỏi:
-          </span>
-          {questions.map((_, qIdx) => {
-            const isCurrent = qIdx === currentIndex;
-            const isAnswered = userAnswers[qIdx] !== undefined;
-            const isCorrect = isSubmitted && userAnswers[qIdx] === questions[qIdx].correctIndex;
-            const isWrong = isSubmitted && isAnswered && !isCorrect;
+        {/* Question Pill Navigator: Segmented into Phần 1 and Phần 2 */}
+        <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2.5">
+          {/* Phần 1: Câu 1 - 5 (Nhận biết) */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            <div className="flex items-center gap-1.5 shrink-0 min-w-[145px]">
+              <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+              <span className="text-[11px] font-black uppercase text-blue-700 dark:text-blue-300">
+                Phần 1 (Câu 1-5):
+              </span>
+              <span className="text-[10px] font-bold text-slate-400">
+                ({part1AnsweredCount}/5)
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              {questions.slice(0, 5).map((_, qIdx) => {
+                const isCurrent = qIdx === currentIndex;
+                const isAnswered = userAnswers[qIdx] !== undefined;
+                const isCorrect = isSubmitted && userAnswers[qIdx] === questions[qIdx].correctIndex;
+                const isWrong = isSubmitted && isAnswered && !isCorrect;
 
-            let pillStyle = 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700';
+                let pillStyle = 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700';
 
-            if (isSubmitted) {
-              if (isCorrect) {
-                pillStyle = 'bg-emerald-500 text-white border-emerald-600 font-black';
-              } else if (isWrong) {
-                pillStyle = 'bg-rose-500 text-white border-rose-600 font-black';
-              } else {
-                pillStyle = 'bg-slate-200 dark:bg-slate-800 text-slate-500 border-slate-300';
-              }
-            } else {
-              if (isCurrent) {
-                pillStyle = 'bg-indigo-600 text-white border-indigo-600 font-black ring-2 ring-indigo-300 dark:ring-indigo-800 scale-105';
-              } else if (isAnswered) {
-                pillStyle = 'bg-indigo-100 dark:bg-indigo-950/80 text-indigo-800 dark:text-indigo-300 border-indigo-300 dark:border-indigo-700 font-bold';
-              }
-            }
+                if (isSubmitted) {
+                  if (isCorrect) {
+                    pillStyle = 'bg-emerald-500 text-white border-emerald-600 font-black';
+                  } else if (isWrong) {
+                    pillStyle = 'bg-rose-500 text-white border-rose-600 font-black';
+                  } else {
+                    pillStyle = 'bg-slate-200 dark:bg-slate-800 text-slate-500 border-slate-300';
+                  }
+                } else {
+                  if (isCurrent) {
+                    pillStyle = 'bg-blue-600 text-white border-blue-600 font-black ring-2 ring-blue-300 dark:ring-blue-800 scale-105';
+                  } else if (isAnswered) {
+                    pillStyle = 'bg-blue-100 dark:bg-blue-950/80 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-700 font-bold';
+                  }
+                }
 
-            return (
-              <button
-                key={qIdx}
-                type="button"
-                onClick={() => setCurrentIndex(qIdx)}
-                className={`min-w-[34px] h-8 px-2 rounded-xl text-xs flex items-center justify-center border transition-all cursor-pointer ${pillStyle}`}
-                title={`Chuyển tới Câu ${qIdx + 1} (${isAnswered ? 'Đã chọn đáp án' : 'Chưa trả lời'})`}
-              >
-                <span>{qIdx + 1}</span>
-                {isSubmitted && isCorrect && <Check className="w-2.5 h-2.5 ml-0.5 stroke-[3]" />}
-              </button>
-            );
-          })}
+                return (
+                  <button
+                    key={qIdx}
+                    type="button"
+                    onClick={() => setCurrentIndex(qIdx)}
+                    className={`min-w-[34px] h-8 px-2 rounded-xl text-xs flex items-center justify-center border transition-all cursor-pointer ${pillStyle}`}
+                    title={`Phần 1 - Câu ${qIdx + 1} (${isAnswered ? 'Đã chọn đáp án' : 'Chưa trả lời'})`}
+                  >
+                    <span>{qIdx + 1}</span>
+                    {isSubmitted && isCorrect && <Check className="w-2.5 h-2.5 ml-0.5 stroke-[3]" />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Phần 2: Câu 6 - 10 (Thông hiểu & Vận dụng) */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            <div className="flex items-center gap-1.5 shrink-0 min-w-[145px]">
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span className="text-[11px] font-black uppercase text-emerald-700 dark:text-emerald-300">
+                Phần 2 (Câu 6-10):
+              </span>
+              <span className="text-[10px] font-bold text-slate-400">
+                ({part2AnsweredCount}/5)
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              {questions.slice(5, 10).map((_, idx) => {
+                const qIdx = idx + 5;
+                const isCurrent = qIdx === currentIndex;
+                const isAnswered = userAnswers[qIdx] !== undefined;
+                const isCorrect = isSubmitted && userAnswers[qIdx] === questions[qIdx].correctIndex;
+                const isWrong = isSubmitted && isAnswered && !isCorrect;
+
+                let pillStyle = 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700';
+
+                if (isSubmitted) {
+                  if (isCorrect) {
+                    pillStyle = 'bg-emerald-500 text-white border-emerald-600 font-black';
+                  } else if (isWrong) {
+                    pillStyle = 'bg-rose-500 text-white border-rose-600 font-black';
+                  } else {
+                    pillStyle = 'bg-slate-200 dark:bg-slate-800 text-slate-500 border-slate-300';
+                  }
+                } else {
+                  if (isCurrent) {
+                    pillStyle = 'bg-emerald-600 text-white border-emerald-600 font-black ring-2 ring-emerald-300 dark:ring-emerald-800 scale-105';
+                  } else if (isAnswered) {
+                    pillStyle = 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700 font-bold';
+                  }
+                }
+
+                return (
+                  <button
+                    key={qIdx}
+                    type="button"
+                    onClick={() => setCurrentIndex(qIdx)}
+                    className={`min-w-[34px] h-8 px-2 rounded-xl text-xs flex items-center justify-center border transition-all cursor-pointer ${pillStyle}`}
+                    title={`Phần 2 - Câu ${qIdx + 1} (${isAnswered ? 'Đã chọn đáp án' : 'Chưa trả lời'})`}
+                  >
+                    <span>{qIdx + 1}</span>
+                    {isSubmitted && isCorrect && <Check className="w-2.5 h-2.5 ml-0.5 stroke-[3]" />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
 
       {/* ACTIVE TEST TAKING VIEW (When not submitted yet) */}
       {!isSubmitted && currentQ && (
         <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl p-6 sm:p-8 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-sm space-y-6 animate-in fade-in duration-200">
-          {/* Question Text */}
+          {/* Question Text with Active Part Badge */}
           <div className="flex items-start gap-3.5">
-            <span className="w-9 h-9 rounded-2xl bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 font-black flex items-center justify-center shrink-0 text-sm shadow-2xs">
+            <span className={`w-9 h-9 rounded-2xl font-black flex items-center justify-center shrink-0 text-sm shadow-2xs ${
+              currentIndex < 5
+                ? 'bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
+                : 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+            }`}>
               {currentIndex + 1}
             </span>
-            <div className="space-y-1">
-              <div className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                Câu hỏi {currentIndex + 1} / {questions.length} · {examCode}
+            <div className="space-y-1.5 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                {currentIndex < 5 ? (
+                  <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                    Phần 1: Nhận biết & Khái niệm cốt lõi
+                  </span>
+                ) : (
+                  <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                    Phần 2: Thông hiểu & Vận dụng thực hành
+                  </span>
+                )}
+                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                  Câu hỏi {currentIndex + 1} / {questions.length} · {examCode}
+                </span>
               </div>
               <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-relaxed">
                 {currentQ.question}
@@ -393,7 +495,17 @@ export const QuizExercise: React.FC<QuizExerciseProps> = ({
                 </button>
               )}
 
-              {currentIndex < questions.length - 1 ? (
+              {currentIndex === 4 ? (
+                /* Clear transition milestone at Question 5 to proceed to Part 2 */
+                <button
+                  type="button"
+                  onClick={() => setCurrentIndex(5)}
+                  className="px-5 py-2.5 rounded-xl text-xs font-black text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md flex items-center gap-1.5 cursor-pointer active:scale-95"
+                >
+                  <span>Hoàn thành P.1 · Sang Phần 2 (Câu 6)</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              ) : currentIndex < questions.length - 1 ? (
                 <button
                   type="button"
                   onClick={() => setCurrentIndex(i => i + 1)}
@@ -412,7 +524,7 @@ export const QuizExercise: React.FC<QuizExerciseProps> = ({
                       : 'bg-indigo-600 hover:bg-indigo-700 text-white'
                   }`}
                 >
-                  <span>Nộp bài & Xem kết quả</span>
+                  <span>Nộp bài & Xem kết quả (10 câu)</span>
                   <span>🎯</span>
                 </button>
               )}
@@ -444,20 +556,30 @@ export const QuizExercise: React.FC<QuizExerciseProps> = ({
               </p>
             </div>
 
-            {/* Score Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-xl mx-auto pt-2">
+            {/* Score Grid: Detailed Breakdown for Part 1, Part 2 and Total */}
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 max-w-2xl mx-auto pt-2">
               <div className="p-3.5 bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-2xs">
-                <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400">Số câu đúng</div>
-                <div className="text-xl font-black text-indigo-600 dark:text-indigo-400 mt-0.5 font-mono">
-                  {correctCount} / {questions.length}
+                <div className="text-[11px] font-bold text-blue-600 dark:text-blue-400">Phần 1 (Câu 1-5)</div>
+                <div className="text-xl font-black text-blue-700 dark:text-blue-300 mt-0.5 font-mono">
+                  {part1CorrectCount} / 5
                 </div>
+                <div className="text-[10px] text-slate-500 font-medium">Nhận biết</div>
               </div>
 
               <div className="p-3.5 bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-2xs">
-                <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400">Độ chính xác</div>
-                <div className="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-0.5 font-mono">
-                  {accuracy}%
+                <div className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">Phần 2 (Câu 6-10)</div>
+                <div className="text-xl font-black text-emerald-700 dark:text-emerald-300 mt-0.5 font-mono">
+                  {part2CorrectCount} / 5
                 </div>
+                <div className="text-[10px] text-slate-500 font-medium">Vận dụng</div>
+              </div>
+
+              <div className="p-3.5 bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-2xs">
+                <div className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400">Tổng điểm</div>
+                <div className="text-xl font-black text-indigo-600 dark:text-indigo-400 mt-0.5 font-mono">
+                  {correctCount} / {questions.length}
+                </div>
+                <div className="text-[10px] text-emerald-600 font-bold">{accuracy}%</div>
               </div>
 
               <div className="p-3.5 bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-2xs">
@@ -465,9 +587,10 @@ export const QuizExercise: React.FC<QuizExerciseProps> = ({
                 <div className="text-xl font-black text-slate-800 dark:text-white mt-0.5 font-mono">
                   {formatTime(secondsElapsed)}
                 </div>
+                <div className="text-[10px] text-slate-500 font-medium">10 câu</div>
               </div>
 
-              <div className="p-3.5 bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-2xs">
+              <div className="col-span-2 sm:col-span-1 p-3.5 bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-2xs">
                 <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400">Đánh giá Sao</div>
                 <div className="flex items-center justify-center gap-1 mt-1 text-amber-400">
                   {[1, 2, 3].map(s => (
@@ -480,6 +603,9 @@ export const QuizExercise: React.FC<QuizExerciseProps> = ({
                       }`}
                     />
                   ))}
+                </div>
+                <div className="text-[10px] text-amber-600 dark:text-amber-400 font-bold">
+                  {correctCount >= 9 ? 'Xuất sắc' : correctCount >= 7 ? 'Tốt' : 'Đạt'}
                 </div>
               </div>
             </div>
@@ -514,7 +640,7 @@ export const QuizExercise: React.FC<QuizExerciseProps> = ({
                   <span>Giải Mã Đáp Án & Lời Giải Chi Tiết</span>
                 </div>
                 <h3 className="text-lg font-black text-slate-900 dark:text-white">
-                  Xem Lại Toàn Bộ Câu Hỏi Trong Đề ({examCode})
+                  Xem Lại Toàn Bộ 10 Câu Hỏi Trong Đề ({examCode})
                 </h3>
               </div>
 
@@ -556,9 +682,19 @@ export const QuizExercise: React.FC<QuizExerciseProps> = ({
               </div>
             </div>
 
-            {/* List of Review Questions */}
+            {/* List of Review Questions Grouped by Phần 1 & Phần 2 */}
             <div className="space-y-6">
-              {filteredReviewQuestions.map(({ q, idx }) => {
+              {/* Part 1 Header if questions match filter */}
+              {filteredReviewQuestions.some(({ idx }) => idx < 5) && (
+                <div className="flex items-center gap-2 pt-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                  <h4 className="text-xs font-black uppercase tracking-wider text-blue-700 dark:text-blue-300">
+                    Phần 1: Nhận biết & Khái niệm cốt lõi (Câu 1 - 5)
+                  </h4>
+                </div>
+              )}
+
+              {filteredReviewQuestions.filter(({ idx }) => idx < 5).map(({ q, idx }) => {
                 const userChoiceIdx = userAnswers[idx];
                 const isUserCorrect = userChoiceIdx === q.correctIndex;
 
@@ -583,9 +719,141 @@ export const QuizExercise: React.FC<QuizExerciseProps> = ({
                         >
                           {idx + 1}
                         </span>
-                        <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white leading-relaxed">
-                          {q.question}
-                        </h4>
+                        <div>
+                          <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider block mb-1">
+                            Phần 1 · Câu {idx + 1}
+                          </span>
+                          <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white leading-relaxed">
+                            {q.question}
+                          </h4>
+                        </div>
+                      </div>
+
+                      <div className="shrink-0">
+                        {isUserCorrect ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>Chính xác</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-700">
+                            <XCircle className="w-3.5 h-3.5 text-rose-600" />
+                            <span>Chưa đúng</span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Options Breakdown */}
+                    <div className="space-y-2 pt-1">
+                      {q.options.map((opt, optIdx) => {
+                        const letter = String.fromCharCode(65 + optIdx);
+                        const isChosenByStudent = userChoiceIdx === optIdx;
+                        const isActualCorrect = optIdx === q.correctIndex;
+
+                        let optBoxStyle = 'bg-white/80 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300';
+                        let badgeElement = null;
+
+                        if (isActualCorrect) {
+                          optBoxStyle = 'bg-emerald-50 dark:bg-emerald-950/80 border-emerald-500 text-emerald-950 dark:text-emerald-100 font-bold ring-2 ring-emerald-300 dark:ring-emerald-800';
+                          badgeElement = (
+                            <span className="px-2 py-0.5 rounded-md bg-emerald-600 text-white text-[10px] font-black shrink-0">
+                              ✓ Đáp án đúng
+                            </span>
+                          );
+                        } else if (isChosenByStudent && !isActualCorrect) {
+                          optBoxStyle = 'bg-rose-50 dark:bg-rose-950/80 border-rose-500 text-rose-950 dark:text-rose-100 font-bold ring-2 ring-rose-300 dark:ring-rose-800';
+                          badgeElement = (
+                            <span className="px-2 py-0.5 rounded-md bg-rose-600 text-white text-[10px] font-black shrink-0">
+                              ✗ Lựa chọn của em
+                            </span>
+                          );
+                        }
+
+                        return (
+                          <div
+                            key={optIdx}
+                            className={`p-3 rounded-xl border text-xs sm:text-sm flex items-center justify-between gap-3 ${optBoxStyle}`}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <span
+                                className={`w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 border ${
+                                  isActualCorrect
+                                    ? 'bg-emerald-600 text-white border-emerald-600'
+                                    : isChosenByStudent
+                                    ? 'bg-rose-600 text-white border-rose-600'
+                                    : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-300'
+                                }`}
+                              >
+                                {letter}
+                              </span>
+                              <span className="leading-relaxed">{opt}</span>
+                            </div>
+                            {badgeElement}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Detailed Pedagogical Explanation */}
+                    {q.explanation && (
+                      <div className="p-3.5 rounded-xl bg-amber-50/80 dark:bg-slate-800/90 border border-amber-200 dark:border-slate-700 text-xs leading-relaxed text-slate-800 dark:text-slate-200 flex items-start gap-2.5">
+                        <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                        <div>
+                          <strong className="text-amber-900 dark:text-amber-300 block mb-0.5">
+                            Lời giải thích & Lời khuyên bài học:
+                          </strong>
+                          <span>{q.explanation}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+
+              {/* Part 2 Header if questions match filter */}
+              {filteredReviewQuestions.some(({ idx }) => idx >= 5) && (
+                <div className="flex items-center gap-2 pt-4 border-t border-slate-200/60 dark:border-slate-800">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                  <h4 className="text-xs font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+                    Phần 2: Thông hiểu & Vận dụng thực hành (Câu 6 - 10)
+                  </h4>
+                </div>
+              )}
+
+              {filteredReviewQuestions.filter(({ idx }) => idx >= 5).map(({ q, idx }) => {
+                const userChoiceIdx = userAnswers[idx];
+                const isUserCorrect = userChoiceIdx === q.correctIndex;
+
+                return (
+                  <div
+                    key={idx}
+                    className={`p-6 rounded-2xl border space-y-4 transition-all ${
+                      isUserCorrect
+                        ? 'bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-200/80 dark:border-emerald-800/60'
+                        : 'bg-rose-50/40 dark:bg-rose-950/20 border-rose-200/80 dark:border-rose-800/60'
+                    }`}
+                  >
+                    {/* Question Header & Status */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3">
+                        <span
+                          className={`w-7 h-7 rounded-xl flex items-center justify-center font-black text-xs shrink-0 ${
+                            isUserCorrect
+                              ? 'bg-emerald-600 text-white'
+                              : 'bg-rose-600 text-white'
+                          }`}
+                        >
+                          {idx + 1}
+                        </span>
+                        <div>
+                          <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block mb-1">
+                            Phần 2 · Câu {idx + 1}
+                          </span>
+                          <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white leading-relaxed">
+                            {q.question}
+                          </h4>
+                        </div>
                       </div>
 
                       <div className="shrink-0">

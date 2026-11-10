@@ -51,6 +51,7 @@ import { ClassPerformanceAnalytics } from './dashboard/ClassPerformanceAnalytics
 import { StudentManagement } from './dashboard/StudentManagement';
 import { TeacherManagement } from './dashboard/TeacherManagement';
 import { FeedbackManagement } from './dashboard/FeedbackManagement';
+import { TopicCompletionTimeTable } from './home/TopicCompletionTimeTable';
 import { ThemeToggleButton } from './common/ThemeToggleButton';
 
 interface TeacherDashboardProps {
@@ -500,7 +501,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
           }`}
         >
           <BarChart3 className="w-4 h-4 text-amber-400" />
-          <span>Hiệu Suất Lớp Học</span>
+          <span>Hiệu Suất & Tiến Độ Lớp Học</span>
         </button>
 
         <button
@@ -546,15 +547,21 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacher, onL
         />
       )}
 
-      {/* TAB: CLASS PERFORMANCE (RECHARTS) */}
+      {/* TAB: CLASS PERFORMANCE (RECHARTS) & TOPIC TIME STATS */}
       {activeTab === 'performance' && (
-        <ClassPerformanceAnalytics
-          assignments={assignments}
-          results={results}
-          students={students}
-          onRefreshCloud={loadData}
-          isRefreshing={isCloudSyncing}
-        />
+        <div className="space-y-8">
+          <ClassPerformanceAnalytics
+            assignments={assignments}
+            results={results}
+            students={students}
+            onRefreshCloud={loadData}
+            isRefreshing={isCloudSyncing}
+          />
+
+          <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
+            <TopicCompletionTimeTable results={results} />
+          </div>
+        </div>
       )}
 
       {/* TAB: ASSIGNMENTS BY CLASS (NO SEPARATE ASSIGNMENT PIN) */}

@@ -14,7 +14,6 @@ import {
   ArcadeGameId
 } from './components/games/ArcadeGameCenter';
 import { FeedbackModal } from './components/common/FeedbackModal';
-import { TopicCompletionTimeTable } from './components/home/TopicCompletionTimeTable';
 import {
   ArrowRight,
   ArrowLeft,
@@ -203,13 +202,6 @@ export default function App() {
               className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline underline-offset-4 transition-colors whitespace-nowrap shrink-0"
             >
               10 Chủ đề
-            </a>
-            <a
-              href="#thong-ke-tien-do"
-              onClick={() => view !== 'home' && setView('home')}
-              className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline underline-offset-4 transition-colors whitespace-nowrap shrink-0"
-            >
-              Thống kê tiến độ
             </a>
             <button
               type="button"
@@ -568,9 +560,6 @@ export default function App() {
                 </div>
               </div>
             </section>
-
-            {/* Average Completion Time Statistics by Topic for Teachers */}
-            <TopicCompletionTimeTable onOpenTeacherPortal={() => handleStartRole('teacher')} />
 
             {/* Interactive Educational Arcade Games Section */}
             <section id="arcade-games" className="space-y-6">
