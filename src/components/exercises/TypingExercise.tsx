@@ -3,7 +3,7 @@ import { Lesson, SubjectId } from '../../types';
 import { soundService } from '../../services/sound';
 import { ConfettiEffect } from '../common/ConfettiEffect';
 import { ThemeToggleButton } from '../common/ThemeToggleButton';
-import { getTelexKeysForChar, isVietnameseChar } from '../../services/telex';
+import { convertTelex, removeVietnameseAccents } from '../../services/telex';
 import {
   Sparkles,
   RotateCcw,
@@ -16,7 +16,6 @@ import {
   Volume2,
   VolumeX,
   FastForward,
-  Lightbulb,
   Check,
   Zap,
   Shield
@@ -87,19 +86,6 @@ const FINGER_GROUPS: Record<string, { finger: string; hand: string; color: strin
   '/': { finger: 'Ngón út', hand: 'Tay phải', color: 'bg-fuchsia-100 dark:bg-fuchsia-950/60 text-fuchsia-800 dark:text-fuchsia-300', border: 'border-fuchsia-300 dark:border-fuchsia-700' }
 };
 
-// Base unaccented character mapping to ease typing when accents get tough
-const REMOVE_ACCENTS_MAP: Record<string, string> = {
-  'à': 'a', 'á': 'a', 'ả': 'a', 'ã': 'a', 'ạ': 'a', 'ă': 'a', 'ằ': 'a', 'ắ': 'a', 'ẳ': 'a', 'ẵ': 'a', 'ặ': 'a',
-  'â': 'a', 'ầ': 'a', 'ấ': 'a', 'ẩ': 'a', 'ẫ': 'a', 'ậ': 'a',
-  'è': 'e', 'é': 'e', 'ẻ': 'e', 'ẽ': 'e', 'ẹ': 'e', 'ê': 'e', 'ề': 'e', 'ế': 'e', 'ể': 'e', 'ễ': 'e', 'ệ': 'e',
-  'ì': 'i', 'í': 'i', 'ỉ': 'i', 'ĩ': 'i', 'ị': 'i',
-  'ò': 'o', 'ó': 'o', 'ỏ': 'o', 'õ': 'o', 'ọ': 'o', 'ô': 'o', 'ồ': 'o', 'ố': 'o', 'ổ': 'o', 'ỗ': 'o', 'ộ': 'o',
-  'ơ': 'o', 'ờ': 'o', 'ớ': 'o', 'ở': 'o', 'ỡ': 'o', 'ợ': 'o',
-  'ù': 'u', 'ú': 'u', 'ủ': 'u', 'ũ': 'u', 'ụ': 'u', 'ư': 'u', 'ừ': 'u', 'ứ': 'u', 'ử': 'u', 'ữ': 'u', 'ự': 'u',
-  'ỳ': 'y', 'ý': 'y', 'ỷ': 'y', 'ỹ': 'y', 'ỵ': 'y',
-  'đ': 'd'
-};
-
 export const TypingExercise: React.FC<TypingExerciseProps> = ({
   lesson,
   subjectId,
@@ -110,6 +96,7 @@ export const TypingExercise: React.FC<TypingExerciseProps> = ({
 }) => {
   const targetText = lesson.target || 'f j f j ff jj';
   const [typed, setTyped] = useState('');
+  const [rawBuffer, setRawBuffer] = useState('');
   const [errors, setErrors] = useState(0);
   const [startTime, setStartTime] = useState<number | null>(null);
   const [isFinished, setIsFinished] = useState(false);
@@ -120,34 +107,15 @@ export const TypingExercise: React.FC<TypingExerciseProps> = ({
   const [maxCombo, setMaxCombo] = useState(0);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
-  // Mode: 'easy' allows case-insensitivity, lenient matching, skip, and smooth typing.
-  // 'strict' requires exact matching and precise keycodes.
+  // Mode: 'easy' allows case-insensitivity and smooth typing.
+  // 'strict' requires exact matching.
   const [typingMode, setTypingMode] = useState<'easy' | 'strict'>('easy');
-
-  // Telex step tracking for Vietnamese accented characters (e.g. for 'ò', step 0 is 'o', step 1 is 'f')
-  const [telexStep, setTelexStep] = useState(0);
-  const [lastMistakeKey, setLastMistakeKey] = useState<string | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
-
-  const currentChar = typed.length < targetText.length ? targetText[typed.length] : '';
-  const isVN = isVietnameseChar(currentChar);
-  const telexKeys = getTelexKeysForChar(currentChar);
-
-  // The actual physical key expected on keyboard at current micro-step
-  const currentExpectedKey = telexKeys[telexStep] || telexKeys[0] || currentChar;
-  const currentKeyUpper = currentExpectedKey === ' ' ? ' ' : currentExpectedKey.toUpperCase();
-
-  const fingerGuide = FINGER_GROUPS[currentKeyUpper] || {
-    finger: 'Ngón tay phù hợp',
-    hand: 'Bàn tay',
-    color: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300',
-    border: 'border-slate-300 dark:border-slate-700'
-  };
 
   const finishExercise = useCallback(() => {
     const elapsed = Math.max(1, Math.round(((Date.now() - (startTime || Date.now())) / 1000)));
@@ -158,181 +126,191 @@ export const TypingExercise: React.FC<TypingExerciseProps> = ({
     onComplete(100, Math.min(100, accuracyCalc), elapsed);
   }, [startTime, targetText.length, errors, soundEnabled, onComplete]);
 
-  // Handle advancing one character cleanly
-  const advanceCharacter = useCallback(() => {
-    const nextTyped = typed + currentChar;
-    setTyped(nextTyped);
-    setTelexStep(0);
-    setLastMistakeKey(null);
+  // Advance by a matched chunk (character or word)
+  const commitMatched = useCallback((matchedChunk: string) => {
+    setTyped(prev => {
+      const nextTyped = prev + matchedChunk;
+      if (nextTyped.length >= targetText.length) {
+        finishExercise();
+      }
+      return nextTyped;
+    });
+    setRawBuffer('');
     setCombo(c => {
       const nextC = c + 1;
       if (nextC > maxCombo) setMaxCombo(nextC);
       return nextC;
     });
-
-    if (nextTyped.length >= targetText.length) {
-      finishExercise();
-    }
-  }, [typed, currentChar, targetText.length, maxCombo, finishExercise]);
-
-  // Skip current character if student is stuck
-  const handleSkipChar = () => {
-    if (isFinished || !currentChar) return;
-    if (!startTime) setStartTime(Date.now());
-    advanceCharacter();
-    inputRef.current?.focus();
-  };
-
-  // Auto-fill hint for current character
-  const handleAutoFillHint = () => {
-    if (isFinished || !currentChar) return;
-    if (!startTime) setStartTime(Date.now());
     if (soundEnabled) soundService.playKeyCorrect();
-    advanceCharacter();
-    inputRef.current?.focus();
-  };
+  }, [targetText.length, finishExercise, maxCombo, soundEnabled]);
 
-  // Handle virtual key click from the on-screen keyboard (great for primary students)
-  const handleVirtualKeyClick = (keyChar: string) => {
+  // Skip current word or character if student is stuck
+  const handleSkip = useCallback(() => {
     if (isFinished) return;
     if (!startTime) setStartTime(Date.now());
+    const remaining = targetText.slice(typed.length);
+    if (!remaining) return;
+
+    const nextSpace = remaining.indexOf(' ');
+    const advanceBy = nextSpace === -1 ? remaining.length : (nextSpace === 0 ? 1 : nextSpace);
+    commitMatched(remaining.slice(0, advanceBy));
     inputRef.current?.focus();
+  }, [isFinished, startTime, typed.length, targetText, commitMatched]);
 
-    setActiveKey(keyChar.toUpperCase());
-    setTimeout(() => setActiveKey(''), 200);
+  // Main input processor: Supports standard keystrokes, Telex composition, and IME
+  const handleKeyStroke = useCallback((key: string) => {
+    if (isFinished) return;
+    if (!startTime) setStartTime(Date.now());
 
-    // Process matching
-    const pressed = keyChar;
-    const isDirectMatch =
-      pressed.toLowerCase() === currentChar.toLowerCase() ||
-      (typingMode === 'easy' && REMOVE_ACCENTS_MAP[currentChar.toLowerCase()] === pressed.toLowerCase());
+    setActiveKey(key === ' ' ? ' ' : key.toUpperCase());
+    setTimeout(() => setActiveKey(''), 150);
 
-    const expectedKey = telexKeys[telexStep] || telexKeys[0] || currentChar;
-    const isStepMatch = expectedKey && pressed.toLowerCase() === expectedKey.toLowerCase();
+    const remaining = targetText.slice(typed.length);
+    if (!remaining) return;
 
-    if (isDirectMatch || (isStepMatch && telexStep + 1 >= telexKeys.length)) {
-      if (soundEnabled) soundService.playKeyCorrect();
-      advanceCharacter();
-    } else if (isStepMatch) {
-      if (soundEnabled) soundService.playKeyCorrect();
-      setTelexStep(s => s + 1);
-    } else {
+    // 1. Space Bar Press
+    if (key === ' ') {
+      // If rawBuffer converts to match target word, commit it plus space
+      if (rawBuffer) {
+        const converted = convertTelex(rawBuffer);
+        if (
+          remaining.startsWith(converted) ||
+          (typingMode === 'easy' && remaining.toLowerCase().startsWith(converted.toLowerCase()))
+        ) {
+          const addSpace = remaining[converted.length] === ' ';
+          commitMatched(remaining.slice(0, converted.length) + (addSpace ? ' ' : ''));
+          return;
+        }
+
+        // Easy mode: check unaccented word match
+        if (typingMode === 'easy') {
+          const nextSpaceIdx = remaining.indexOf(' ');
+          const targetWord = nextSpaceIdx === -1 ? remaining : remaining.slice(0, nextSpaceIdx);
+          if (removeVietnameseAccents(targetWord).toLowerCase() === removeVietnameseAccents(converted).toLowerCase()) {
+            commitMatched(targetWord + (nextSpaceIdx !== -1 ? ' ' : ''));
+            return;
+          }
+        }
+      }
+
+      // If directly at space
+      if (remaining[0] === ' ') {
+        commitMatched(' ');
+        return;
+      }
+
+      // Space mismatch
       if (soundEnabled) soundService.playKeyError();
       setErrors(e => e + 1);
-      setLastMistakeKey(pressed.toUpperCase());
       setCombo(0);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (isFinished) return;
-
-    if (!startTime) {
-      setStartTime(Date.now());
-    }
-
-    // Tab key = Quick Skip character
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      handleSkipChar();
       return;
     }
 
-    // Backspace handling
-    if (e.key === 'Backspace') {
-      if (telexStep > 0) {
-        setTelexStep(0);
-      } else if (typed.length > 0) {
-        setTyped(prev => prev.slice(0, -1));
-        setTelexStep(0);
-        setCombo(0);
+    // 2. Direct character match when no rawBuffer is accumulated
+    if (!rawBuffer) {
+      const isDirect =
+        key === remaining[0] ||
+        (typingMode === 'easy' && key.toLowerCase() === remaining[0].toLowerCase());
+
+      if (isDirect) {
+        commitMatched(remaining[0]);
+        return;
       }
+    }
+
+    // 3. Telex composition: combine buffer and convert
+    const newRaw = rawBuffer + key;
+    const converted = convertTelex(newRaw);
+
+    // 3a. Does converted match the beginning of remaining text?
+    // e.g. "hocj" -> "học", "as" -> "á", "aa" -> "â", "cá" -> "cá"
+    if (
+      remaining.startsWith(converted) ||
+      (typingMode === 'easy' && remaining.toLowerCase().startsWith(converted.toLowerCase()))
+    ) {
+      commitMatched(remaining.slice(0, converted.length));
       return;
     }
 
-    // Ignore special functional keys like Shift, Control, Alt, Meta, CapsLock
-    if (e.key.length > 1 && e.key !== 'Space') return;
+    // 3b. Check if newRaw is on track towards the current word in remaining
+    const nextSpaceIdx = remaining.indexOf(' ');
+    const targetWord = nextSpaceIdx === -1 ? remaining : remaining.slice(0, nextSpaceIdx);
+    const targetBase = removeVietnameseAccents(targetWord).toLowerCase();
+    const convertedBase = removeVietnameseAccents(converted).toLowerCase();
 
-    const pressed = e.key;
-    setActiveKey(pressed === ' ' ? ' ' : pressed.toUpperCase());
-
-    // Normalize characters for comparison
-    const normPressed = pressed.normalize();
-    const normCurrent = currentChar.normalize();
-    const lowerPressed = pressed.toLowerCase();
-    const lowerCurrent = currentChar.toLowerCase();
-
-    // Check 1: Exact or Case-Insensitive Direct Match
-    const isDirectMatch =
-      pressed === currentChar ||
-      normPressed === normCurrent ||
-      (typingMode === 'easy' && lowerPressed === lowerCurrent) ||
-      (typingMode === 'easy' && isVN && REMOVE_ACCENTS_MAP[lowerCurrent] === lowerPressed);
-
-    if (isDirectMatch) {
-      e.preventDefault();
-      if (soundEnabled) soundService.playKeyCorrect();
-      advanceCharacter();
-      return;
-    }
-
-    // Check 2: Telex step-by-step key matching (e.g. for 'ò': step 0 is 'o', step 1 is 'f')
-    const expectedKey = telexKeys[telexStep];
-    const isStepMatch =
-      expectedKey &&
-      (pressed === expectedKey || pressed.toLowerCase() === expectedKey.toLowerCase());
-
-    if (isStepMatch) {
-      e.preventDefault();
-      if (soundEnabled) soundService.playKeyCorrect();
-      const nextStep = telexStep + 1;
-
-      if (nextStep >= telexKeys.length) {
-        advanceCharacter();
-      } else {
-        setTelexStep(nextStep);
-      }
-      return;
-    }
-
-    // Check 3: If space was pressed and current character is space
-    if (pressed === ' ' && currentChar === ' ') {
-      e.preventDefault();
-      if (soundEnabled) soundService.playKeyCorrect();
-      advanceCharacter();
-      return;
-    }
-
-    // In Easy Mode: If student types space on wrong letter, allow advancing if they wish
-    if (typingMode === 'easy' && pressed === ' ' && currentChar !== ' ') {
-      // Don't hard fail; show gentle hint
+    // If on track: e.g. "ho" towards "học", or "vieet" towards "việt", or "cha" towards "chăm"
+    if (targetBase.startsWith(convertedBase) || newRaw.length <= targetWord.length + 2) {
+      setRawBuffer(newRaw);
       if (soundEnabled) soundService.playTypingSound();
       return;
     }
 
     // Key mismatch
-    e.preventDefault();
     if (soundEnabled) soundService.playKeyError();
     setErrors(prev => prev + 1);
-    setLastMistakeKey(pressed.toUpperCase());
     setCombo(0);
+  }, [isFinished, startTime, typed.length, targetText, rawBuffer, commitMatched, typingMode, soundEnabled]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (isFinished) return;
+    if (!startTime) setStartTime(Date.now());
+
+    // Tab key = Quick Skip
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      handleSkip();
+      return;
+    }
+
+    // Backspace handling: delete from rawBuffer first, then from typed
+    if (e.key === 'Backspace') {
+      if (rawBuffer.length > 0) {
+        setRawBuffer(prev => prev.slice(0, -1));
+      } else if (typed.length > 0) {
+        setTyped(prev => prev.slice(0, -1));
+      }
+      return;
+    }
+
+    // Ignore non-character control keys
+    if (e.key.length > 1 && e.key !== 'Space') return;
+
+    setActiveKey(e.key === ' ' ? ' ' : e.key.toUpperCase());
+    handleKeyStroke(e.key);
   };
 
   // Support direct text entry from IME inputs (Unikey, EVKey, Gboard, mobile keyboards)
   const handleInput = (e: React.FormEvent<HTMLInputElement>) => {
-    const val = e.currentTarget.value;
+    const val = e.currentTarget.value.normalize('NFC');
+    e.currentTarget.value = '';
     if (!val) return;
-    const lastChar = val[val.length - 1];
 
-    const isMatch =
-      lastChar === currentChar ||
-      lastChar.normalize() === currentChar.normalize() ||
-      (typingMode === 'easy' && lastChar.toLowerCase() === currentChar.toLowerCase());
+    const remaining = targetText.slice(typed.length);
+    if (!remaining) return;
 
-    if (isMatch) {
-      if (soundEnabled) soundService.playKeyCorrect();
-      advanceCharacter();
-      e.currentTarget.value = '';
+    // Check if IME inputted characters match remaining text
+    let matchLen = 0;
+    while (matchLen < val.length && matchLen < remaining.length) {
+      const c1 = val[matchLen];
+      const c2 = remaining[matchLen];
+      const isCharMatch = c1 === c2 || (typingMode === 'easy' && c1.toLowerCase() === c2.toLowerCase());
+      if (isCharMatch) {
+        matchLen++;
+      } else {
+        break;
+      }
+    }
+
+    if (matchLen > 0) {
+      commitMatched(remaining.slice(0, matchLen));
+    } else {
+      const converted = convertTelex(val);
+      if (
+        remaining.startsWith(converted) ||
+        (typingMode === 'easy' && remaining.toLowerCase().startsWith(converted.toLowerCase()))
+      ) {
+        commitMatched(remaining.slice(0, converted.length));
+      }
     }
   };
 
@@ -340,13 +318,19 @@ export const TypingExercise: React.FC<TypingExerciseProps> = ({
     setActiveKey('');
   };
 
+  const handleVirtualKeyClick = (k: string) => {
+    setActiveKey(k === ' ' ? ' ' : k.toUpperCase());
+    setTimeout(() => setActiveKey(''), 180);
+    handleKeyStroke(k);
+    inputRef.current?.focus();
+  };
+
   const resetExercise = () => {
     setTyped('');
+    setRawBuffer('');
     setErrors(0);
     setStartTime(null);
-    setTelexStep(0);
     setCombo(0);
-    setLastMistakeKey(null);
     setIsFinished(false);
     inputRef.current?.focus();
   };
@@ -385,7 +369,7 @@ export const TypingExercise: React.FC<TypingExerciseProps> = ({
                   ? 'bg-emerald-500 text-white shadow-xs'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
-              title="Chế độ dễ gõ: Không phân biệt hoa thường, hỗ trợ bộ gõ Unikey tự nhiên, gõ thoải mái"
+              title="Chế độ dễ gõ: Hỗ trợ gõ Telex trực tiếp và bộ gõ Unikey tự nhiên"
             >
               <Zap className="w-3 h-3" />
               <span>Dễ gõ & Linh hoạt</span>
@@ -401,7 +385,7 @@ export const TypingExercise: React.FC<TypingExerciseProps> = ({
                   ? 'bg-blue-600 text-white shadow-xs'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
-              title="Chế độ 10 ngón chuẩn: Yêu cầu chính xác từng ký tự và ngón tay"
+              title="Chế độ chuẩn: Yêu cầu chính xác chữ hoa, chữ thường và dấu thanh"
             >
               <Shield className="w-3 h-3" />
               <span>Chuẩn 10 ngón</span>
@@ -509,7 +493,7 @@ export const TypingExercise: React.FC<TypingExerciseProps> = ({
               <span>Cấp {lesson.level} · Bài {lesson.id}</span>
               {typingMode === 'easy' && (
                 <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[10px] font-black lowercase">
-                  ✓ Chế độ dễ gõ
+                  ✓ Hỗ trợ gõ Telex tự nhiên
                 </span>
               )}
             </div>
@@ -577,7 +561,7 @@ export const TypingExercise: React.FC<TypingExerciseProps> = ({
             })}
           </div>
 
-          {/* Focused input */}
+          {/* Focused hidden input */}
           <input
             ref={inputRef}
             type="text"
@@ -593,70 +577,13 @@ export const TypingExercise: React.FC<TypingExerciseProps> = ({
           />
         </div>
 
-        {/* Smart Helpful Assistance Bar (Never leaves students stuck) */}
-        {!isFinished && currentChar && (
-          <div className="p-3.5 bg-blue-50/90 dark:bg-blue-950/50 border border-blue-200/80 dark:border-blue-800 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-bold text-xs text-slate-700 dark:text-slate-200">Phím cần bấm:</span>
-              <button
-                type="button"
-                onClick={() => handleVirtualKeyClick(currentExpectedKey)}
-                className="px-3.5 py-1 font-mono text-lg font-black bg-white dark:bg-slate-800 text-blue-700 dark:text-blue-300 border-2 border-blue-400 dark:border-blue-600 rounded-xl shadow-xs hover:scale-105 active:scale-95 transition-transform cursor-pointer"
-                title="Bấm vào để gõ ngay phím này"
-              >
-                {currentExpectedKey === ' ' ? 'Phím cách (Space)' : currentExpectedKey.toUpperCase()}
-              </button>
-
-              <span className="text-slate-400">→</span>
-              <span className={`px-2.5 py-1 rounded-xl font-bold text-xs ${fingerGuide.color} border ${fingerGuide.border}`}>
-                Dùng {fingerGuide.finger} ({fingerGuide.hand})
-              </span>
-
-              {/* Telex Formula Tag for Vietnamese */}
-              {isVN && (
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 dark:bg-amber-950/70 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-700 rounded-xl text-xs font-semibold shadow-2xs">
-                  <span>💡 Chữ "{currentChar}":</span>
-                  <span className="font-mono font-bold text-blue-700 dark:text-blue-300">
-                    {telexKeys.map(k => k.toUpperCase()).join(' + ')}
-                  </span>
-                  {telexStep > 0 && (
-                    <span className="text-emerald-700 dark:text-emerald-400 font-bold ml-1">
-                      (Đã gõ bước {telexStep}/{telexKeys.length})
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Assistance Action Buttons */}
-            <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
-              <button
-                type="button"
-                onClick={handleAutoFillHint}
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-700 transition-colors cursor-pointer"
-                title="Gợi ý và điền tự động ký tự này nếu em chưa rõ"
-              >
-                <Lightbulb className="w-3.5 h-3.5 text-amber-500" />
-                <span>Gợi ý gõ</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleSkipChar}
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 transition-colors cursor-pointer"
-                title="Bỏ qua ký tự khó này để gõ tiếp (Phím Tab)"
-              >
-                <FastForward className="w-3.5 h-3.5 text-blue-600" />
-                <span>Bỏ qua (Tab)</span>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Gentle Notice if student pressed wrong key */}
-        {lastMistakeKey && !isFinished && (
-          <div className="text-xs text-amber-700 dark:text-amber-400 flex items-center gap-1.5 bg-amber-50 dark:bg-amber-950/40 p-2 rounded-xl border border-amber-200 dark:border-amber-800 animate-fade-in">
-            <span>⚠️ Em vừa gõ phím <strong className="font-mono text-sm underline">{lastMistakeKey}</strong>. Hãy bấm phím <strong className="font-mono text-sm bg-amber-200 dark:bg-amber-800 px-1.5 py-0.5 rounded text-amber-900 dark:text-white">{currentExpectedKey === ' ' ? 'Space (Cách)' : currentExpectedKey.toUpperCase()}</strong> hoặc bấm nút "Gợi ý gõ" nhé!</span>
+        {/* Live Telex Composition Preview (Subtle and informative, only when user has pending Telex keys) */}
+        {rawBuffer && !isFinished && (
+          <div className="flex items-center gap-2 text-xs font-mono px-4 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 text-indigo-900 dark:text-indigo-200 animate-fade-in">
+            <span className="font-sans font-bold text-slate-500 dark:text-slate-400">Đang gõ Telex:</span>
+            <span className="px-2 py-0.5 rounded bg-white dark:bg-slate-800 font-bold border border-indigo-200 dark:border-indigo-700">{rawBuffer}</span>
+            <span className="text-slate-400">→</span>
+            <span className="px-2 py-0.5 rounded bg-indigo-600 text-white font-bold">{convertTelex(rawBuffer)}</span>
           </div>
         )}
       </div>
@@ -681,10 +608,8 @@ export const TypingExercise: React.FC<TypingExerciseProps> = ({
                   type="button"
                   onClick={() => handleVirtualKeyClick(k)}
                   className={`w-10 h-10 flex items-center justify-center rounded-xl border text-sm font-semibold transition-all cursor-pointer ${
-                    currentKeyUpper === k
-                      ? 'bg-blue-600 text-white ring-4 ring-blue-300 dark:ring-blue-800 scale-110 shadow-md z-10'
-                      : activeKey === k
-                      ? 'bg-blue-100 dark:bg-blue-900/60 border-blue-400 scale-95'
+                    activeKey === k
+                      ? 'bg-blue-600 text-white ring-4 ring-blue-300 dark:ring-blue-800 scale-105 shadow-md z-10'
                       : FINGER_GROUPS[k]?.color || 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
                   }`}
                 >
@@ -701,10 +626,8 @@ export const TypingExercise: React.FC<TypingExerciseProps> = ({
                   type="button"
                   onClick={() => handleVirtualKeyClick(k)}
                   className={`w-10 h-10 flex items-center justify-center rounded-xl border text-sm font-semibold transition-all cursor-pointer ${
-                    currentKeyUpper === k
-                      ? 'bg-blue-600 text-white ring-4 ring-blue-300 dark:ring-blue-800 scale-110 shadow-md z-10'
-                      : activeKey === k
-                      ? 'bg-blue-100 dark:bg-blue-900/60 border-blue-400 scale-95'
+                    activeKey === k
+                      ? 'bg-blue-600 text-white ring-4 ring-blue-300 dark:ring-blue-800 scale-105 shadow-md z-10'
                       : FINGER_GROUPS[k]?.color || 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
                   }`}
                 >
@@ -723,10 +646,8 @@ export const TypingExercise: React.FC<TypingExerciseProps> = ({
                     type="button"
                     onClick={() => handleVirtualKeyClick(k)}
                     className={`w-10 h-10 flex flex-col items-center justify-center rounded-xl border text-sm font-bold relative transition-all cursor-pointer ${
-                      currentKeyUpper === k
-                        ? 'bg-blue-600 text-white ring-4 ring-blue-300 dark:ring-blue-800 scale-110 shadow-md z-10'
-                        : activeKey === k
-                        ? 'bg-blue-100 dark:bg-blue-900/60 border-blue-400 scale-95'
+                      activeKey === k
+                        ? 'bg-blue-600 text-white ring-4 ring-blue-300 dark:ring-blue-800 scale-105 shadow-md z-10'
                         : FINGER_GROUPS[k]?.color || 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
                     }`}
                   >
@@ -747,10 +668,8 @@ export const TypingExercise: React.FC<TypingExerciseProps> = ({
                   type="button"
                   onClick={() => handleVirtualKeyClick(k)}
                   className={`w-10 h-10 flex items-center justify-center rounded-xl border text-sm font-semibold transition-all cursor-pointer ${
-                    currentKeyUpper === k
-                      ? 'bg-blue-600 text-white ring-4 ring-blue-300 dark:ring-blue-800 scale-110 shadow-md z-10'
-                      : activeKey === k
-                      ? 'bg-blue-100 dark:bg-blue-900/60 border-blue-400 scale-95'
+                    activeKey === k
+                      ? 'bg-blue-600 text-white ring-4 ring-blue-300 dark:ring-blue-800 scale-105 shadow-md z-10'
                       : FINGER_GROUPS[k]?.color || 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
                   }`}
                 >
@@ -765,10 +684,8 @@ export const TypingExercise: React.FC<TypingExerciseProps> = ({
                 type="button"
                 onClick={() => handleVirtualKeyClick(' ')}
                 className={`w-64 h-10 flex items-center justify-center rounded-xl border text-xs font-bold tracking-wider transition-all cursor-pointer ${
-                  currentKeyUpper === ' '
+                  activeKey === ' '
                     ? 'bg-blue-600 text-white ring-4 ring-blue-300 dark:ring-blue-800 scale-105 shadow-md'
-                    : activeKey === ' '
-                    ? 'bg-blue-100 dark:bg-blue-900/60 border-blue-400'
                     : 'bg-indigo-50 dark:bg-indigo-950/60 border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300'
                 }`}
               >

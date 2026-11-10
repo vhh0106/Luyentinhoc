@@ -9,6 +9,140 @@ export interface TelexCharGuide {
   note: string;
 }
 
+const TONE_INDEX: Record<string, number> = { s: 0, f: 1, r: 2, x: 3, j: 4 };
+
+const TONE_MAP: Record<string, [string, string, string, string, string]> = {
+  'a': ['á', 'à', 'ả', 'ã', 'ạ'],
+  'ă': ['ắ', 'ằ', 'ẳ', 'ẵ', 'ặ'],
+  'â': ['ấ', 'ầ', 'ẩ', 'ẫ', 'ậ'],
+  'e': ['é', 'è', 'ẻ', 'ẽ', 'ẹ'],
+  'ê': ['ế', 'ề', 'ể', 'ễ', 'ệ'],
+  'i': ['í', 'ì', 'ỉ', 'ĩ', 'ị'],
+  'o': ['ó', 'ò', 'ỏ', 'õ', 'ọ'],
+  'ô': ['ố', 'ồ', 'ổ', 'ỗ', 'ộ'],
+  'ơ': ['ớ', 'ờ', 'ở', 'ỡ', 'ợ'],
+  'u': ['ú', 'ù', 'ủ', 'ũ', 'ụ'],
+  'ư': ['ứ', 'ừ', 'ử', 'ữ', 'ự'],
+  'y': ['ý', 'ỳ', 'ỷ', 'ỹ', 'ỵ'],
+  'A': ['Á', 'À', 'Ả', 'Ã', 'Ạ'],
+  'Ă': ['Ắ', 'Ằ', 'Ẳ', 'Ẵ', 'Ặ'],
+  'Â': ['Ấ', 'Ầ', 'Ẩ', 'Ẫ', 'Ậ'],
+  'E': ['É', 'È', 'Ẻ', 'Ẽ', 'Ẹ'],
+  'Ê': ['Ế', 'Ề', 'Ể', 'Ễ', 'Ệ'],
+  'I': ['Í', 'Ì', 'Ỉ', 'Ĩ', 'Ị'],
+  'O': ['Ó', 'Ò', 'Ỏ', 'Õ', 'Ọ'],
+  'Ô': ['Ố', 'Ồ', 'Ổ', 'Ỗ', 'Ộ'],
+  'Ơ': ['Ớ', 'Ờ', 'Ở', 'Ỡ', 'Ợ'],
+  'U': ['Ú', 'Ù', 'Ủ', 'Ũ', 'Ụ'],
+  'Ư': ['Ứ', 'Ừ', 'Ử', 'Ữ', 'Ự'],
+  'Y': ['Ý', 'Ỳ', 'Ỷ', 'Ỹ', 'Ỵ']
+};
+
+const VOWEL_REGEX = /[aăâeêioôơuưyAĂÂEÊIOÔƠUƯY]/;
+const MODIFIED_VOWELS = /[ăâêôơưĂÂÊÔƠƯ]/;
+
+/**
+ * Full Vietnamese Telex Word & Character Engine
+ * Converts raw keystrokes according to Telex rules:
+ * - hocj -> học, toans -> toán, vieetj -> việt, tieengs -> tiếng
+ * - cas -> cá, caf -> cà, car -> cả, cax -> cã, caj -> cạ
+ * - aa -> â, ee -> ê, oo -> ô, dd -> đ, aw -> ă, ow -> ơ, uw -> ư
+ * - truowngf -> trường, chawm -> chăm, chir -> chỉ
+ */
+export function convertTelex(input: string): string {
+  if (!input) return '';
+  let s = input.normalize('NFC');
+
+  // Double letters & vowel modifications (uow and [uư][oơ]w before ow)
+  s = s.replace(/dd/g, 'đ').replace(/DD/g, 'Đ').replace(/Dd/g, 'Đ');
+  s = s.replace(/aa/g, 'â').replace(/AA/g, 'Â').replace(/Aa/g, 'Â');
+  s = s.replace(/ee/g, 'ê').replace(/EE/g, 'Ê').replace(/Ee/g, 'Ê');
+  s = s.replace(/oo/g, 'ô').replace(/OO/g, 'Ô').replace(/Oo/g, 'Ô');
+  s = s.replace(/uow/gi, 'ươ');
+  s = s.replace(/([uư])([oơ])w/gi, 'ươ');
+  s = s.replace(/uw/g, 'ư').replace(/UW/g, 'Ư').replace(/Uw/g, 'Ư');
+  s = s.replace(/ow/g, 'ơ').replace(/OW/g, 'Ơ').replace(/Ow/g, 'Ơ');
+  s = s.replace(/aw/g, 'ă').replace(/AW/g, 'Ă').replace(/Aw/g, 'Ă');
+
+  // Tone detection (s, f, r, x, j, z)
+  let toneChar: string | null = null;
+  let tonePos = -1;
+
+  for (let i = s.length - 1; i >= 0; i--) {
+    const ch = s[i].toLowerCase();
+    if (TONE_INDEX[ch] !== undefined) {
+      if (i > 0 && VOWEL_REGEX.test(s.slice(0, i))) {
+        toneChar = ch;
+        tonePos = i;
+        break;
+      }
+    }
+  }
+
+  if (toneChar && tonePos !== -1) {
+    const toneIdx = TONE_INDEX[toneChar];
+    const withoutTone = s.slice(0, tonePos) + s.slice(tonePos + 1);
+
+    const vowelIndices: number[] = [];
+    for (let i = 0; i < withoutTone.length; i++) {
+      if (VOWEL_REGEX.test(withoutTone[i])) {
+        vowelIndices.push(i);
+      }
+    }
+
+    if (vowelIndices.length > 0) {
+      let targetVowelIdx = vowelIndices[0];
+
+      // Special rule: ươ always puts tone on ơ (e.g. trường, lượng)
+      const uoIdx = withoutTone.toLowerCase().indexOf('ươ');
+      if (uoIdx !== -1) {
+        targetVowelIdx = uoIdx + 1; // index of ơ
+      } else {
+        const modVowel = vowelIndices.find(idx => MODIFIED_VOWELS.test(withoutTone[idx]));
+        if (modVowel !== undefined) {
+          targetVowelIdx = modVowel;
+        } else if (vowelIndices.length === 1) {
+          targetVowelIdx = vowelIndices[0];
+        } else if (vowelIndices.length === 2) {
+          const hasEndingConsonant = !VOWEL_REGEX.test(withoutTone[withoutTone.length - 1]);
+          if (hasEndingConsonant) {
+            targetVowelIdx = vowelIndices[1];
+          } else {
+            const pair = (withoutTone[vowelIndices[0]] + withoutTone[vowelIndices[1]]).toLowerCase();
+            if (['oa', 'oe', 'uy'].includes(pair)) {
+              targetVowelIdx = vowelIndices[1];
+            } else {
+              targetVowelIdx = vowelIndices[0];
+            }
+          }
+        } else if (vowelIndices.length >= 3) {
+          targetVowelIdx = vowelIndices[1];
+        }
+      }
+
+      const vChar = withoutTone[targetVowelIdx];
+      const tonedVChar = TONE_MAP[vChar] ? TONE_MAP[vChar][toneIdx] : vChar;
+      s = withoutTone.slice(0, targetVowelIdx) + tonedVChar + withoutTone.slice(targetVowelIdx + 1);
+    }
+  }
+
+  // Standalone 'w' -> 'ư'
+  s = s.replace(/w/gi, match => (match === 'W' ? 'Ư' : 'ư'));
+  return s.normalize('NFC');
+}
+
+/**
+ * Strips Vietnamese accents from a string for relaxed comparison
+ */
+export function removeVietnameseAccents(str: string): string {
+  if (!str) return '';
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D');
+}
+
 // Complete mapping of Vietnamese characters to standard Telex keystrokes
 const TELEX_MAP: Record<string, string[]> = {
   // Lowercase
